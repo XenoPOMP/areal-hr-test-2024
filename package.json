@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "node-pg-migrate": "^7.7.1",
+    "pg-migrate": "^2.0.1"
+  },
+  "scripts": {
+    "migrate": "pg-migrate up -u postgres://postgres:Spiridon_2017@localhost:5432/Areal_HR_test_2024 -d migrations",
+    "migrate:create": "pg-migrate create initial_setup -u postgres://postgres:Spiridon_2017@localhost:5432/Areal_HR_test_2024 -d migrations"
+  }
+}
