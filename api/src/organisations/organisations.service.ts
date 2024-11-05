@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class OrganisationsService {
-    getAllOrganizations() {
-        return [{ name: 'Example Organization' }];
-    }
+export class OrganizationsService {
+  getAllOrganizations() {
+    return [{ id: 1, name: 'Example Organization' }];
+  }
 }
