@@ -4,15 +4,15 @@
 
     <!-- Форма для добавления новой организации -->
     <form @submit.prevent="createOrganizationHandler">
-      <input v-model="newOrganization.name" placeholder="Название отдела" required />
-      <input v-model="newOrganization.comment" placeholder="Комментарий" />
+      <input v-model="newOrganization.org_name" placeholder="Название организации" required />
+      <input v-model="newOrganization.org_comment" placeholder="Комментарий" />
       <button type="submit">Добавить</button>
     </form>
 
     <!-- Список организаций с кнопками редактирования и удаления -->
     <ul>
       <li v-for="organization in organizations" :key="organization.id">
-        <strong>{{ organization.name }}</strong>: {{ organization.comment }}
+        <strong>{{ organization.org_name }}</strong>: {{ organization.org_comment }}
         <button @click="startEditingOrganization(organization)">Изменить</button>
         <button @click="deleteOrganizationHandler(organization.id)">Удалить</button>
       </li>
@@ -22,8 +22,8 @@
     <div v-if="editMode && editedOrganization">
       <h3>Изменить организацию</h3>
       <form @submit.prevent="updateOrganizationHandler">
-        <input v-model="editedOrganization.name" placeholder="Название организации" required />
-        <input v-model="editedOrganization.comment" placeholder="Комментарий организации" />
+        <input v-model="editedOrganization.org_name" placeholder="Название организации" required />
+        <input v-model="editedOrganization.org_comment" placeholder="Комментарий организации" />
         <button type="submit">Изменить</button>
         <button @click="cancelEdit">Отмена</button>
       </form>
@@ -38,13 +38,13 @@ import { getOrganizations, createOrganization, updateOrganization, deleteOrganiz
 // Интерфейс для организации
 interface Organization {
   id: string;
-  name: string;
-  comment: string;
+  org_name: string;
+  org_comment: string;
 }
 
 // Состояния для организаций, новой организации и редактируемой организации
 const organizations = ref<Organization[]>([]);
-const newOrganization = ref<{ name: string; comment: string }>({ name: '', comment: '' });
+const newOrganization = ref<Organization>({ id: '', org_name: '', org_comment: '' });
 const editMode = ref(false);  // Режим редактирования
 const editedOrganization = ref<Organization | null>(null);  // Текущая редактируемая организация
 
@@ -62,17 +62,31 @@ onMounted(() => {
   loadOrganizations();
 });
 
-// Обработчик создания новой организации
 const createOrganizationHandler = async () => {
   try {
     await createOrganization({
-      name: newOrganization.value.name,
-      comment: newOrganization.value.comment,
+      org_name: newOrganization.value.org_name.slice(0, 255),
+      org_comment: newOrganization.value.org_comment,
     });
-    newOrganization.value = { name: '', comment: '' };  // Очистка формы
+    newOrganization.value = { id: '', org_name: '', org_comment: '' };  // Очистка формы
     loadOrganizations();  // Обновление списка организаций
   } catch (error) {
     console.error('Ошибка добавления организации:', error);
+  }
+};
+
+const updateOrganizationHandler = async () => {
+  if (editedOrganization.value) {
+    try {
+      await updateOrganization(editedOrganization.value.id, {
+        org_name: editedOrganization.value.org_name,
+        org_comment: editedOrganization.value.org_comment,
+      });
+      await loadOrganizations();  // Перезагрузка списка организаций из базы данных
+      cancelEdit();
+    } catch (error) {
+      console.error('Ошибка обновления организации:', error);
+    }
   }
 };
 
@@ -80,25 +94,6 @@ const createOrganizationHandler = async () => {
 const startEditingOrganization = (organization: Organization) => {
   editedOrganization.value = { ...organization };  // Копируем данные организации для редактирования
   editMode.value = true;  // Включаем режим редактирования
-};
-
-// Обработчик обновления организации
-const updateOrganizationHandler = async () => {
-  if (editedOrganization.value) {
-    try {
-      // Отправка обновления на сервер
-      await updateOrganization(editedOrganization.value.id, {
-        name: editedOrganization.value.name,
-        comment: editedOrganization.value.comment,
-      });
-
-      // Перезагрузка списка организаций из базы данных
-      await loadOrganizations();  // Это гарантирует, что данные обновляются из базы
-      cancelEdit();  // Завершение режима редактирования
-    } catch (error) {
-      console.error('Ошибка обновления организации:', error);
-    }
-  }
 };
 
 // Отмена редактирования

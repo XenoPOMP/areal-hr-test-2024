@@ -4,15 +4,15 @@
 
     <!-- Форма для добавления нового отдела -->
     <form @submit.prevent="createDepartmentHandler">
-      <input v-model="newDepartment.name" placeholder="Название отдела" required />
-      <input v-model="newDepartment.comment" placeholder="Комментарий" />
+      <input v-model="newDepartment.dep_name" placeholder="Название отдела" required />
+      <input v-model="newDepartment.dep_name" placeholder="Комментарий" />
       <button type="submit">Добавить</button>
     </form>
 
     <!-- Список отделов с кнопками редактирования и удаления -->
     <ul>
       <li v-for="department in departments" :key="department.id">
-        <strong>{{ department.name }}</strong>: {{ department.comment }}
+        <strong>{{ department.dep_name }}</strong>: {{ department.dep_comment }}
         <button @click="startEditingDepartment(department)">Изменить</button>
         <button @click="deleteDepartmentHandler(department.id)">Удалить</button>
       </li>
@@ -22,8 +22,8 @@
     <div v-if="editMode && editedDepartment">
       <h3>Изменить отдел</h3>
       <form @submit.prevent="updateDepartmentHandler">
-        <input v-model="editedDepartment.name" placeholder="Название отдела" required/>
-        <input v-model="editedDepartment.comment" placeholder="Комментарий отдела"/>
+        <input v-model="editedDepartment.dep_name" placeholder="Название отдела" required/>
+        <input v-model="editedDepartment.dep_comment" placeholder="Комментарий отдела"/>
         <button type="submit">Изменить</button>
         <button @click="cancelEdit">Отмена</button>
       </form>
@@ -38,13 +38,13 @@ import {getDepartments, createDepartment, updateDepartment, deleteDepartment} fr
 // Интерфейс для отдела
 interface Department {
   id: string;
-  name: string;
-  comment: string;
+  dep_name: string;
+  dep_comment: string;
 }
 
 // Состояния для отделов, нового отдела и редактируемого отдела
 const departments = ref<Department[]>([]);
-const newDepartment = ref<{ name: string; comment: string }>({name: '', comment: ''});
+const newDepartment = ref<{ dep_name: string; dep_comment: string }>({dep_name: '', dep_comment: ''});
 const editMode = ref(false);  // Режим редактирования
 const editedDepartment = ref<Department | null>(null);  // Текущий редактируемый отдел
 
@@ -66,10 +66,10 @@ onMounted(() => {
 const createDepartmentHandler = async () => {
   try {
     await createDepartment({
-      name: newDepartment.value.name,
-      comment: newDepartment.value.comment,
+      dep_name: newDepartment.value.dep_name,
+      dep_comment: newDepartment.value.dep_comment,
     });
-    newDepartment.value = {name: '', comment: ''};  // Очистка формы
+    newDepartment.value = {dep_name: '', dep_comment: ''};  // Очистка формы
     loadDepartments();  // Обновление списка отделов
   } catch (error) {
     console.error('Ошибка добавления отдела:', error);
@@ -87,8 +87,8 @@ const updateDepartmentHandler = async () => {
   if (editedDepartment.value) {
     try {
       await updateDepartment(editedDepartment.value.id, {
-        name: editedDepartment.value.name,
-        comment: editedDepartment.value.comment,
+        dep_name: editedDepartment.value.dep_name,
+        dep_comment: editedDepartment.value.dep_comment,
       });
 
       // Перезагрузка списка организаций из базы данных

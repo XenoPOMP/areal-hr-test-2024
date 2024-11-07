@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { Organization } from './organization.entity';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Get()
-  async findAll() {
+  findAll(): Promise<Organization[]> {
     return this.organizationsService.findAll();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.organizationsService.findOne(id);
-  }
-
   @Post()
-  async create(@Body() createOrganizationDto: CreateOrganizationDto) {
-    return this.organizationsService.create(createOrganizationDto);
+  create(@Body() orgData: Partial<Organization>): Promise<Organization> {
+    console.log('Received data for creation:', orgData);
+    return this.organizationsService.create(orgData);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateOrganizationDto: UpdateOrganizationDto) {
-    return this.organizationsService.update(id, updateOrganizationDto);
+  update(@Param('id') id: number, @Body() orgData: Partial<Organization>): Promise<Organization> {
+    return this.organizationsService.update(id, orgData);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  remove(@Param('id') id: number): Promise<void> {
     return this.organizationsService.remove(id);
   }
 }

@@ -1,36 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Organization } from './organization.entity';
 
 @Injectable()
 export class OrganizationsService {
-  private organizations = []; // Временное хранилище
+  constructor(
+      @InjectRepository(Organization)
+      private readonly organizationRepository: Repository<Organization>,
+  ) {}
 
-  findAll() {
-    return this.organizations;
+  // Получение всех организаций
+  async findAll(): Promise<Organization[]> {
+    return this.organizationRepository.find();
   }
 
-  findOne(id: string) {
-    return this.organizations.find(org => org.id === id);
+  // Создание новой организации
+  async create(orgData: Partial<Organization>): Promise<Organization> {
+    console.log('Creating new organization with data:', orgData);
+    const organization = this.organizationRepository.create({
+      org_name: orgData.org_name,
+      org_comment: orgData.org_comment
+    });
+    return this.organizationRepository.save(organization);
   }
 
-  create(createOrganizationDto: CreateOrganizationDto) {
-    const newOrg = { id: Date.now().toString(), ...createOrganizationDto };
-    this.organizations.push(newOrg);
-    return newOrg;
+  // Обновление организации по ID
+  async update(id: number, orgData: Partial<Organization>): Promise<Organization> {
+    console.log(`Updating organization with ID ${id}`, orgData); // Лог перед обновлением
+    await this.organizationRepository.update(id, orgData);
+    const updatedOrganization = await this.organizationRepository.findOne({ where: { id } });
+    if (!updatedOrganization) {
+      console.error(`Organization with ID ${id} not found`);
+      throw new NotFoundException(`Organization with ID ${id} not found`);
+    }
+    console.log(`Organization updated successfully`, updatedOrganization); // Лог после обновления
+    return updatedOrganization;
   }
 
-  update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
-    const orgIndex = this.organizations.findIndex(org => org.id === id);
-    if (orgIndex === -1) return null;
-    this.organizations[orgIndex] = { ...this.organizations[orgIndex], ...updateOrganizationDto };
-    return this.organizations[orgIndex];
-  }
-
-  remove(id: string) {
-    const orgIndex = this.organizations.findIndex(org => org.id === id);
-    if (orgIndex === -1) return null;
-    const removedOrg = this.organizations.splice(orgIndex, 1);
-    return removedOrg[0];
+  // Удаление организации по ID
+  async remove(id: number): Promise<void> {
+    console.log(`Deleting organization with ID ${id}`); // Лог перед удалением
+    const deleteResult = await this.organizationRepository.delete(id);
+    if (!deleteResult.affected) {
+      console.error(`Organization with ID ${id} not found`);
+      throw new NotFoundException(`Organization with ID ${id} not found`);
+    }
+    console.log(`Organization deleted successfully`); // Лог после успешного удаления
   }
 }

@@ -4,24 +4,24 @@
 
     <!-- Форма для добавления новой должности -->
     <form @submit.prevent="createPositionHandler">
-      <input v-model="newPosition.name" placeholder="Название должности" required />
+      <input v-model="newPosition.pos_name" placeholder="Название должности" required />
       <button type="submit">Добавить</button>
     </form>
 
     <!-- Список должностей с кнопками редактирования и удаления -->
     <ul>
       <li v-for="position in positions" :key="position.id">
-        <strong>{{ position.name }}</strong>
+        <strong>{{ position.pos_name }}</strong>
         <button @click="startEditingPosition(position)">Изменить</button>
         <button @click="deletePositionHandler(position.id)">Удалить</button>
       </li>
     </ul>
 
-    <!-- Форма редактирования должности (отображается только при наличии editedPosition) -->
+    <!-- Форма редактирования должности -->
     <div v-if="editMode && editedPosition">
       <h3>Изменить должность</h3>
       <form @submit.prevent="updatePositionHandler">
-        <input v-model="editedPosition.name" placeholder="Название должности" required />
+        <input v-model="editedPosition.pos_name" placeholder="Название должности" required />
         <button type="submit">Изменить</button>
         <button @click="cancelEdit">Отмена</button>
       </form>
@@ -36,12 +36,12 @@ import { getPositions, createPosition, updatePosition, deletePosition } from 'sr
 // Интерфейс для должности
 interface Position {
   id: string;
-  name: string;
+  pos_name: string;
 }
 
 // Состояния для должностей, новой должности и редактируемой должности
 const positions = ref<Position[]>([]);
-const newPosition = ref<{ name: string }>({ name: '' });
+const newPosition = ref<{ pos_name: string }>({ pos_name: '' });
 const editMode = ref(false);  // Режим редактирования
 const editedPosition = ref<Position | null>(null);  // Текущая редактируемая должность
 
@@ -63,9 +63,9 @@ onMounted(() => {
 const createPositionHandler = async () => {
   try {
     await createPosition({
-      name: newPosition.value.name,
+      pos_name: newPosition.value.pos_name,
     });
-    newPosition.value = { name: '' };  // Очистка формы
+    newPosition.value = { pos_name: '' };  // Очистка формы
     loadPositions();  // Обновление списка должностей
   } catch (error) {
     console.error('Ошибка добавления должности:', error);
@@ -83,9 +83,8 @@ const updatePositionHandler = async () => {
   if (editedPosition.value) {
     try {
       await updatePosition(editedPosition.value.id, {
-        name: editedPosition.value.name,
+        pos_name: editedPosition.value.pos_name,
       });
-
       await loadPositions();  // Перезагрузка списка должностей
       cancelEdit();  // Завершение режима редактирования
     } catch (error) {
