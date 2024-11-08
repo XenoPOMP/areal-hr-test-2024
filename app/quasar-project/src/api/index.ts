@@ -8,12 +8,12 @@ export const getOrganizations = async () => {
   return response.data;
 };
 
-export const createOrganization = async (data: { org_name: string; org_comment: string }) => {
+export const createOrganization = async (data: { name: string; comment: string }) => {
   const response = await axios.post(`${API_URL}/organizations`, data);
   return response.data;
 };
 
-export const updateOrganization = async (id: string, data: { org_name: string; org_comment: string }) => {
+export const updateOrganization = async (id: string, data: { name: string; comment: string }) => {
   const response = await axios.put(`${API_URL}/organizations/${id}`, data);
   return response.data;
 };
@@ -29,12 +29,12 @@ export const getDepartments = async () => {
   return response.data;
 };
 
-export const createDepartment = async (data: { dep_name: string; dep_comment: string }) => {
+export const createDepartment = async (data: { name: string; comment: string }) => {
   const response = await axios.post(`${API_URL}/departments`, data);
   return response.data;
 };
 
-export const updateDepartment = async (id: string, data: { dep_name: string; dep_comment: string }) => {
+export const updateDepartment = async (id: string, data: { name: string; comment: string }) => {
   const response = await axios.put(`${API_URL}/departments/${id}`, data);
   return response.data;
 };
@@ -50,12 +50,12 @@ export const getPositions = async () => {
   return response.data;
 };
 
-export const createPosition = async (data: { pos_name: string; }) => {
+export const createPosition = async (data: { name: string; }) => {
   const response = await axios.post(`${API_URL}/positions`, data);
   return response.data;
 };
 
-export const updatePosition = async (id: string, data: { pos_name: string; }) => {
+export const updatePosition = async (id: string, data: { name: string; }) => {
   const response = await axios.put(`${API_URL}/positions/${id}`, data);
   return response.data;
 };

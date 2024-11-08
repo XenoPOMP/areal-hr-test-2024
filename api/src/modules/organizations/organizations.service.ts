@@ -19,8 +19,8 @@ export class OrganizationsService {
   async create(orgData: Partial<Organization>): Promise<Organization> {
     console.log('Creating new organization with data:', orgData);
     const organization = this.organizationRepository.create({
-      org_name: orgData.org_name,
-      org_comment: orgData.org_comment
+      name: orgData.name,
+      comment: orgData.comment
     });
     return this.organizationRepository.save(organization);
   }

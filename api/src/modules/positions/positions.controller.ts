@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { PositionsService } from './positions.service';
-import { CreatePositionDto } from './dto/create-position.dto';
-import { UpdatePositionDto } from './dto/update-position.dto';
+import { Position } from './position.entity';
 
 @Controller('positions')
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Get()
-  async findAll() {
+  findAll(): Promise<Position[]> {
     return this.positionsService.findAll();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.positionsService.findOne(id);
-  }
-
   @Post()
-  async create(@Body() createPositionDto: CreatePositionDto) {
-    return this.positionsService.create(createPositionDto);
+  create(@Body() posData: Partial<Position>): Promise<Position> {
+    console.log('Received data for creation:', posData);
+    return this.positionsService.create(posData);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updatePositionDto: UpdatePositionDto) {
-    return this.positionsService.update(id, updatePositionDto);
+  update(@Param('id') id: number, @Body() posData: Partial<Position>): Promise<Position> {
+    return this.positionsService.update(id, posData);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  remove(@Param('id') id: number): Promise<void> {
     return this.positionsService.remove(id);
   }
 }

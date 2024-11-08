@@ -4,24 +4,24 @@
 
     <!-- Форма для добавления новой должности -->
     <form @submit.prevent="createPositionHandler">
-      <input v-model="newPosition.pos_name" placeholder="Название должности" required />
+      <input v-model="newPosition.name" placeholder="Название должности" required />
       <button type="submit">Добавить</button>
     </form>
 
     <!-- Список должностей с кнопками редактирования и удаления -->
     <ul>
       <li v-for="position in positions" :key="position.id">
-        <strong>{{ position.pos_name }}</strong>
+        <strong>{{ position.name }}</strong>
         <button @click="startEditingPosition(position)">Изменить</button>
         <button @click="deletePositionHandler(position.id)">Удалить</button>
       </li>
     </ul>
 
-    <!-- Форма редактирования должности -->
+    <!-- Форма редактирования должности (отображается только при наличии editedPosition) -->
     <div v-if="editMode && editedPosition">
       <h3>Изменить должность</h3>
       <form @submit.prevent="updatePositionHandler">
-        <input v-model="editedPosition.pos_name" placeholder="Название должности" required />
+        <input v-model="editedPosition.name" placeholder="Название должности" required />
         <button type="submit">Изменить</button>
         <button @click="cancelEdit">Отмена</button>
       </form>
@@ -36,21 +36,21 @@ import { getPositions, createPosition, updatePosition, deletePosition } from 'sr
 // Интерфейс для должности
 interface Position {
   id: string;
-  pos_name: string;
+  name: string;
 }
 
-// Состояния для должностей, новой должности и редактируемой должности
+// Состояния для должности, новой должности и редактируемой должности
 const positions = ref<Position[]>([]);
-const newPosition = ref<{ pos_name: string }>({ pos_name: '' });
+const newPosition = ref<Position>({ id: '', name: ''});
 const editMode = ref(false);  // Режим редактирования
 const editedPosition = ref<Position | null>(null);  // Текущая редактируемая должность
 
-// Загрузка списка должностей
+// Загрузка списка организаций
 const loadPositions = async () => {
   try {
     positions.value = await getPositions();
   } catch (error) {
-    console.error('Ошибка загрузки должностей:', error);
+    console.error('Ошибка загрузки должности:', error);
   }
 };
 
@@ -59,16 +59,29 @@ onMounted(() => {
   loadPositions();
 });
 
-// Обработчик создания новой должности
 const createPositionHandler = async () => {
   try {
     await createPosition({
-      pos_name: newPosition.value.pos_name,
+      name: newPosition.value.name.slice(0, 255),
     });
-    newPosition.value = { pos_name: '' };  // Очистка формы
+    newPosition.value = { id: '', name: '' };  // Очистка формы
     loadPositions();  // Обновление списка должностей
   } catch (error) {
     console.error('Ошибка добавления должности:', error);
+  }
+};
+
+const updatePositionHandler = async () => {
+  if (editedPosition.value) {
+    try {
+      await updatePosition(editedPosition.value.id, {
+        name: editedPosition.value.name,
+      });
+      await loadPositions();  // Перезагрузка списка должностей из базы данных
+      cancelEdit();
+    } catch (error) {
+      console.error('Ошибка обновления должности:', error);
+    }
   }
 };
 
@@ -78,28 +91,13 @@ const startEditingPosition = (position: Position) => {
   editMode.value = true;  // Включаем режим редактирования
 };
 
-// Обработчик обновления должности
-const updatePositionHandler = async () => {
-  if (editedPosition.value) {
-    try {
-      await updatePosition(editedPosition.value.id, {
-        pos_name: editedPosition.value.pos_name,
-      });
-      await loadPositions();  // Перезагрузка списка должностей
-      cancelEdit();  // Завершение режима редактирования
-    } catch (error) {
-      console.error('Ошибка обновления должности:', error);
-    }
-  }
-};
-
 // Отмена редактирования
 const cancelEdit = () => {
   editMode.value = false;
   editedPosition.value = null;
 };
 
-// Удаление должности
+// Удаление организации
 const deletePositionHandler = async (id: string) => {
   try {
     await deletePosition(id);

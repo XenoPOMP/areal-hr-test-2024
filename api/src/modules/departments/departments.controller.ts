@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
-import { CreateDepartmentDto } from './dto/create-department.dto';
-import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { Department } from './department.entity';
 
 @Controller('departments')
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
 
   @Get()
-  async findAll() {
+  findAll(): Promise<Department[]> {
     return this.departmentsService.findAll();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.departmentsService.findOne(id);
-  }
-
   @Post()
-  async create(@Body() createDepartmentDto: CreateDepartmentDto) {
-    return this.departmentsService.create(createDepartmentDto);
+  create(@Body() depData: Partial<Department>): Promise<Department> {
+    console.log('Received data for creation:', depData);
+    return this.departmentsService.create(depData);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateDepartmentDto: UpdateDepartmentDto) {
-    return this.departmentsService.update(id, updateDepartmentDto);
+  update(@Param('id') id: number, @Body() depData: Partial<Department>): Promise<Department> {
+    return this.departmentsService.update(id, depData);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  remove(@Param('id') id: number): Promise<void> {
     return this.departmentsService.remove(id);
   }
 }

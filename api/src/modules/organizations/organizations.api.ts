@@ -7,12 +7,12 @@ export const getOrganizations = async () => {
     return response.data;
 };
 
-export const createOrganization = async (orgData: { org_name: string; org_comment?: string }) => {
+export const createOrganization = async (orgData: { name: string; comment?: string }) => {
     const response = await axios.post(API_URL, orgData);
     return response.data;
 };
 
-export const updateOrganization = async (id: number, orgData: { org_name: string; org_comment?: string }) => {
+export const updateOrganization = async (id: number, orgData: { name: string; comment?: string }) => {
     const response = await axios.put(`${API_URL}/${id}`, orgData);
     return response.data;
 };

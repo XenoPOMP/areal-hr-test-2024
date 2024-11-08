@@ -1,36 +1,50 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePositionDto } from './dto/create-position.dto';
-import { UpdatePositionDto } from './dto/update-position.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Position } from './position.entity';
 
 @Injectable()
 export class PositionsService {
-  private positions = []; // Временное хранилище для должностей
+  constructor(
+      @InjectRepository(Position)
+      private readonly positionRepository: Repository<Position>,
+  ) {}
 
-  findAll() {
-    return this.positions;
+  // Получение всех организаций
+  async findAll(): Promise<Position[]> {
+    return this.positionRepository.find();
   }
 
-  findOne(id: string) {
-    return this.positions.find(pos => pos.id === id);
+  // Создание новой организации
+  async create(posData: Partial<Position>): Promise<Position> {
+    console.log('Creating new position with data:', posData);
+    const position = this.positionRepository.create({
+      name: posData.name
+    });
+    return this.positionRepository.save(position);
   }
 
-  create(createPositionDto: CreatePositionDto) {
-    const newPos = { id: Date.now().toString(), ...createPositionDto };
-    this.positions.push(newPos);
-    return newPos;
+  // Обновление организации по ID
+  async update(id: number, posData: Partial<Position>): Promise<Position> {
+    console.log(`Updating position with ID ${id}`, posData); // Лог перед обновлением
+    await this.positionRepository.update(id, posData);
+    const updatedPosition = await this.positionRepository.findOne({ where: { id } });
+    if (!updatedPosition) {
+      console.error(`Position with ID ${id} not found`);
+      throw new NotFoundException(`Position with ID ${id} not found`);
+    }
+    console.log(`Position updated successfully`, updatedPosition); // Лог после обновления
+    return updatedPosition;
   }
 
-  update(id: string, updatePositionDto: UpdatePositionDto) {
-    const posIndex = this.positions.findIndex(pos => pos.id === id);
-    if (posIndex === -1) return null;
-    this.positions[posIndex] = { ...this.positions[posIndex], ...updatePositionDto };
-    return this.positions[posIndex];
-  }
-
-  remove(id: string) {
-    const posIndex = this.positions.findIndex(pos => pos.id === id);
-    if (posIndex === -1) return null;
-    const removedPos = this.positions.splice(posIndex, 1);
-    return removedPos[0];
+  // Удаление организации по ID
+  async remove(id: number): Promise<void> {
+    console.log(`Deleting position with ID ${id}`); // Лог перед удалением
+    const deleteResult = await this.positionRepository.delete(id);
+    if (!deleteResult.affected) {
+      console.error(`Position with ID ${id} not found`);
+      throw new NotFoundException(`Position with ID ${id} not found`);
+    }
+    console.log(`Position deleted successfully`); // Лог после успешного удаления
   }
 }

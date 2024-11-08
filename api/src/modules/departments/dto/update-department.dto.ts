@@ -5,5 +5,5 @@ export class UpdateDepartmentDto {
   readonly name?: string;
 
   @IsString()
-  readonly organizationId?: string;
+  readonly organization_id?: string;
 }

@@ -6,8 +6,8 @@ export class Organization {
   id: number;
 
   @Column({ type: 'varchar', length: 255 })
-  org_name: string;
+  name: string;
 
   @Column({ type: 'text', nullable: true })
-  org_comment: string;
+  comment: string;
 }

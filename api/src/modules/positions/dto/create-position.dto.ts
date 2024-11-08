@@ -6,5 +6,5 @@ export class CreatePositionDto {
   readonly title: string;
 
   @IsString()
-  readonly departmentId?: string; // Связь с департаментом
+  readonly department_id?: string; // Связь с департаментом
 }

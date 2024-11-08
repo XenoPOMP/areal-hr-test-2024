@@ -6,5 +6,5 @@ export class CreateDepartmentDto {
   readonly name: string;
 
   @IsString()
-  readonly organizationId?: string; // Связь с организацией
+  readonly organization_id?: string; // Связь с организацией
 }
