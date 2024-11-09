@@ -14,6 +14,7 @@ import { PositionsModule } from './modules/positions/positions.module';
       password: 'Spiridon_2017',
       database: 'areal_hr',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      migrations: [__dirname + '/migrations/*.js'],
       synchronize: true,
     }),
     OrganizationsModule,
