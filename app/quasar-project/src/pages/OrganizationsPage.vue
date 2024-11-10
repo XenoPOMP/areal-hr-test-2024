@@ -1,31 +1,52 @@
 <template>
   <div>
+    <!-- Компонент шапки для навигации -->
+    <AppHeader />
+
     <h1>Организации</h1>
 
     <!-- Форма для добавления новой организации -->
-    <form @submit.prevent="createOrganizationHandler">
-      <input v-model="newOrganization.name" placeholder="Название организации" required />
-      <input v-model="newOrganization.comment" placeholder="Комментарий" />
-      <button type="submit">Добавить</button>
+    <form @submit.prevent="createOrganizationHandler" class="form-container">
+      <q-input v-model="newOrganization.name" label="Название организации" filled required />
+      <q-input v-model="newOrganization.comment" label="Комментарий" filled />
+      <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
-    <!-- Список организаций с кнопками редактирования и удаления -->
-    <ul>
-      <li v-for="organization in organizations" :key="organization.id">
-        <strong>{{ organization.name }}</strong>: {{ organization.comment }}
-        <button @click="startEditingOrganization(organization)">Изменить</button>
-        <button @click="deleteOrganizationHandler(organization.id)">Удалить</button>
-      </li>
-    </ul>
+    <!-- Таблица организаций -->
+    <q-table
+      :rows="organizations"
+      :columns="columns"
+      row-key="id"
+      flat
+      bordered
+      class="table-container"
+    >
+      <template v-slot:body-cell-actions="props">
+        <q-btn
+          color="primary"
+          label="Изменить"
+          @click="startEditingOrganization(props.row)"
+          flat
+          size="sm"
+        />
+        <q-btn
+          color="negative"
+          label="Удалить"
+          @click="deleteOrganizationHandler(props.row.id)"
+          flat
+          size="sm"
+        />
+      </template>
+    </q-table>
 
-    <!-- Форма редактирования организации (отображается только при наличии editedOrganization) -->
-    <div v-if="editMode && editedOrganization">
+    <!-- Форма редактирования организации -->
+    <div v-if="editMode && editedOrganization" class="edit-form">
       <h3>Изменить организацию</h3>
       <form @submit.prevent="updateOrganizationHandler">
-        <input v-model="editedOrganization.name" placeholder="Название организации" required />
-        <input v-model="editedOrganization.comment" placeholder="Комментарий организации" />
-        <button type="submit">Изменить</button>
-        <button @click="cancelEdit">Отмена</button>
+        <q-input v-model="editedOrganization.name" label="Название организации" filled required />
+        <q-input v-model="editedOrganization.comment" label="Комментарий организации" filled />
+        <q-btn type="submit" label="Изменить" color="primary" />
+        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
     </div>
   </div>
@@ -34,6 +55,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { getOrganizations, createOrganization, updateOrganization, deleteOrganization } from 'src/api';
+import { QTableColumn } from 'quasar';
+import AppHeader from 'components/AppHeader.vue';
+
+// Определение колонок для таблицы
+const columns: QTableColumn[] = [
+  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
+  { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
+  { name: 'actions', label: 'Действия', align: 'center', field: row => row.id }
+];
 
 // Интерфейс для организации
 interface Organization {
@@ -112,3 +142,14 @@ const deleteOrganizationHandler = async (id: string) => {
   }
 };
 </script>
+
+<style scoped>
+.form-container, .edit-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.table-container {
+  margin-top: 1rem;
+}
+</style>

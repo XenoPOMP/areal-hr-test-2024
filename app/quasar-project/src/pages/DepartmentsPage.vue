@@ -1,39 +1,62 @@
 <template>
   <div>
+    <!-- Компонент шапки для навигации -->
+    <AppHeader />
+
     <h1>Отделы</h1>
 
     <!-- Форма для добавления нового отдела -->
-    <form @submit.prevent="createDepartmentHandler">
-      <input v-model="newDepartment.name" placeholder="Название отдела" required />
-      <input v-model="newDepartment.comment" placeholder="Комментарий" />
-      <button type="submit">Добавить</button>
+    <form @submit.prevent="createDepartmentHandler" class="form-container">
+      <q-input v-model="newDepartment.name" label="Название отдела" filled required />
+      <q-input v-model="newDepartment.comment" label="Комментарий" filled />
+      <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
-    <!-- Список организаций с кнопками редактирования и удаления -->
-    <ul>
-      <li v-for="department in departments" :key="department.id">
-        <strong>{{ department.name }}</strong>: {{ department.comment }}
-        <button @click="startEditingDepartment(department)">Изменить</button>
-        <button @click="deleteDepartmentHandler(department.id)">Удалить</button>
-      </li>
-    </ul>
+    <!-- Таблица отделов -->
+    <q-table
+      :rows="departments"
+      :columns="columns"
+      row-key="id"
+      flat
+      bordered
+      class="table-container"
+    >
+      <template v-slot:body-cell-actions="props">
+        <q-btn
+          color="primary"
+          label="Изменить"
+          @click="startEditingDepartment(props.row)"
+          flat
+          size="sm"
+        />
+        <q-btn
+          color="negative"
+          label="Удалить"
+          @click="deleteDepartmentHandler(props.row.id)"
+          flat
+          size="sm"
+        />
+      </template>
+    </q-table>
 
-    <!-- Форма редактирования отдела (отображается только при наличии editedDepartment) -->
-    <div v-if="editMode && editedDepartment">
+    <!-- Форма редактирования отдела -->
+    <div v-if="editMode && editedDepartment" class="edit-form">
       <h3>Изменить отдел</h3>
       <form @submit.prevent="updateDepartmentHandler">
-        <input v-model="editedDepartment.name" placeholder="Название отдела" required />
-        <input v-model="editedDepartment.comment" placeholder="Комментарий отдела" />
-        <button type="submit">Изменить</button>
-        <button @click="cancelEdit">Отмена</button>
+        <q-input v-model="editedDepartment.name" label="Название отдела" filled required />
+        <q-input v-model="editedDepartment.comment" label="Комментарий отдела" filled />
+        <q-btn type="submit" label="Изменить" color="primary" />
+        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { getDepartments, createDepartment, updateDepartment, deleteDepartment } from 'src/api';
+import { QTableColumn } from 'quasar';
 
 // Интерфейс для отдела
 interface Department {
@@ -42,13 +65,20 @@ interface Department {
   comment: string;
 }
 
-// Состояния для отдела, нового отдела и редактируемого отдела
+// Состояния для отделов, нового отдела и редактируемого отдела
 const departments = ref<Department[]>([]);
 const newDepartment = ref<Department>({ id: '', name: '', comment: '' });
-const editMode = ref(false);  // Режим редактирования
-const editedDepartment = ref<Department | null>(null);  // Текущий редактируемый отдел
+const editMode = ref(false);
+const editedDepartment = ref<Department | null>(null);
 
-// Загрузка списка организаций
+// Определение колонок для таблицы
+const columns: QTableColumn[] = [
+  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
+  { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
+  { name: 'actions', label: 'Действия', align: 'center', field: row => row.id }
+];
+
+// Загрузка списка отделов
 const loadDepartments = async () => {
   try {
     departments.value = await getDepartments();
@@ -68,8 +98,8 @@ const createDepartmentHandler = async () => {
       name: newDepartment.value.name.slice(0, 255),
       comment: newDepartment.value.comment,
     });
-    newDepartment.value = { id: '', name: '', comment: '' };  // Очистка формы
-    loadDepartments();  // Обновление списка отделов
+    newDepartment.value = { id: '', name: '', comment: '' };
+    loadDepartments();
   } catch (error) {
     console.error('Ошибка добавления отдела:', error);
   }
@@ -82,7 +112,7 @@ const updateDepartmentHandler = async () => {
         name: editedDepartment.value.name,
         comment: editedDepartment.value.comment,
       });
-      await loadDepartments();  // Перезагрузка списка отделов из базы данных
+      await loadDepartments();
       cancelEdit();
     } catch (error) {
       console.error('Ошибка обновления отдела:', error);
@@ -90,25 +120,33 @@ const updateDepartmentHandler = async () => {
   }
 };
 
-// Обработчик начала редактирования
 const startEditingDepartment = (department: Department) => {
-  editedDepartment.value = { ...department };  // Копируем данные отдела для редактирования
-  editMode.value = true;  // Включаем режим редактирования
+  editedDepartment.value = { ...department };
+  editMode.value = true;
 };
 
-// Отмена редактирования
 const cancelEdit = () => {
   editMode.value = false;
   editedDepartment.value = null;
 };
 
-// Удаление организации
 const deleteDepartmentHandler = async (id: string) => {
   try {
     await deleteDepartment(id);
-    loadDepartments();  // Обновление списка отделов после удаления
+    loadDepartments();
   } catch (error) {
     console.error('Ошибка удаления отдела:', error);
   }
 };
 </script>
+
+<style scoped>
+.form-container, .edit-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.table-container {
+  margin-top: 1rem;
+}
+</style>

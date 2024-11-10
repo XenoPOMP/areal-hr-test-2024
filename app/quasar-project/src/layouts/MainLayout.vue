@@ -1,12 +1,13 @@
 <template>
-  <div>
-    <nav>
-      <router-link to="/">Организации</router-link> |
-      <router-link to="/departments">Отделы</router-link> |
-      <router-link to="/positions">Должности</router-link>
-    </nav>
-    <main>
+  <q-layout view="hHh lpR fFf">
+    <!-- Включаем шапку через AppHeader -->
+    <AppHeader />
+    <q-page-container>
       <router-view />
-    </main>
-  </div>
+    </q-page-container>
+  </q-layout>
 </template>
+
+<script setup lang="ts">
+import AppHeader from 'components/AppHeader.vue';
+</script>

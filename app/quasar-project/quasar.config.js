@@ -95,20 +95,18 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
     framework: {
-      config: {},
-
-      // iconSet: 'material-icons', // Quasar icon set
-      // lang: 'en-US', // Quasar language pack
-
-      // For special cases outside of where the auto-import strategy can have an impact
-      // (like functional components as one of the examples),
-      // you can manually specify Quasar components/directives to be available everywhere:
-      //
-      // components: [],
-      // directives: [],
-
-      // Quasar plugins
-      plugins: []
+      components: ['QInput', 'QTable', 'QBtn'],
+      config: {
+        brand: {
+          primary: '#1a73e8',     // Синий акцент
+          secondary: '#f1f3f4',   // Светло-серый для фона
+          accent: '#ff5722',      // Яркий акцентный цвет
+          positive: '#4caf50',    // Цвет для подтверждающих действий
+          negative: '#f44336',    // Цвет для отмены/ошибок
+          info: '#2196f3',        // Информационный цвет
+          warning: '#ffc107'      // Цвет предупреждений
+        }
+      }
     },
 
     // animations: 'all', // --- includes all animations
