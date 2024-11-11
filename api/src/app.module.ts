@@ -3,6 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { PositionsModule } from './modules/positions/positions.module';
+import { EmployeesModule } from './modules/employees/employees.module';
+import { FilesModule } from './modules/files/files.module';
+import { HRActionsModule } from './modules/hr_actions/hr_actions.module';
+import { HistoryOfChangesModule } from './modules/history_of_changes/history_of_changes.module';
 
 @Module({
   imports: [
@@ -19,7 +23,11 @@ import { PositionsModule } from './modules/positions/positions.module';
     }),
     OrganizationsModule,
     DepartmentsModule,
-    PositionsModule
+    PositionsModule,
+    EmployeesModule,
+    FilesModule,
+    HRActionsModule,
+    HistoryOfChangesModule
   ],
 })
 export class AppModule {}
