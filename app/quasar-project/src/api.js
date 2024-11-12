@@ -66,3 +66,88 @@ export const deletePosition = async (id) => {
   const response = await api.delete(`/positions/${id}`);
   return response.data;
 };
+
+// Функции для работы с Employees
+export const getEmployees = async () => {
+  const response = await api.get('/employees');
+  return response.data;
+};
+
+export const createEmployee = async (data) => {
+  const response = await api.post('/employees', data);
+  return response.data;
+};
+
+export const updateEmployee = async (id, data) => {
+  const response = await api.put(`/employees/${id}`, data);
+  return response.data;
+};
+
+export const deleteEmployee = async (id) => {
+  const response = await api.delete(`/employees/${id}`);
+  return response.data;
+};
+
+// Функции для работы с Files
+export const getFiles = async () => {
+  const response = await api.get('/files');
+  return response.data;
+};
+
+export const createFile = async (data) => {
+  const response = await api.post('/files', data);
+  return response.data;
+};
+
+export const updateFile = async (id, data) => {
+  const response = await api.put(`/files/${id}`, data);
+  return response.data;
+};
+
+export const deleteFile = async (id) => {
+  const response = await api.delete(`/files/${id}`);
+  return response.data;
+};
+
+// Функции для работы с hr_actions
+export const getHRActions = async () => {
+  const response = await api.get('/hr_actions');
+  return response.data;
+};
+
+export const createHRAction = async (data) => {
+  const response = await api.post('/hr_actions', data);
+  return response.data;
+};
+
+export const updateHRAction = async (id, data) => {
+  const response = await api.put(`/hr_actions/${id}`, data);
+  return response.data;
+};
+
+export const deleteHRAction = async (id) => {
+  const response = await api.delete(`/hr_actions/${id}`);
+  return response.data;
+};
+
+// Функции для работы с history_of_changes
+export const getHistoryOfChanges = async () => {
+  const response = await api.get('/history_of_changes');
+  return response.data;
+};
+
+export const createHistoryOfChange = async (data) => {
+  const response = await api.post('/history_of_changes', data);
+  return response.data;
+};
+
+export const updateHistoryOfChange = async (id, data) => {
+  const response = await api.put(`/history_of_changes/${id}`, data);
+  return response.data;
+};
+
+export const deleteHistoryOfChange = async (id) => {
+  const response = await api.delete(`/history_of_changes/${id}`);
+  return response.data;
+};
+

@@ -10,9 +10,13 @@
         transition-prev="scale"
         transition-next="scale"
       >
-      <q-tab name="/" label="Организации" @click="goTo('/')" />
-      <q-tab name="/departments" label="Отделы" @click="goTo('/departments')" />
-      <q-tab name="/positions" label="Должности" @click="goTo('/positions')" />
+        <q-tab name="/" label="Организации" @click="goTo('/')" />
+        <q-tab name="/departments" label="Отделы" @click="goTo('/departments')" />
+        <q-tab name="/positions" label="Должности" @click="goTo('/positions')" />
+        <q-tab name="/employees" label="Сотрудники" @click="goTo('/employees')" />
+        <q-tab name="/files" label="Файлы" @click="goTo('/files')" />
+        <q-tab name="/hr_actions" label="Кадровые операции" @click="goTo('/hr_actions')" />
+        <q-tab name="/history_of_changes" label="История изменений" @click="goTo('/history_of_changes')" />
       </q-tabs>
     </q-toolbar>
   </q-header>
