@@ -99,7 +99,7 @@ const createDepartmentHandler = async () => {
       comment: newDepartment.value.comment,
     });
     newDepartment.value = { id: '', name: '', comment: '' };
-    loadDepartments();
+    await loadDepartments();
   } catch (error) {
     console.error('Ошибка добавления отдела:', error);
   }
@@ -133,7 +133,7 @@ const cancelEdit = () => {
 const deleteDepartmentHandler = async (id: string) => {
   try {
     await deleteDepartment(id);
-    loadDepartments();
+    await loadDepartments();
   } catch (error) {
     console.error('Ошибка удаления отдела:', error);
   }
