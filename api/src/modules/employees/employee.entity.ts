@@ -11,7 +11,7 @@ export class Employee {
   @Column({ type: 'varchar', length: 100 })
   surname: string;
 
-  @Column({ type: 'varchar', length: 100  })
+  @Column({ type: 'varchar', length: 100 })
   second_name: string;
 
   @Column({ type: 'date', nullable: true })

@@ -6,8 +6,8 @@ import { Position } from './position.entity';
 @Injectable()
 export class PositionsService {
   constructor(
-      @InjectRepository(Position)
-      private readonly positionRepository: Repository<Position>,
+    @InjectRepository(Position)
+    private readonly positionRepository: Repository<Position>,
   ) {}
 
   // Получение всех организаций
@@ -19,7 +19,7 @@ export class PositionsService {
   async create(posData: Partial<Position>): Promise<Position> {
     console.log('Creating new position with data:', posData);
     const position = this.positionRepository.create({
-      name: posData.name
+      name: posData.name,
     });
     return this.positionRepository.save(position);
   }
@@ -28,7 +28,9 @@ export class PositionsService {
   async update(id: number, posData: Partial<Position>): Promise<Position> {
     console.log(`Updating position with ID ${id}`, posData); // Лог перед обновлением
     await this.positionRepository.update(id, posData);
-    const updatedPosition = await this.positionRepository.findOne({ where: { id } });
+    const updatedPosition = await this.positionRepository.findOne({
+      where: { id },
+    });
     if (!updatedPosition) {
       console.error(`Position with ID ${id} not found`);
       throw new NotFoundException(`Position with ID ${id} not found`);

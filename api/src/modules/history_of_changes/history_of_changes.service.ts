@@ -17,7 +17,9 @@ export class HistoryOfChangesService {
 
   // Получение записи истории изменений по ID
   async findOne(id: number): Promise<HistoryOfChanges> {
-    const historyRecord = await this.historyOfChangesRepository.findOne({ where: { id } });
+    const historyRecord = await this.historyOfChangesRepository.findOne({
+      where: { id },
+    });
     if (!historyRecord) {
       throw new NotFoundException(`History of Change with ID ${id} not found`);
     }
@@ -25,13 +27,18 @@ export class HistoryOfChangesService {
   }
 
   // Создание новой записи в истории изменений
-  async create(changeData: Partial<HistoryOfChanges>): Promise<HistoryOfChanges> {
+  async create(
+    changeData: Partial<HistoryOfChanges>,
+  ): Promise<HistoryOfChanges> {
     const historyRecord = this.historyOfChangesRepository.create(changeData);
     return this.historyOfChangesRepository.save(historyRecord);
   }
 
   // Обновление записи в истории изменений по ID
-  async update(id: number, changeData: Partial<HistoryOfChanges>): Promise<HistoryOfChanges> {
+  async update(
+    id: number,
+    changeData: Partial<HistoryOfChanges>,
+  ): Promise<HistoryOfChanges> {
     await this.historyOfChangesRepository.update(id, changeData);
     const updatedHistoryRecord = await this.findOne(id); // Проверяем наличие обновленной записи
     return updatedHistoryRecord;

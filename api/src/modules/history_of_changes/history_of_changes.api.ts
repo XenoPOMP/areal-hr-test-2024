@@ -9,13 +9,28 @@ export const getHistoryOfChanges = async () => {
 };
 
 // Создание новой записи в истории изменений
-export const createHistoryOfChange = async (hocData: { date: Date; login?: string; object?: string; user_id?: number; field?: any; }) => {
+export const createHistoryOfChange = async (hocData: {
+  date: Date;
+  login?: string;
+  object?: string;
+  user_id?: number;
+  field?: any;
+}) => {
   const response = await axios.post(API_URL, hocData);
   return response.data;
 };
 
 // Обновление записи истории изменений по ID
-export const updateHistoryOfChange = async (id: number, hocData: { date?: Date; login?: string; object?: string; user_id?: number; field?: any; }) => {
+export const updateHistoryOfChange = async (
+  id: number,
+  hocData: {
+    date?: Date;
+    login?: string;
+    object?: string;
+    user_id?: number;
+    field?: any;
+  },
+) => {
   const response = await axios.put(`${API_URL}/${id}`, hocData);
   return response.data;
 };

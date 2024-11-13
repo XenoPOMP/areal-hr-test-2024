@@ -9,7 +9,9 @@ describe('HistoryOfChangesController', () => {
       controllers: [HistoryOfChangesController],
     }).compile();
 
-    controller = module.get<HistoryOfChangesController>(HistoryOfChangesController);
+    controller = module.get<HistoryOfChangesController>(
+      HistoryOfChangesController,
+    );
   });
 
   it('should be defined', () => {

@@ -6,8 +6,8 @@ import { Department } from './department.entity';
 @Injectable()
 export class DepartmentsService {
   constructor(
-      @InjectRepository(Department)
-      private readonly departmentRepository: Repository<Department>,
+    @InjectRepository(Department)
+    private readonly departmentRepository: Repository<Department>,
   ) {}
 
   // Получение всех организаций
@@ -20,7 +20,7 @@ export class DepartmentsService {
     console.log('Creating new organization with data:', orgData);
     const department = this.departmentRepository.create({
       name: orgData.name,
-      comment: orgData.comment
+      comment: orgData.comment,
     });
     return this.departmentRepository.save(department);
   }
@@ -29,7 +29,9 @@ export class DepartmentsService {
   async update(id: number, depData: Partial<Department>): Promise<Department> {
     console.log(`Updating department with ID ${id}`, depData); // Лог перед обновлением
     await this.departmentRepository.update(id, depData);
-    const updatedDepartment = await this.departmentRepository.findOne({ where: { id } });
+    const updatedDepartment = await this.departmentRepository.findOne({
+      where: { id },
+    });
     if (!updatedDepartment) {
       console.error(`Department with ID ${id} not found`);
       throw new NotFoundException(`Department with ID ${id} not found`);

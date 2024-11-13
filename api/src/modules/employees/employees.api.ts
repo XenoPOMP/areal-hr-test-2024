@@ -7,12 +7,25 @@ export const getEmployees = async () => {
   return response.data;
 };
 
-export const createEmployee = async (empData: { name: string; surname?: string; second_name?: string; date_birth: Date; }) => {
+export const createEmployee = async (empData: {
+  name: string;
+  surname?: string;
+  second_name?: string;
+  date_birth: Date;
+}) => {
   const response = await axios.post(API_URL, empData);
   return response.data;
 };
 
-export const updateEmployee = async (id: number, empData: { name: string; surname?: string; second_name?: string; date_birth?: Date; }) => {
+export const updateEmployee = async (
+  id: number,
+  empData: {
+    name: string;
+    surname?: string;
+    second_name?: string;
+    date_birth?: Date;
+  },
+) => {
   const response = await axios.put(`${API_URL}/${id}`, empData);
   return response.data;
 };

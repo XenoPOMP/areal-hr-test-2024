@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { HRActionsService } from './hr_actions.service';
 import { HRAction } from './hr_action.entity';
 
@@ -20,7 +28,10 @@ export class HRActionsController {
 
   // Обновление HR действия по ID
   @Put(':id')
-  update(@Param('id') id: number, @Body() actionData: Partial<HRAction>): Promise<HRAction> {
+  update(
+    @Param('id') id: number,
+    @Body() actionData: Partial<HRAction>,
+  ): Promise<HRAction> {
     return this.hrActionsService.update(id, actionData);
   }
 

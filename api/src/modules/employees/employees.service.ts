@@ -31,7 +31,9 @@ export class EmployeesService {
   async update(id: number, empData: Partial<Employee>): Promise<Employee> {
     console.log(`Updating employee with ID ${id}`, empData); // Лог перед обновлением
     await this.employeeRepository.update(id, empData);
-    const updatedEmployee = await this.employeeRepository.findOne({ where: { id } });
+    const updatedEmployee = await this.employeeRepository.findOne({
+      where: { id },
+    });
     if (!updatedEmployee) {
       console.error(`Employee with ID ${id} not found`);
       throw new NotFoundException(`Employee with ID ${id} not found`);

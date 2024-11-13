@@ -7,12 +7,15 @@ export const getFiles = async () => {
   return response.data;
 };
 
-export const createFile = async (fileData: { name: string; link?: string; }) => {
+export const createFile = async (fileData: { name: string; link?: string }) => {
   const response = await axios.post(API_URL, fileData);
   return response.data;
 };
 
-export const updateFile = async (id: number, fileData: { name: string; link?: string; }) => {
+export const updateFile = async (
+  id: number,
+  fileData: { name: string; link?: string },
+) => {
   const response = await axios.put(`${API_URL}/${id}`, fileData);
   return response.data;
 };

@@ -27,7 +27,7 @@ import { HistoryOfChangesModule } from './modules/history_of_changes/history_of_
     EmployeesModule,
     FilesModule,
     HRActionsModule,
-    HistoryOfChangesModule
+    HistoryOfChangesModule,
   ],
 })
 export class AppModule {}

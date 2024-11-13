@@ -4,9 +4,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: 'http://localhost:9000',  // Укажите адрес вашего frontend-приложения
-    methods: 'GET, POST, PUT, DELETE',  // Разрешенные HTTP-методы
-    allowedHeaders: 'Content-Type, Authorization',  // Разрешенные заголовки
+    origin: 'http://localhost:9000', // Укажите адрес вашего frontend-приложения
+    methods: 'GET, POST, PUT, DELETE', // Разрешенные HTTP-методы
+    allowedHeaders: 'Content-Type, Authorization', // Разрешенные заголовки
   });
   await app.listen(3000);
 }

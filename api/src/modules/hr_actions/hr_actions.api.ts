@@ -9,13 +9,19 @@ export const getHrActions = async () => {
 };
 
 // Создание новой записи кадрового действия
-export const createHrAction = async (actionData: { action_type: string; date?: Date; }) => {
+export const createHrAction = async (actionData: {
+  action_type: string;
+  date?: Date;
+}) => {
   const response = await axios.post(API_URL, actionData);
   return response.data;
 };
 
 // Обновление записи кадрового действия по ID
-export const updateHrAction = async (id: number, actionData: { action_type?: string; date?: Date; }) => {
+export const updateHrAction = async (
+  id: number,
+  actionData: { action_type?: string; date?: Date },
+) => {
   const response = await axios.put(`${API_URL}/${id}`, actionData);
   return response.data;
 };

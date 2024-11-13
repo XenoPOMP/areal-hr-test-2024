@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsDate, IsInt } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDate,
+  IsInt,
+} from 'class-validator';
 
 export class CreateHrActionDto {
   @IsString()

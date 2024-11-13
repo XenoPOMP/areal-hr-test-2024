@@ -6,8 +6,8 @@ import { Organization } from './organization.entity';
 @Injectable()
 export class OrganizationsService {
   constructor(
-      @InjectRepository(Organization)
-      private readonly organizationRepository: Repository<Organization>,
+    @InjectRepository(Organization)
+    private readonly organizationRepository: Repository<Organization>,
   ) {}
 
   // Получение всех организаций
@@ -20,16 +20,21 @@ export class OrganizationsService {
     console.log('Creating new organization with data:', orgData);
     const organization = this.organizationRepository.create({
       name: orgData.name,
-      comment: orgData.comment
+      comment: orgData.comment,
     });
     return this.organizationRepository.save(organization);
   }
 
   // Обновление организации по ID
-  async update(id: number, orgData: Partial<Organization>): Promise<Organization> {
+  async update(
+    id: number,
+    orgData: Partial<Organization>,
+  ): Promise<Organization> {
     console.log(`Updating organization with ID ${id}`, orgData); // Лог перед обновлением
     await this.organizationRepository.update(id, orgData);
-    const updatedOrganization = await this.organizationRepository.findOne({ where: { id } });
+    const updatedOrganization = await this.organizationRepository.findOne({
+      where: { id },
+    });
     if (!updatedOrganization) {
       console.error(`Organization with ID ${id} not found`);
       throw new NotFoundException(`Organization with ID ${id} not found`);

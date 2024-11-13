@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
 import { FilesService } from './files.service';
 import { File } from './file.entity';
 
@@ -21,7 +29,10 @@ export class FilesController {
 
   // Обновление файла по ID
   @Put(':id')
-  update(@Param('id') id: number, @Body() fileData: Partial<File>): Promise<File> {
+  update(
+    @Param('id') id: number,
+    @Body() fileData: Partial<File>,
+  ): Promise<File> {
     return this.filesService.update(id, fileData);
   }
 

@@ -17,20 +17,24 @@ exports.up = (pgm) => {
     street: { type: 'varchar(255)', notNull: true },
     house: { type: 'varchar(50)' },
     housing: { type: 'varchar(50)' },
-    flat: { type: 'varchar(50)' }
+    flat: { type: 'varchar(50)' },
   });
 
   pgm.createSequence('address_id_address_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('address', 'id', { default: pgm.func('nextval(\'public.address_id_address_seq\')') });
+  pgm.alterColumn('address', 'id', {
+    default: pgm.func("nextval('public.address_id_address_seq')"),
+  });
 
   pgm.createTable('file', {
     id: { type: 'integer', primaryKey: true },
     name: { type: 'varchar(255)', notNull: true },
-    link: { type: 'text', notNull: true }
+    link: { type: 'text', notNull: true },
   });
 
   pgm.createSequence('app_file_id_file_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('file', 'id', { default: pgm.func('nextval(\'public.app_file_id_file_seq\')') });
+  pgm.alterColumn('file', 'id', {
+    default: pgm.func("nextval('public.app_file_id_file_seq')"),
+  });
 
   pgm.createTable('user', {
     id: { type: 'integer', primaryKey: true },
@@ -38,20 +42,27 @@ exports.up = (pgm) => {
     surname: { type: 'varchar(100)', notNull: true },
     second_name: { type: 'varchar(100)' },
     login: { type: 'varchar(50)', notNull: true, unique: true },
-    password: { type: 'varchar(255)', notNull: true }
+    password: { type: 'varchar(255)', notNull: true },
   });
 
   pgm.createSequence('app_user_id_user_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('user', 'id', { default: pgm.func('nextval(\'public.app_user_id_user_seq\')') });
+  pgm.alterColumn('user', 'id', {
+    default: pgm.func("nextval('public.app_user_id_user_seq')"),
+  });
 
   pgm.createTable('department', {
     id: { type: 'integer', primaryKey: true },
     name: { type: 'varchar(255)', notNull: true },
-    comment: { type: 'text' }
+    comment: { type: 'text' },
   });
 
-  pgm.createSequence('department_id_department_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('department', 'id', { default: pgm.func('nextval(\'public.department_id_department_seq\')') });
+  pgm.createSequence('department_id_department_seq', {
+    start: 1,
+    increment: 1,
+  });
+  pgm.alterColumn('department', 'id', {
+    default: pgm.func("nextval('public.department_id_department_seq')"),
+  });
 
   pgm.createTable('employee', {
     id: { type: 'integer', primaryKey: true },
@@ -62,11 +73,13 @@ exports.up = (pgm) => {
     passport_id: { type: 'integer' },
     address_id: { type: 'integer' },
     position_id: { type: 'integer' },
-    file_id: { type: 'integer' }
+    file_id: { type: 'integer' },
   });
 
   pgm.createSequence('employee_id_employee_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('employee', 'id', { default: pgm.func('nextval(\'public.employee_id_employee_seq\')') });
+  pgm.alterColumn('employee', 'id', {
+    default: pgm.func("nextval('public.employee_id_employee_seq')"),
+  });
 
   pgm.createTable('history_of_changes', {
     id: { type: 'integer', primaryKey: true },
@@ -75,11 +88,16 @@ exports.up = (pgm) => {
     login: { type: 'varchar(50)' },
     object: { type: 'varchar(255)', notNull: true },
     user_id: { type: 'integer' },
-    field: { type: 'json' }
+    field: { type: 'json' },
   });
 
-  pgm.createSequence('history_of_changes_id_change_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('history_of_changes', 'id', { default: pgm.func('nextval(\'public.history_of_changes_id_change_seq\')') });
+  pgm.createSequence('history_of_changes_id_change_seq', {
+    start: 1,
+    increment: 1,
+  });
+  pgm.alterColumn('history_of_changes', 'id', {
+    default: pgm.func("nextval('public.history_of_changes_id_change_seq')"),
+  });
 
   pgm.createTable('hr_action', {
     id: { type: 'integer', primaryKey: true },
@@ -87,20 +105,24 @@ exports.up = (pgm) => {
     employee_id: { type: 'integer' },
     department_id: { type: 'integer' },
     position_id: { type: 'integer' },
-    date: { type: 'timestamp', default: pgm.func('CURRENT_TIMESTAMP') }
+    date: { type: 'timestamp', default: pgm.func('CURRENT_TIMESTAMP') },
   });
 
   pgm.createSequence('hraction_id_action_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('hr_action', 'id', { default: pgm.func('nextval(\'public.hraction_id_action_seq\')') });
+  pgm.alterColumn('hr_action', 'id', {
+    default: pgm.func("nextval('public.hraction_id_action_seq')"),
+  });
 
   pgm.createTable('organisation', {
     id: { type: 'integer', primaryKey: true },
     name: { type: 'varchar(255)', notNull: true },
-    comment: { type: 'text' }
+    comment: { type: 'text' },
   });
 
   pgm.createSequence('organisation_id_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('organisation', 'id', { default: pgm.func('nextval(\'public.organisation_id_seq\')') });
+  pgm.alterColumn('organisation', 'id', {
+    default: pgm.func("nextval('public.organisation_id_seq')"),
+  });
 
   pgm.createTable('passport', {
     id: { type: 'integer', primaryKey: true },
@@ -108,43 +130,47 @@ exports.up = (pgm) => {
     number: { type: 'varchar(10)', notNull: true },
     date_issue: { type: 'date', notNull: true },
     code: { type: 'varchar(10)' },
-    issued_by: { type: 'varchar(255)', notNull: true }
+    issued_by: { type: 'varchar(255)', notNull: true },
   });
 
   pgm.createSequence('passport_id_passport_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('passport', 'id', { default: pgm.func('nextval(\'public.passport_id_passport_seq\')') });
+  pgm.alterColumn('passport', 'id', {
+    default: pgm.func("nextval('public.passport_id_passport_seq')"),
+  });
 
   pgm.createTable('position', {
     id: { type: 'integer', primaryKey: true },
-    name: { type: 'varchar(255)', notNull: true }
+    name: { type: 'varchar(255)', notNull: true },
   });
 
   pgm.createSequence('position_id_seq', { start: 1, increment: 1 });
-  pgm.alterColumn('position', 'id', { default: pgm.func('nextval(\'public.position_id_seq\')') });
+  pgm.alterColumn('position', 'id', {
+    default: pgm.func("nextval('public.position_id_seq')"),
+  });
 
   // Добавление внешних ключей
   pgm.addConstraint('employee', 'employee_id_address_fkey', {
     foreignKeys: {
       columns: ['address_id'],
       references: 'address(id)',
-      onDelete: 'SET NULL'
-    }
+      onDelete: 'SET NULL',
+    },
   });
 
   pgm.addConstraint('employee', 'employee_id_file_fkey', {
     foreignKeys: {
       columns: ['file_id'],
       references: 'file(id)',
-      onDelete: 'SET NULL'
-    }
+      onDelete: 'SET NULL',
+    },
   });
 
   pgm.addConstraint('employee', 'employee_id_passport_fkey', {
     foreignKeys: {
       columns: ['passport_id'],
       references: 'passport(id)',
-      onDelete: 'SET NULL'
-    }
+      onDelete: 'SET NULL',
+    },
   });
 
   pgm.addConstraint('history_of_changes', 'fk_history_user', {
@@ -152,24 +178,24 @@ exports.up = (pgm) => {
       columns: ['user_id'],
       references: 'user(id)',
       onUpdate: 'CASCADE',
-      onDelete: 'CASCADE'
-    }
+      onDelete: 'CASCADE',
+    },
   });
 
   pgm.addConstraint('hr_action', 'hraction_id_employee_fkey', {
     foreignKeys: {
       columns: ['employee_id'],
       references: 'employee(id)',
-      onDelete: 'SET NULL'
-    }
+      onDelete: 'SET NULL',
+    },
   });
 
   pgm.addConstraint('hr_action', 'hraction_id_department_fkey', {
     foreignKeys: {
       columns: ['department_id'],
       references: 'department(id)',
-      onDelete: 'SET NULL'
-    }
+      onDelete: 'SET NULL',
+    },
   });
 
   // Создание уникальных и первичных ключей
@@ -177,31 +203,31 @@ exports.up = (pgm) => {
   pgm.createIndex('user', 'id', { unique: true });
 
   pgm.addConstraint('address', 'address_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('file', 'file_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('department', 'department_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('employee', 'employee_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('history_of_changes', 'history_of_changes_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('hr_action', 'hraction_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('organisation', 'organisation_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('passport', 'passport_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
   pgm.addConstraint('position', 'position_pkey', {
-    primaryKey: ['id']
+    primaryKey: ['id'],
   });
 };
 
@@ -213,7 +239,7 @@ exports.down = (pgm) => {
   pgm.dropConstraint('history_of_changes', 'fk_history_user');
   pgm.dropConstraint('hr_action', 'hraction_id_employee_fkey');
   pgm.dropConstraint('hr_action', 'hraction_id_department_fkey');
-  
+
   pgm.dropTable('address');
   pgm.dropTable('file');
   pgm.dropTable('user');
