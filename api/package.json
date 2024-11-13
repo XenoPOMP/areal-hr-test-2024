@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migrate": "node-pg-migrate"
+    "migrate": "npx node-pg-migrate up --migrations-dir migrations -d postgres://postgres:Spiridon_2017@localhost:5432/areal_hr"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -30,8 +30,11 @@
     "class-validator": "^0.14.1",
     "node-pg-migrate": "^7.7.1",
     "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "sequelize": "^6.37.5",
+    "sequelize-cli": "^6.6.2",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
