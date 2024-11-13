@@ -8,12 +8,18 @@ export const getOrganizations = async () => {
   return response.data;
 };
 
-export const createOrganization = async (data: { name: string; comment: string }) => {
+export const createOrganization = async (data: {
+  name: string;
+  comment: string;
+}) => {
   const response = await axios.post(`${API_URL}/organizations`, data);
   return response.data;
 };
 
-export const updateOrganization = async (id: string, data: { name: string; comment: string }) => {
+export const updateOrganization = async (
+  id: string,
+  data: { name: string; comment: string }
+) => {
   const response = await axios.put(`${API_URL}/organizations/${id}`, data);
   return response.data;
 };
@@ -29,12 +35,18 @@ export const getDepartments = async () => {
   return response.data;
 };
 
-export const createDepartment = async (data: { name: string; comment: string }) => {
+export const createDepartment = async (data: {
+  name: string;
+  comment: string;
+}) => {
   const response = await axios.post(`${API_URL}/departments`, data);
   return response.data;
 };
 
-export const updateDepartment = async (id: string, data: { name: string; comment: string }) => {
+export const updateDepartment = async (
+  id: string,
+  data: { name: string; comment: string }
+) => {
   const response = await axios.put(`${API_URL}/departments/${id}`, data);
   return response.data;
 };
@@ -50,12 +62,12 @@ export const getPositions = async () => {
   return response.data;
 };
 
-export const createPosition = async (data: { name: string; }) => {
+export const createPosition = async (data: { name: string }) => {
   const response = await axios.post(`${API_URL}/positions`, data);
   return response.data;
 };
 
-export const updatePosition = async (id: string, data: { name: string; }) => {
+export const updatePosition = async (id: string, data: { name: string }) => {
   const response = await axios.put(`${API_URL}/positions/${id}`, data);
   return response.data;
 };
@@ -81,12 +93,15 @@ export const createEmployee = async (data: {
   return response.data;
 };
 
-export const updateEmployee = async (id: string, data: {
-  name: string;
-  surname: string;
-  second_name?: string;
-  date_birth: string;
-}) => {
+export const updateEmployee = async (
+  id: string,
+  data: {
+    name: string;
+    surname: string;
+    second_name?: string;
+    date_birth: string;
+  }
+) => {
   const response = await axios.put(`${API_URL}/employees/${id}`, data);
   return response.data;
 };
@@ -107,7 +122,10 @@ export const createFile = async (data: { name: string; link: string }) => {
   return response.data;
 };
 
-export const updateFile = async (id: string, data: { name: string; link: string }) => {
+export const updateFile = async (
+  id: string,
+  data: { name: string; link: string }
+) => {
   const response = await axios.put(`${API_URL}/files/${id}`, data);
   return response.data;
 };
@@ -123,12 +141,18 @@ export const getHRActions = async () => {
   return response.data;
 };
 
-export const createHRAction = async (data: { action_type: string; date: string }) => {
+export const createHRAction = async (data: {
+  action_type: string;
+  date: string;
+}) => {
   const response = await axios.post(`${API_URL}/hr_actions`, data);
   return response.data;
 };
 
-export const updateHRAction = async (id: string, data: { action_type: string; date: string }) => {
+export const updateHRAction = async (
+  id: string,
+  data: { action_type: string; date: string }
+) => {
   const response = await axios.put(`${API_URL}/hr_actions/${id}`, data);
   return response.data;
 };
@@ -148,18 +172,19 @@ export const createHistoryOfChange = async (data: {
   object: string;
   field: object;
   date: string;
-  login: string;
 }) => {
   const response = await axios.post(`${API_URL}/history_of_changes`, data);
   return response.data;
 };
 
-export const updateHistoryOfChange = async (id: string, data: {
-  object: string;
-  field: object;
-  date: string;
-  login: string;
-}) => {
+export const updateHistoryOfChange = async (
+  id: string,
+  data: {
+    object: string;
+    field: object;
+    date: string;
+  }
+) => {
   const response = await axios.put(`${API_URL}/history_of_changes/${id}`, data);
   return response.data;
 };

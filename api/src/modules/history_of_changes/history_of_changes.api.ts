@@ -11,7 +11,6 @@ export const getHistoryOfChanges = async () => {
 // Создание новой записи в истории изменений
 export const createHistoryOfChange = async (hocData: {
   date: Date;
-  login?: string;
   object?: string;
   user_id?: number;
   field?: any;
@@ -25,7 +24,6 @@ export const updateHistoryOfChange = async (
   id: number,
   hocData: {
     date?: Date;
-    login?: string;
     object?: string;
     user_id?: number;
     field?: any;

@@ -7,9 +7,19 @@
     <!-- Форма для добавления новой записи в историю изменений -->
     <form @submit.prevent="createHistoryRecordHandler" class="form-container">
       <q-input v-model="newRecord.object" label="Объект" filled required />
-      <q-input v-model="newField" label="Измененные поля (JSON)" filled required />
-      <q-input v-model="newRecord.date" label="Дата" filled type="date" required />
-      <q-input v-model="newRecord.login" label="Логин" filled required />
+      <q-input
+        v-model="newField"
+        label="Измененные поля (JSON)"
+        filled
+        required
+      />
+      <q-input
+        v-model="newRecord.date"
+        label="Дата"
+        filled
+        type="date"
+        required
+      />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
@@ -43,9 +53,19 @@
       <h3>Изменить запись истории изменений</h3>
       <form @submit.prevent="updateHistoryRecordHandler">
         <q-input v-model="editedRecord.object" label="Объект" filled required />
-        <q-input v-model="editField" label="Измененные поля (JSON)" filled required />
-        <q-input v-model="editedRecord.date" label="Дата" filled type="date" required />
-        <q-input v-model="editedRecord.login" label="Логин" filled required />
+        <q-input
+          v-model="editField"
+          label="Измененные поля (JSON)"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedRecord.date"
+          label="Дата"
+          filled
+          type="date"
+          required
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -56,7 +76,12 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getHistoryOfChanges, createHistoryOfChange, updateHistoryOfChange, deleteHistoryOfChange } from 'src/api';
+import {
+  getHistoryOfChanges,
+  createHistoryOfChange,
+  updateHistoryOfChange,
+  deleteHistoryOfChange,
+} from 'src/api';
 import { QTableColumn } from 'quasar';
 
 // Интерфейс для записи истории изменений
@@ -65,22 +90,37 @@ interface HistoryRecord {
   object: string;
   field: Record<string, unknown>; // JSON как объект
   date: string;
-  login: string;
 }
 
 // Состояния для записи, новой записи и редактируемой записи
 const historyRecords = ref<HistoryRecord[]>([]);
-const newRecord = ref<HistoryRecord>({ id: '', object: '', field: {}, date: '', login: '' });
+const newRecord = ref<HistoryRecord>({
+  id: '',
+  object: '',
+  field: {},
+  date: '',
+});
 const newField = ref(''); // строка для ввода JSON
 const editMode = ref(false);
 const editedRecord = ref<HistoryRecord | null>(null);
 const editField = ref(''); // строка для редактирования JSON
 
 const columns: QTableColumn[] = [
-  { name: 'object', label: 'Объект', align: 'left', field: 'object', required: true },
-  { name: 'field', label: 'Измененные поля', align: 'left', field: 'field', required: true },
+  {
+    name: 'object',
+    label: 'Объект',
+    align: 'left',
+    field: 'object',
+    required: true,
+  },
+  {
+    name: 'field',
+    label: 'Измененные поля',
+    align: 'left',
+    field: 'field',
+    required: true,
+  },
   { name: 'date', label: 'Дата', align: 'left', field: 'date', required: true },
-  { name: 'login', label: 'Логин', align: 'left', field: 'login', required: true },
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
 
@@ -103,9 +143,8 @@ const createHistoryRecordHandler = async () => {
       object: newRecord.value.object,
       field: newRecord.value.field,
       date: newRecord.value.date,
-      login: newRecord.value.login,
     });
-    newRecord.value = { id: '', object: '', field: {}, date: '', login: '' };
+    newRecord.value = { id: '', object: '', field: {}, date: '' };
     newField.value = '';
     loadHistoryRecords();
   } catch (error) {
@@ -121,7 +160,6 @@ const updateHistoryRecordHandler = async () => {
         object: editedRecord.value.object,
         field: editedRecord.value.field,
         date: editedRecord.value.date,
-        login: editedRecord.value.login,
       });
       await loadHistoryRecords();
       cancelEdit();
@@ -154,7 +192,8 @@ const deleteRecordHandler = async (id: string) => {
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;

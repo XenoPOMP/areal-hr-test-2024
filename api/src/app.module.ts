@@ -19,7 +19,7 @@ import { HistoryOfChangesModule } from './modules/history_of_changes/history_of_
       database: 'areal_hr',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/migrations/*.js'],
-      synchronize: true,
+      synchronize: false,
     }),
     OrganizationsModule,
     DepartmentsModule,
