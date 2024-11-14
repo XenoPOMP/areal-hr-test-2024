@@ -40,7 +40,7 @@ export class HistoryOfChangesService {
     changeData: Partial<HistoryOfChanges>,
   ): Promise<HistoryOfChanges> {
     await this.historyOfChangesRepository.update(id, changeData);
-    const updatedHistoryRecord = await this.findOne(id); // Проверяем наличие обновленной записи
+    const updatedHistoryRecord: HistoryOfChanges = await this.findOne(id); // Проверяем наличие обновленной записи
     return updatedHistoryRecord;
   }
 

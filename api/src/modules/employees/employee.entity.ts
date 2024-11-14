@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Passport } from '../passports/passport.entity';
+import { Address } from '../addresses/address.entity';
 
 @Entity('employee')
 export class Employee {
@@ -16,4 +24,12 @@ export class Employee {
 
   @Column({ type: 'date', nullable: true })
   date_birth: Date;
+
+  @ManyToOne(() => Passport, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'passport_id' })
+  passport: Passport;
+
+  @ManyToOne(() => Address, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'address_id' })
+  address: Address;
 }

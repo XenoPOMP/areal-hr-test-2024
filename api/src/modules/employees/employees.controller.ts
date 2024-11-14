@@ -11,6 +11,8 @@ import { EmployeesService } from './employees.service';
 import { Employee } from './employee.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { CreatePassportDto } from '../passports/create-passport.dto';
+import { CreateAddressDto } from '../addresses/create-address.dto';
 
 @Controller('employees')
 export class EmployeesController {

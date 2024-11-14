@@ -1,55 +1,88 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Employee } from './employee.entity';
+import { Passport } from '../passports/passport.entity';
+import { Address } from '../addresses/address.entity';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
-    private readonly employeeRepository: Repository<Employee>,
+    private employeeRepository: Repository<Employee>,
+    @InjectRepository(Passport)
+    private passportRepository: Repository<Passport>,
+    @InjectRepository(Address)
+    private addressRepository: Repository<Address>,
   ) {}
 
-  // Получение всех сотрудников
-  async findAll(): Promise<Employee[]> {
-    return this.employeeRepository.find();
+  async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+    const { passport, address, ...employeeData } = createEmployeeDto;
+
+    const newEmployee = this.employeeRepository.create(employeeData);
+
+    if (passport) {
+      const newPassport = this.passportRepository.create(passport);
+      newEmployee.passport = await this.passportRepository.save(newPassport);
+    }
+
+    if (address) {
+      const newAddress = this.addressRepository.create(address);
+      newEmployee.address = await this.addressRepository.save(newAddress);
+    }
+
+    return this.employeeRepository.save(newEmployee);
   }
 
-  // Создание нового сотрудника
-  async create(empData: Partial<Employee>): Promise<Employee> {
-    console.log('Creating new employee with data:', empData);
-    const employee = this.employeeRepository.create({
-      name: empData.name,
-      surname: empData.surname,
-      second_name: empData.second_name,
-      date_birth: empData.date_birth,
-    });
-    return this.employeeRepository.save(employee);
-  }
-
-  // Обновление сотрудника по ID
-  async update(id: number, empData: Partial<Employee>): Promise<Employee> {
-    console.log(`Updating employee with ID ${id}`, empData); // Лог перед обновлением
-    await this.employeeRepository.update(id, empData);
-    const updatedEmployee = await this.employeeRepository.findOne({
+  async update(
+    id: number,
+    updateEmployeeDto: UpdateEmployeeDto,
+  ): Promise<Employee> {
+    const { passport, address, ...employeeData } = updateEmployeeDto;
+    const employee = await this.employeeRepository.findOne({
       where: { id },
+      relations: ['passport', 'address'],
     });
-    if (!updatedEmployee) {
-      console.error(`Employee with ID ${id} not found`);
-      throw new NotFoundException(`Employee with ID ${id} not found`);
+
+    if (!employee) {
+      throw new Error('Employee not found');
     }
-    console.log(`Employee updated successfully`, updatedEmployee); // Лог после обновления
-    return updatedEmployee;
+
+    if (passport && employee.passport) {
+      await this.passportRepository.update(employee.passport.id, passport);
+    } else if (passport) {
+      employee.passport = await this.passportRepository.save(passport);
+    }
+
+    if (address && employee.address) {
+      await this.addressRepository.update(employee.address.id, address);
+    } else if (address) {
+      employee.address = await this.addressRepository.save(address);
+    }
+
+    return this.employeeRepository.save({ ...employee, ...employeeData });
   }
 
-  // Удаление сотрудника по ID
   async remove(id: number): Promise<void> {
-    console.log(`Deleting employee with ID ${id}`); // Лог перед удалением
-    const deleteResult = await this.employeeRepository.delete(id);
-    if (!deleteResult.affected) {
-      console.error(`Employee with ID ${id} not found`);
-      throw new NotFoundException(`Employee with ID ${id} not found`);
+    const employee = await this.employeeRepository.findOne({
+      where: { id },
+      relations: ['passport', 'address'],
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
     }
-    console.log(`Employee deleted successfully`); // Лог после успешного удаления
+
+    if (employee.passport) {
+      await this.passportRepository.delete(employee.passport.id);
+    }
+
+    if (employee.address) {
+      await this.addressRepository.delete(employee.address.id);
+    }
+
+    await this.employeeRepository.delete(id);
   }
 }

@@ -7,6 +7,8 @@ import { EmployeesModule } from './modules/employees/employees.module';
 import { FilesModule } from './modules/files/files.module';
 import { HRActionsModule } from './modules/hr_actions/hr_actions.module';
 import { HistoryOfChangesModule } from './modules/history_of_changes/history_of_changes.module';
+import { PassportsModule } from './modules/passports/passports.module';
+import { AddressesModule } from './modules/addresses/addresses.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { HistoryOfChangesModule } from './modules/history_of_changes/history_of_
     FilesModule,
     HRActionsModule,
     HistoryOfChangesModule,
+    PassportsModule,
+    AddressesModule,
   ],
 })
 export class AppModule {}

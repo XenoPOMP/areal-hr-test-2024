@@ -146,7 +146,7 @@ const createHistoryRecordHandler = async () => {
     });
     newRecord.value = { id: '', object: '', field: {}, date: '' };
     newField.value = '';
-    loadHistoryRecords();
+    await loadHistoryRecords();
   } catch (error) {
     console.error('Ошибка добавления записи в историю изменений:', error);
   }
@@ -184,7 +184,7 @@ const cancelEdit = () => {
 const deleteRecordHandler = async (id: string) => {
   try {
     await deleteHistoryOfChange(id);
-    loadHistoryRecords();
+    await loadHistoryRecords();
   } catch (error) {
     console.error('Ошибка удаления записи истории изменений:', error);
   }

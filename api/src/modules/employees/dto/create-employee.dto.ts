@@ -4,7 +4,11 @@ import {
   IsOptional,
   IsDate,
   IsInt,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreatePassportDto } from './passports/create-passport.dto';
+import { CreateAddressDto } from './addresses/create-address.dto';
 
 export class CreateEmployeeDto {
   @IsString()
@@ -38,4 +42,14 @@ export class CreateEmployeeDto {
   @IsInt()
   @IsOptional()
   readonly file_id?: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreatePassportDto)
+  readonly passport?: CreatePassportDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  readonly address?: CreateAddressDto;
 }

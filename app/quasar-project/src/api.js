@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000',  // Убедитесь, что адрес вашего сервера указан правильно
+  baseURL: 'http://localhost:3000', // Убедитесь, что адрес вашего сервера указан правильно
 });
 
 // Функции для работы с Organizations
@@ -73,19 +73,16 @@ export const getEmployees = async () => {
   return response.data;
 };
 
-export const createEmployee = async (data) => {
-  const response = await api.post('/employees', data);
-  return response.data;
+export const createEmployee = async (employeeData) => {
+  return axios.post('/api/employees', employeeData);
 };
 
-export const updateEmployee = async (id, data) => {
-  const response = await api.put(`/employees/${id}`, data);
-  return response.data;
+export const updateEmployee = async (id, employeeData) => {
+  return axios.put(`/api/employees/${id}`, employeeData);
 };
 
 export const deleteEmployee = async (id) => {
-  const response = await api.delete(`/employees/${id}`);
-  return response.data;
+  return axios.delete(`/api/employees/${id}`);
 };
 
 // Функции для работы с Files
@@ -150,4 +147,3 @@ export const deleteHistoryOfChange = async (id) => {
   const response = await api.delete(`/history_of_changes/${id}`);
   return response.data;
 };
-
