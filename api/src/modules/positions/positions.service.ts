@@ -1,52 +1,41 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Position } from './position.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Position } from './position.model';
+import { CreatePositionDto } from './dto/create-position.dto';
+import { UpdatePositionDto } from './dto/update-position.dto';
 
 @Injectable()
 export class PositionsService {
   constructor(
-    @InjectRepository(Position)
-    private readonly positionRepository: Repository<Position>,
+    @InjectModel(Position)
+    private readonly positionModel: typeof Position,
   ) {}
 
-  // Получение всех организаций
   async findAll(): Promise<Position[]> {
-    return this.positionRepository.find();
+    return this.positionModel.findAll();
   }
 
-  // Создание новой организации
-  async create(posData: Partial<Position>): Promise<Position> {
-    console.log('Creating new position with data:', posData);
-    const position = this.positionRepository.create({
-      name: posData.name,
-    });
-    return this.positionRepository.save(position);
+  async create(createDto: CreatePositionDto): Promise<Position> {
+    const { name } = createDto;
+    return this.positionModel.create({ name });
   }
 
-  // Обновление организации по ID
-  async update(id: number, posData: Partial<Position>): Promise<Position> {
-    console.log(`Updating position with ID ${id}`, posData); // Лог перед обновлением
-    await this.positionRepository.update(id, posData);
-    const updatedPosition = await this.positionRepository.findOne({
-      where: { id },
-    });
-    if (!updatedPosition) {
-      console.error(`Position with ID ${id} not found`);
-      throw new NotFoundException(`Position with ID ${id} not found`);
+  async findOne(id: number): Promise<Position | null> {
+    return this.positionModel.findByPk(id);
+  }
+
+  async update(id: number, dto: UpdatePositionDto): Promise<Position | null> {
+    const position = await this.positionModel.findByPk(id);
+    if (position) {
+      return position.update(dto);
     }
-    console.log(`Position updated successfully`, updatedPosition); // Лог после обновления
-    return updatedPosition;
+    return null;
   }
 
-  // Удаление организации по ID
   async remove(id: number): Promise<void> {
-    console.log(`Deleting position with ID ${id}`); // Лог перед удалением
-    const deleteResult = await this.positionRepository.delete(id);
-    if (!deleteResult.affected) {
-      console.error(`Position with ID ${id} not found`);
-      throw new NotFoundException(`Position with ID ${id} not found`);
+    const position = await this.positionModel.findByPk(id);
+    if (position) {
+      await position.destroy();
     }
-    console.log(`Position deleted successfully`); // Лог после успешного удаления
   }
 }

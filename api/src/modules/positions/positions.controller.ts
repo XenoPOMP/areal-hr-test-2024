@@ -2,39 +2,41 @@ import {
   Controller,
   Get,
   Post,
+  Body,
+  Param,
   Put,
   Delete,
-  Param,
-  Body,
 } from '@nestjs/common';
 import { PositionsService } from './positions.service';
-import { Position } from './position.entity';
+import { CreatePositionDto } from './dto/create-position.dto';
+import { UpdatePositionDto } from './dto/update-position.dto';
 
 @Controller('positions')
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Get()
-  findAll(): Promise<Position[]> {
+  async findAll() {
     return this.positionsService.findAll();
   }
 
   @Post()
-  create(@Body() posData: Partial<Position>): Promise<Position> {
-    console.log('Received data for creation:', posData);
-    return this.positionsService.create(posData);
+  async create(@Body() createDto: CreatePositionDto) {
+    return this.positionsService.create(createDto);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    return this.positionsService.findOne(id);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: number,
-    @Body() posData: Partial<Position>,
-  ): Promise<Position> {
-    return this.positionsService.update(id, posData);
+  async update(@Param('id') id: number, @Body() updateDto: UpdatePositionDto) {
+    return this.positionsService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: number) {
     return this.positionsService.remove(id);
   }
 }

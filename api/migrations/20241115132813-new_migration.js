@@ -1,9 +1,6 @@
-'use strict';
-
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    // Таблица address
+  up: async (queryInterface, Sequelize) => {
+    // Создание таблицы address
     await queryInterface.createTable('address', {
       id: {
         type: Sequelize.INTEGER,
@@ -33,7 +30,7 @@ module.exports = {
       },
     });
 
-    // Таблица department
+    // Создание таблицы department
     await queryInterface.createTable('department', {
       id: {
         type: Sequelize.INTEGER,
@@ -49,26 +46,20 @@ module.exports = {
       },
       parent_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'department', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
       organisation_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'organisation', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
     });
 
-    // Таблица employee
+    // Создание таблицы employee
     await queryInterface.createTable('employee', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-      },
-      name: {
-        type: Sequelize.STRING(100),
-        allowNull: false,
       },
       surname: {
         type: Sequelize.STRING(100),
@@ -81,24 +72,17 @@ module.exports = {
       date_birth: {
         type: Sequelize.DATEONLY,
       },
-      passport_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'passport', key: 'id' },
-        onDelete: 'RESTRICT',
-      },
-      address_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'address', key: 'id' },
-        onDelete: 'RESTRICT',
+      name: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
       },
       position_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'position', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
     });
 
-    // Таблица file
+    // Создание таблицы file
     await queryInterface.createTable('file', {
       id: {
         type: Sequelize.INTEGER,
@@ -114,12 +98,11 @@ module.exports = {
       },
       employee_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'employee', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
     });
 
-    // Таблица history_of_changes
+    // Создание таблицы history_of_changes
     await queryInterface.createTable('history_of_changes', {
       id: {
         type: Sequelize.INTEGER,
@@ -130,19 +113,18 @@ module.exports = {
         type: Sequelize.STRING(255),
       },
       field: {
-        type: Sequelize.JSON,
+        type: Sequelize.JSONB,
       },
       date: {
         type: Sequelize.DATE,
       },
       user_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'user', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
     });
 
-    // Таблица hr_action
+    // Создание таблицы hr_action
     await queryInterface.createTable('hr_action', {
       id: {
         type: Sequelize.INTEGER,
@@ -158,22 +140,19 @@ module.exports = {
       },
       employee_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'employee', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
       department_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'department', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
       position_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'position', key: 'id' },
-        onDelete: 'RESTRICT',
+        allowNull: true,
       },
     });
 
-    // Таблица organisation
+    // Создание таблицы organisation
     await queryInterface.createTable('organisation', {
       id: {
         type: Sequelize.INTEGER,
@@ -189,7 +168,7 @@ module.exports = {
       },
     });
 
-    // Таблица passport
+    // Создание таблицы passport
     await queryInterface.createTable('passport', {
       id: {
         type: Sequelize.INTEGER,
@@ -217,7 +196,7 @@ module.exports = {
       },
     });
 
-    // Таблица position
+    // Создание таблицы position
     await queryInterface.createTable('position', {
       id: {
         type: Sequelize.INTEGER,
@@ -230,7 +209,7 @@ module.exports = {
       },
     });
 
-    // Таблица user
+    // Создание таблицы user
     await queryInterface.createTable('user', {
       id: {
         type: Sequelize.INTEGER,
@@ -261,18 +240,116 @@ module.exports = {
         type: Sequelize.STRING(50),
       },
     });
+
+    // Установка внешних ключей
+    await queryInterface.addConstraint('department', {
+      fields: ['organisation_id'],
+      type: 'foreign key',
+      name: 'dep_org_fk',
+      references: {
+        table: 'organisation',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('department', {
+      fields: ['parent_id'],
+      type: 'foreign key',
+      name: 'parent_fk',
+      references: {
+        table: 'department',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('employee', {
+      fields: ['position_id'],
+      type: 'foreign key',
+      name: 'pos_emp_fk',
+      references: {
+        table: 'position',
+        field: 'id',
+      },
+      onUpdate: 'NO ACTION',
+      onDelete: 'NO ACTION',
+    });
+
+    await queryInterface.addConstraint('file', {
+      fields: ['employee_id'],
+      type: 'foreign key',
+      name: 'file_emp_fk',
+      references: {
+        table: 'employee',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('history_of_changes', {
+      fields: ['user_id'],
+      type: 'foreign key',
+      name: 'hoc_user_fk',
+      references: {
+        table: 'user',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('hr_action', {
+      fields: ['department_id'],
+      type: 'foreign key',
+      name: 'dep_hr_fk',
+      references: {
+        table: 'department',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('hr_action', {
+      fields: ['employee_id'],
+      type: 'foreign key',
+      name: 'emp_hr_fk',
+      references: {
+        table: 'employee',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
+
+    await queryInterface.addConstraint('hr_action', {
+      fields: ['position_id'],
+      type: 'foreign key',
+      name: 'pos_hr_fk',
+      references: {
+        table: 'position',
+        field: 'id',
+      },
+      onUpdate: 'RESTRICT',
+      onDelete: 'RESTRICT',
+    });
   },
 
-  async down(queryInterface) {
-    await queryInterface.dropTable('user');
-    await queryInterface.dropTable('position');
-    await queryInterface.dropTable('passport');
-    await queryInterface.dropTable('organisation');
+  down: async (queryInterface, Sequelize) => {
+    // Удаление таблиц в обратном порядке
     await queryInterface.dropTable('hr_action');
     await queryInterface.dropTable('history_of_changes');
     await queryInterface.dropTable('file');
     await queryInterface.dropTable('employee');
     await queryInterface.dropTable('department');
+    await queryInterface.dropTable('user');
+    await queryInterface.dropTable('passport');
+    await queryInterface.dropTable('position');
+    await queryInterface.dropTable('organisation');
     await queryInterface.dropTable('address');
   },
 };

@@ -1,9 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class UpdatePositionDto {
   @IsString()
-  readonly title?: string;
-
-  @IsString()
-  readonly department_id?: string;
+  @IsOptional()
+  name?: string;
 }

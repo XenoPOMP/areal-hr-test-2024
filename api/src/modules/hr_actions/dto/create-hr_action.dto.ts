@@ -1,29 +1,18 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsDate,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsDate, IsNumber } from 'class-validator';
 
 export class CreateHrActionDto {
   @IsString()
-  @IsNotEmpty()
   readonly action_type: string;
 
   @IsDate()
-  @IsOptional()
-  readonly date?: Date;
+  readonly date: Date;
 
-  @IsInt()
-  @IsNotEmpty()
+  @IsNumber()
   readonly employee_id: number;
 
-  @IsInt()
-  @IsOptional()
-  readonly department_id?: number;
+  @IsNumber()
+  readonly department_id: number;
 
-  @IsInt()
-  @IsOptional()
-  readonly position_id?: number;
+  @IsNumber()
+  readonly position_id: number;
 }

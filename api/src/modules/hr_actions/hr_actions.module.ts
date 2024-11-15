@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { HRActionsController } from './hr_actions.controller';
-import { HRActionsService } from './hr_actions.service';
-import { HRAction } from './hr_action.entity';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { HrAction } from './hr_action.model';
+import { HrActionsService } from './hr_actions.service';
+import { HrActionsController } from './hr_actions.controller';
+import { Employee } from '../employees/employee.model'; // Импорт модели сотрудника
+import { Department } from '../departments/department.model'; // Импорт модели департамента
+import { Position } from '../positions/position.model'; // Импорт модели позиции
 
 @Module({
-  imports: [TypeOrmModule.forFeature([HRAction])],
-  controllers: [HRActionsController],
-  providers: [HRActionsService],
+  imports: [
+    SequelizeModule.forFeature([HrAction, Employee, Department, Position]),
+  ],
+  controllers: [HrActionsController],
+  providers: [HrActionsService],
 })
-export class HRActionsModule {}
+export class HrActionsModule {}

@@ -1,47 +1,52 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { HRAction } from './hr_action.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { HrAction } from './hr_action.model';
+import { CreateHrActionDto } from './dto/create-hr_action.dto';
+import { UpdateHrActionDto } from './dto/update-hr_action.dto';
 
 @Injectable()
-export class HRActionsService {
+export class HrActionsService {
   constructor(
-    @InjectRepository(HRAction)
-    private readonly hrActionsRepository: Repository<HRAction>,
+    @InjectModel(HrAction)
+    private readonly hrActionModel: typeof HrAction,
   ) {}
 
-  // Получение всех HR действий
-  async findAll(): Promise<HRAction[]> {
-    return this.hrActionsRepository.find();
+  // Метод для получения всех записей
+  async findAll(): Promise<HrAction[]> {
+    return this.hrActionModel.findAll();
   }
 
-  // Получение HR действия по ID
-  async findOne(id: number): Promise<HRAction> {
-    const hrAction = await this.hrActionsRepository.findOne({ where: { id } });
-    if (!hrAction) {
-      throw new NotFoundException(`HR Action with ID ${id} not found`);
+  // Метод для создания записи
+  async create(createDto: CreateHrActionDto): Promise<HrAction> {
+    // Здесь создаем запись с использованием DTO
+    return this.hrActionModel.create({
+      action_type: createDto.action_type,
+      date: createDto.date,
+      employee_id: createDto.employee_id,
+      department_id: createDto.department_id,
+      position_id: createDto.position_id,
+    });
+  }
+
+  // Метод для поиска записи по id
+  async findOne(id: number): Promise<HrAction | null> {
+    return this.hrActionModel.findByPk(id);
+  }
+
+  // Метод для обновления записи
+  async update(id: number, dto: UpdateHrActionDto): Promise<HrAction | null> {
+    const action = await this.hrActionModel.findByPk(id);
+    if (action) {
+      return action.update(dto);
     }
-    return hrAction;
+    return null;
   }
 
-  // Создание нового HR действия
-  async create(actionData: Partial<HRAction>): Promise<HRAction> {
-    const hrAction = this.hrActionsRepository.create(actionData);
-    return this.hrActionsRepository.save(hrAction);
-  }
-
-  // Обновление HR действия по ID
-  async update(id: number, actionData: Partial<HRAction>): Promise<HRAction> {
-    await this.hrActionsRepository.update(id, actionData);
-    const updatedHRAction = await this.findOne(id); // Проверяем наличие обновленного действия
-    return updatedHRAction;
-  }
-
-  // Удаление HR действия по ID
+  // Метод для удаления записи
   async remove(id: number): Promise<void> {
-    const deleteResult = await this.hrActionsRepository.delete(id);
-    if (!deleteResult.affected) {
-      throw new NotFoundException(`HR Action with ID ${id} not found`);
+    const action = await this.hrActionModel.findByPk(id);
+    if (action) {
+      await action.destroy();
     }
   }
 }

@@ -6,39 +6,54 @@ import {
   Delete,
   Param,
   Body,
+  NotFoundException,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
-import { File } from './file.entity';
+import { CreateFileDto } from './dto/create-file.dto';
+import { UpdateFileDto } from './dto/update-file.dto';
+import { File } from './file.model';
 
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  // Получение всех файлов
   @Get()
-  findAll(): Promise<File[]> {
+  async findAll(): Promise<File[]> {
     return this.filesService.findAll();
   }
 
-  // Создание нового файла
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<File> {
+    const file = await this.filesService.findOne(id);
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+    return file;
+  }
+
   @Post()
-  create(@Body() fileData: Partial<File>): Promise<File> {
-    console.log('Received data for file creation:', fileData);
-    return this.filesService.create(fileData);
+  async create(@Body() createFileDto: CreateFileDto): Promise<File> {
+    return this.filesService.create(createFileDto);
   }
 
-  // Обновление файла по ID
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: number,
-    @Body() fileData: Partial<File>,
+    @Body() updateFileDto: UpdateFileDto,
   ): Promise<File> {
-    return this.filesService.update(id, fileData);
+    const updatedFile = await this.filesService.update(id, updateFileDto);
+    if (!updatedFile) {
+      throw new NotFoundException('File not found');
+    }
+    return updatedFile;
   }
 
-  // Удаление файла по ID
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: number): Promise<void> {
+    const file = await this.filesService.findOne(id);
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
     return this.filesService.remove(id);
   }
 }

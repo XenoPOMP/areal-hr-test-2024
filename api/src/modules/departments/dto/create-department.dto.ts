@@ -1,8 +1,19 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
+
 export class CreateDepartmentDto {
   @IsString()
   @IsNotEmpty()
   readonly name: string;
+
+  @IsOptional()
   @IsString()
-  readonly organization_id?: string; // Связь с организацией
+  readonly comment?: string;
+
+  @IsOptional()
+  @IsNumber()
+  readonly parent_id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  readonly organisation_id?: number;
 }

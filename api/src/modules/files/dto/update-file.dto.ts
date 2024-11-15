@@ -1,11 +1,15 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateFileDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   readonly name?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   readonly link?: string;
+
+  @IsOptional()
+  @IsInt()
+  readonly employee_id?: number;
 }

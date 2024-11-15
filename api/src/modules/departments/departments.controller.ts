@@ -8,7 +8,9 @@ import {
   Body,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
-import { Department } from './department.entity';
+import { Department } from './department.model';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Controller('departments')
 export class DepartmentsController {
@@ -20,17 +22,16 @@ export class DepartmentsController {
   }
 
   @Post()
-  create(@Body() depData: Partial<Department>): Promise<Department> {
-    console.log('Received data for creation:', depData);
-    return this.departmentsService.create(depData);
+  create(@Body() dto: CreateDepartmentDto): Promise<Department> {
+    return this.departmentsService.create(dto);
   }
 
   @Put(':id')
   update(
     @Param('id') id: number,
-    @Body() depData: Partial<Department>,
-  ): Promise<Department> {
-    return this.departmentsService.update(id, depData);
+    @Body() dto: UpdateDepartmentDto,
+  ): Promise<Department | null> {
+    return this.departmentsService.update(id, dto);
   }
 
   @Delete(':id')

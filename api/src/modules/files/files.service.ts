@@ -1,51 +1,40 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { File } from './file.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { File } from './file.model';
+import { CreateFileDto } from './dto/create-file.dto';
+import { UpdateFileDto } from './dto/update-file.dto';
 
 @Injectable()
 export class FilesService {
   constructor(
-    @InjectRepository(File)
-    private readonly fileRepository: Repository<File>,
+    @InjectModel(File)
+    private readonly fileModel: typeof File,
   ) {}
 
-  // Получение всех файлов
   async findAll(): Promise<File[]> {
-    return this.fileRepository.find();
+    return this.fileModel.findAll();
   }
 
-  // Создание нового файла
-  async create(fileData: Partial<File>): Promise<File> {
-    console.log('Creating new file with data:', fileData);
-    const file = this.fileRepository.create({
-      name: fileData.name,
-      link: fileData.link,
-    });
-    return this.fileRepository.save(file);
+  async findOne(id: number): Promise<File | null> {
+    return this.fileModel.findByPk(id);
   }
 
-  // Обновление файла по ID
-  async update(id: number, fileData: Partial<File>): Promise<File> {
-    console.log(`Updating file with ID ${id}`, fileData);
-    await this.fileRepository.update(id, fileData);
-    const updatedFile = await this.fileRepository.findOne({ where: { id } });
-    if (!updatedFile) {
-      console.error(`File with ID ${id} not found`);
-      throw new NotFoundException(`File with ID ${id} not found`);
+  async create(dto: CreateFileDto): Promise<File> {
+    return this.fileModel.create({ ...dto });
+  }
+
+  async update(id: number, dto: UpdateFileDto): Promise<File | null> {
+    const file = await this.fileModel.findByPk(id);
+    if (file) {
+      return file.update({ ...dto });
     }
-    console.log(`File updated successfully`, updatedFile);
-    return updatedFile;
+    return null;
   }
 
-  // Удаление файла по ID
   async remove(id: number): Promise<void> {
-    console.log(`Deleting file with ID ${id}`);
-    const deleteResult = await this.fileRepository.delete(id);
-    if (!deleteResult.affected) {
-      console.error(`File with ID ${id} not found`);
-      throw new NotFoundException(`File with ID ${id} not found`);
+    const file = await this.fileModel.findByPk(id);
+    if (file) {
+      await file.destroy();
     }
-    console.log(`File deleted successfully`);
   }
 }

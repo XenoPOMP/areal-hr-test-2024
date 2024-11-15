@@ -1,10 +1,11 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
-export class CreateOrganizationDto {
+export class CreateOrganisationDto {
   @IsString()
   @IsNotEmpty()
   readonly name: string;
 
+  @IsOptional()
   @IsString()
-  readonly address?: string;
+  readonly comment?: string;
 }

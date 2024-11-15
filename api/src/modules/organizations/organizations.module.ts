@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrganizationsService } from './organizations.service';
-import { OrganizationsController } from './organizations.controller';
-import { Organization } from './organization.entity';
+import { SequelizeModule } from '@nestjs/sequelize'; // Импортируем SequelizeModule
+import { OrganisationsService } from './organizations.service';
+import { OrganisationsController } from './organizations.controller';
+import { Organisation } from './organization.model'; // Импортируем модель
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization])],
-  providers: [OrganizationsService],
-  controllers: [OrganizationsController],
+  imports: [SequelizeModule.forFeature([Organisation])], // Используем SequelizeModule
+  providers: [OrganisationsService],
+  controllers: [OrganisationsController],
 })
 export class OrganizationsModule {}

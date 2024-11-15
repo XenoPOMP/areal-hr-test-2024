@@ -6,38 +6,53 @@ import {
   Delete,
   Param,
   Body,
+  NotFoundException,
 } from '@nestjs/common';
-import { HRActionsService } from './hr_actions.service';
-import { HRAction } from './hr_action.entity';
+import { HrActionsService } from './hr_actions.service';
+import { CreateHrActionDto } from './dto/create-hr_action.dto';
+import { HrAction } from './hr_action.model';
 
-@Controller('hr_actions')
-export class HRActionsController {
-  constructor(private readonly hrActionsService: HRActionsService) {}
+@Controller('hr-actions')
+export class HrActionsController {
+  constructor(private readonly hrActionsService: HrActionsService) {}
 
-  // Получение всех HR действий
   @Get()
-  findAll(): Promise<HRAction[]> {
+  async findAll(): Promise<HrAction[]> {
     return this.hrActionsService.findAll();
   }
 
-  // Создание нового HR действия
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<HrAction> {
+    const action = await this.hrActionsService.findOne(id);
+    if (!action) {
+      throw new NotFoundException('HR action not found');
+    }
+    return action;
+  }
+
   @Post()
-  create(@Body() actionData: Partial<HRAction>): Promise<HRAction> {
-    return this.hrActionsService.create(actionData);
+  async create(@Body() createDto: CreateHrActionDto): Promise<HrAction> {
+    return this.hrActionsService.create(createDto);
   }
 
-  // Обновление HR действия по ID
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: number,
-    @Body() actionData: Partial<HRAction>,
-  ): Promise<HRAction> {
-    return this.hrActionsService.update(id, actionData);
+    @Body() updateDto: CreateHrActionDto,
+  ): Promise<HrAction> {
+    const updatedAction = await this.hrActionsService.update(id, updateDto);
+    if (!updatedAction) {
+      throw new NotFoundException('HR action not found');
+    }
+    return updatedAction;
   }
 
-  // Удаление HR действия по ID
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: number): Promise<void> {
+    const action = await this.hrActionsService.findOne(id);
+    if (!action) {
+      throw new NotFoundException('HR action not found');
+    }
     return this.hrActionsService.remove(id);
   }
 }

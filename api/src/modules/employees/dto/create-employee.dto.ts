@@ -1,55 +1,20 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsDate,
-  IsInt,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { CreatePassportDto } from './passports/create-passport.dto';
-import { CreateAddressDto } from './addresses/create-address.dto';
+import { IsString, IsOptional, IsDate, IsInt } from 'class-validator';
 
 export class CreateEmployeeDto {
   @IsString()
-  @IsNotEmpty()
-  readonly name: string;
+  surname: string;
 
   @IsString()
-  @IsOptional()
-  readonly surname?: string;
+  second_name: string;
 
   @IsString()
-  @IsOptional()
-  readonly second_name?: string;
+  name: string;
 
+  @IsOptional()
   @IsDate()
-  @IsOptional()
-  readonly date_birth?: Date;
+  date_birth?: Date;
 
+  @IsOptional()
   @IsInt()
-  @IsOptional()
-  readonly passport_id?: number;
-
-  @IsInt()
-  @IsOptional()
-  readonly address_id?: number;
-
-  @IsInt()
-  @IsOptional()
-  readonly position_id?: number;
-
-  @IsInt()
-  @IsOptional()
-  readonly file_id?: number;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CreatePassportDto)
-  readonly passport?: CreatePassportDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateAddressDto)
-  readonly address?: CreateAddressDto;
+  position_id?: number;
 }

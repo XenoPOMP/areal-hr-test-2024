@@ -8,37 +8,38 @@ import {
   Body,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
-import { Employee } from './employee.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import { CreatePassportDto } from '../passports/create-passport.dto';
-import { CreateAddressDto } from '../addresses/create-address.dto';
 
 @Controller('employees')
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Get()
-  findAll(): Promise<Employee[]> {
+  async findAll() {
     return this.employeesService.findAll();
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    return this.employeesService.findOne(id);
+  }
+
   @Post()
-  create(@Body() empData: CreateEmployeeDto): Promise<Employee> {
-    console.log('Received data for creation:', empData);
-    return this.employeesService.create(empData);
+  async create(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return this.employeesService.create(createEmployeeDto);
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: number,
-    @Body() empData: UpdateEmployeeDto,
-  ): Promise<Employee> {
-    return this.employeesService.update(id, empData);
+    @Body() updateEmployeeDto: UpdateEmployeeDto,
+  ) {
+    return this.employeesService.update(id, updateEmployeeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: number) {
     return this.employeesService.remove(id);
   }
 }

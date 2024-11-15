@@ -6,35 +6,59 @@ import {
   Delete,
   Param,
   Body,
+  NotFoundException,
 } from '@nestjs/common';
-import { OrganizationsService } from './organizations.service';
-import { Organization } from './organization.entity';
+import { OrganisationsService } from './organizations.service';
+import { CreateOrganisationDto } from './dto/create-organization.dto';
+import { UpdateOrganisationDto } from './dto/update-organization.dto';
+import { Organisation } from './organization.model';
 
-@Controller('organizations')
-export class OrganizationsController {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+@Controller('organisations')
+export class OrganisationsController {
+  constructor(private readonly organisationsService: OrganisationsService) {}
 
   @Get()
-  findAll(): Promise<Organization[]> {
-    return this.organizationsService.findAll();
+  async findAll(): Promise<Organisation[]> {
+    return this.organisationsService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<Organisation> {
+    const organisation = await this.organisationsService.findOne(id);
+    if (!organisation) {
+      throw new NotFoundException('Organisation not found');
+    }
+    return organisation;
   }
 
   @Post()
-  create(@Body() orgData: Partial<Organization>): Promise<Organization> {
-    console.log('Received data for creation:', orgData);
-    return this.organizationsService.create(orgData);
+  async create(
+    @Body() createDto: CreateOrganisationDto,
+  ): Promise<Organisation> {
+    return this.organisationsService.create(createDto);
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: number,
-    @Body() orgData: Partial<Organization>,
-  ): Promise<Organization> {
-    return this.organizationsService.update(id, orgData);
+    @Body() updateDto: UpdateOrganisationDto,
+  ): Promise<Organisation> {
+    const updatedOrganisation = await this.organisationsService.update(
+      id,
+      updateDto,
+    );
+    if (!updatedOrganisation) {
+      throw new NotFoundException('Organisation not found');
+    }
+    return updatedOrganisation;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
-    return this.organizationsService.remove(id);
+  async remove(@Param('id') id: number): Promise<void> {
+    const organisation = await this.organisationsService.findOne(id);
+    if (!organisation) {
+      throw new NotFoundException('Organisation not found');
+    }
+    return this.organisationsService.remove(id);
   }
 }

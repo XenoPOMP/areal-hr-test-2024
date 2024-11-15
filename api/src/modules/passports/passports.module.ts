@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Passport } from './passport.entity';
+import { Passport } from './passport.model';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { PassportsService } from './passports.service';
+import { PassportsController } from './passports.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Passport])],
-  exports: [TypeOrmModule],
+  imports: [SequelizeModule.forFeature([Passport])],
+  providers: [PassportsService], // Подключаем сервис
+  controllers: [PassportsController], // Подключаем контроллер
 })
 export class PassportsModule {}

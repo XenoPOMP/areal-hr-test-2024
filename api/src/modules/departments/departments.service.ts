@@ -1,53 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Department } from './department.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Department } from './department.model';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { UpdateDepartmentDto } from './dto/update-department.dto';
 
 @Injectable()
 export class DepartmentsService {
   constructor(
-    @InjectRepository(Department)
-    private readonly departmentRepository: Repository<Department>,
+    @InjectModel(Department)
+    private readonly departmentModel: typeof Department,
   ) {}
 
-  // Получение всех организаций
   async findAll(): Promise<Department[]> {
-    return this.departmentRepository.find();
+    return this.departmentModel.findAll();
   }
 
-  // Создание новой организации
-  async create(orgData: Partial<Department>): Promise<Department> {
-    console.log('Creating new organization with data:', orgData);
-    const department = this.departmentRepository.create({
-      name: orgData.name,
-      comment: orgData.comment,
-    });
-    return this.departmentRepository.save(department);
+  async create(dto: CreateDepartmentDto): Promise<Department> {
+    return this.departmentModel.create({ ...dto });
   }
 
-  // Обновление организации по ID
-  async update(id: number, depData: Partial<Department>): Promise<Department> {
-    console.log(`Updating department with ID ${id}`, depData); // Лог перед обновлением
-    await this.departmentRepository.update(id, depData);
-    const updatedDepartment = await this.departmentRepository.findOne({
-      where: { id },
-    });
-    if (!updatedDepartment) {
-      console.error(`Department with ID ${id} not found`);
-      throw new NotFoundException(`Department with ID ${id} not found`);
+  async update(
+    id: number,
+    dto: UpdateDepartmentDto,
+  ): Promise<Department | null> {
+    const department = await this.departmentModel.findByPk(id);
+    if (department) {
+      return department.update({ ...dto });
     }
-    console.log(`Department updated successfully`, updatedDepartment); // Лог после обновления
-    return updatedDepartment;
+    return null;
   }
 
-  // Удаление организации по ID
   async remove(id: number): Promise<void> {
-    console.log(`Deleting department with ID ${id}`); // Лог перед удалением
-    const deleteResult = await this.departmentRepository.delete(id);
-    if (!deleteResult.affected) {
-      console.error(`Department with ID ${id} not found`);
-      throw new NotFoundException(`Department with ID ${id} not found`);
+    const department = await this.departmentModel.findByPk(id);
+    if (department) {
+      await department.destroy();
     }
-    console.log(`Department deleted successfully`); // Лог после успешного удаления
   }
 }

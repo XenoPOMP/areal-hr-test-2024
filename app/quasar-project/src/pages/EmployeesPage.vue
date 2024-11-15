@@ -254,12 +254,6 @@ const columns: QTableColumn[] = [
     field: 'date_birth',
     required: true,
   },
-  {
-    name: 'actions',
-    label: 'Действия',
-    align: 'center',
-    field: (row) => row.id,
-  },
 ];
 
 // Загрузка списка сотрудников

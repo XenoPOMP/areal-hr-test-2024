@@ -1,23 +1,23 @@
-import { IsString, IsOptional, IsDate, IsInt } from 'class-validator';
+import { IsString, IsOptional, IsDate, IsNumber } from 'class-validator';
 
 export class UpdateHrActionDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   readonly action_type?: string;
 
-  @IsDate()
   @IsOptional()
+  @IsDate()
   readonly date?: Date;
 
-  @IsInt()
   @IsOptional()
+  @IsNumber()
   readonly employee_id?: number;
 
-  @IsInt()
   @IsOptional()
+  @IsNumber()
   readonly department_id?: number;
 
-  @IsInt()
   @IsOptional()
+  @IsNumber()
   readonly position_id?: number;
 }

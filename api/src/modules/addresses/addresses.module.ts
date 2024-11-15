@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Address } from './address.entity';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { Address } from './address.model';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Address])],
-  exports: [TypeOrmModule],
+  imports: [SequelizeModule.forFeature([Address])],
+  exports: [SequelizeModule],
 })
 export class AddressesModule {}

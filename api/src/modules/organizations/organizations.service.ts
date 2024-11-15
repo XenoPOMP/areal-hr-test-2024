@@ -1,56 +1,46 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Organization } from './organization.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Organisation } from './organization.model';
+import { CreateOrganisationDto } from './dto/create-organization.dto';
+import { UpdateOrganisationDto } from './dto/update-organization.dto';
 
 @Injectable()
-export class OrganizationsService {
+export class OrganisationsService {
   constructor(
-    @InjectRepository(Organization)
-    private readonly organizationRepository: Repository<Organization>,
+    @InjectModel(Organisation)
+    private readonly organisationModel: typeof Organisation,
   ) {}
 
-  // Получение всех организаций
-  async findAll(): Promise<Organization[]> {
-    return this.organizationRepository.find();
+  async findAll(): Promise<Organisation[]> {
+    return this.organisationModel.findAll();
   }
 
-  // Создание новой организации
-  async create(orgData: Partial<Organization>): Promise<Organization> {
-    console.log('Creating new organization with data:', orgData);
-    const organization = this.organizationRepository.create({
-      name: orgData.name,
-      comment: orgData.comment,
-    });
-    return this.organizationRepository.save(organization);
+  // Исправленная версия метода create
+  async create(createDto: CreateOrganisationDto): Promise<Organisation> {
+    // Передаем данные напрямую без использования dto
+    const { name, comment } = createDto;
+    return this.organisationModel.create({ name, comment });
   }
 
-  // Обновление организации по ID
+  async findOne(id: number): Promise<Organisation | null> {
+    return this.organisationModel.findByPk(id);
+  }
+
   async update(
     id: number,
-    orgData: Partial<Organization>,
-  ): Promise<Organization> {
-    console.log(`Updating organization with ID ${id}`, orgData); // Лог перед обновлением
-    await this.organizationRepository.update(id, orgData);
-    const updatedOrganization = await this.organizationRepository.findOne({
-      where: { id },
-    });
-    if (!updatedOrganization) {
-      console.error(`Organization with ID ${id} not found`);
-      throw new NotFoundException(`Organization with ID ${id} not found`);
+    dto: UpdateOrganisationDto,
+  ): Promise<Organisation | null> {
+    const organisation = await this.organisationModel.findByPk(id);
+    if (organisation) {
+      return organisation.update(dto);
     }
-    console.log(`Organization updated successfully`, updatedOrganization); // Лог после обновления
-    return updatedOrganization;
+    return null;
   }
 
-  // Удаление организации по ID
   async remove(id: number): Promise<void> {
-    console.log(`Deleting organization with ID ${id}`); // Лог перед удалением
-    const deleteResult = await this.organizationRepository.delete(id);
-    if (!deleteResult.affected) {
-      console.error(`Organization with ID ${id} not found`);
-      throw new NotFoundException(`Organization with ID ${id} not found`);
+    const organisation = await this.organisationModel.findByPk(id);
+    if (organisation) {
+      await organisation.destroy();
     }
-    console.log(`Organization deleted successfully`); // Лог после успешного удаления
   }
 }

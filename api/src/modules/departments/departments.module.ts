@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DepartmentsService } from './departments.service';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { DepartmentsController } from './departments.controller';
-import { Department } from './department.entity';
+import { DepartmentsService } from './departments.service';
+import { Department } from './department.model';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Department])],
-  providers: [DepartmentsService],
+  imports: [SequelizeModule.forFeature([Department])],
   controllers: [DepartmentsController],
+  providers: [DepartmentsService],
+  exports: [DepartmentsService],
 })
 export class DepartmentsModule {}

@@ -1,35 +1,23 @@
 import { IsString, IsOptional, IsDate, IsInt } from 'class-validator';
 
 export class UpdateEmployeeDto {
-  @IsString()
   @IsOptional()
-  readonly name?: string;
-
   @IsString()
-  @IsOptional()
-  readonly surname?: string;
+  surname?: string;
 
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  readonly second_name?: string;
+  second_name?: string;
 
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
   @IsDate()
-  @IsOptional()
-  readonly date_birth?: Date;
+  date_birth?: Date;
 
-  @IsInt()
   @IsOptional()
-  readonly passport_id?: number;
-
   @IsInt()
-  @IsOptional()
-  readonly address_id?: number;
-
-  @IsInt()
-  @IsOptional()
-  readonly position_id?: number;
-
-  @IsInt()
-  @IsOptional()
-  readonly file_id?: number;
+  position_id?: number;
 }

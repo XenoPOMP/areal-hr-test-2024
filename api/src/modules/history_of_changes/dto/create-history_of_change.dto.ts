@@ -1,26 +1,18 @@
-import { IsString, IsOptional, IsDate, IsInt } from 'class-validator';
+import { IsString, IsOptional, IsDate, IsJSON } from 'class-validator';
 
-export class CreateHistoryOfChangesDto {
-  @IsDate()
-  @IsOptional()
-  readonly date?: Date;
-
-  @IsString()
-  @IsOptional()
-  readonly time?: string;
-
-  @IsString()
-  @IsOptional()
-  readonly login?: string;
-
+export class CreateHistoryOfChangeDto {
   @IsString()
   @IsOptional()
   readonly object?: string;
 
-  @IsInt()
+  @IsJSON()
   @IsOptional()
-  readonly user_id?: number;
+  readonly field?: JSON;
+
+  @IsDate()
+  @IsOptional()
+  readonly date?: Date;
 
   @IsOptional()
-  readonly field?: any; // Должно соответствовать типу JSON
+  readonly user_id?: number; // Foreign key to User
 }
