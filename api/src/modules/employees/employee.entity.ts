@@ -2,8 +2,8 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Passport } from '../passports/passport.entity';
 import { Address } from '../addresses/address.entity';
@@ -25,11 +25,11 @@ export class Employee {
   @Column({ type: 'date', nullable: true })
   date_birth: Date;
 
-  @ManyToOne(() => Passport, { nullable: true, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'passport_id' })
+  @OneToOne(() => Passport, { cascade: true, eager: true })
+  @JoinColumn()
   passport: Passport;
 
-  @ManyToOne(() => Address, { nullable: true, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'address_id' })
+  @OneToOne(() => Address, { cascade: true, eager: true })
+  @JoinColumn()
   address: Address;
 }
