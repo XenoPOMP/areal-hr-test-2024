@@ -188,7 +188,6 @@ import {
 } from 'src/api';
 import { QTableColumn } from 'quasar';
 
-// Интерфейс для сотрудника
 interface Employee {
   id: string;
   name: string;
@@ -208,7 +207,6 @@ interface Employee {
   flat?: string;
 }
 
-// Состояния для сотрудников, нового сотрудника и редактируемого сотрудника
 const employees = ref<Employee[]>([]);
 const newEmployee = ref<Employee>({
   id: '',
@@ -231,7 +229,6 @@ const newEmployee = ref<Employee>({
 const editMode = ref(false);
 const editedEmployee = ref<Employee | null>(null);
 
-// Определение колонок для таблицы
 const columns: QTableColumn[] = [
   { name: 'name', label: 'Имя', align: 'left', field: 'name', required: true },
   {
@@ -254,9 +251,50 @@ const columns: QTableColumn[] = [
     field: 'date_birth',
     required: true,
   },
+  {
+    name: 'serial',
+    label: 'Серия паспорта',
+    align: 'left',
+    field: 'serial',
+    required: true,
+  },
+  {
+    name: 'number',
+    label: 'Номер паспорта',
+    align: 'left',
+    field: 'number',
+    required: true,
+  },
+  {
+    name: 'region',
+    label: 'Регион',
+    align: 'left',
+    field: 'region',
+    required: true,
+  },
+  {
+    name: 'settlement',
+    label: 'Населенный пункт',
+    align: 'left',
+    field: 'settlement',
+    required: true,
+  },
+  {
+    name: 'street',
+    label: 'Улица',
+    align: 'left',
+    field: 'street',
+    required: true,
+  },
+  {
+    name: 'house',
+    label: 'Дом',
+    align: 'left',
+    field: 'house',
+    required: true,
+  },
 ];
 
-// Загрузка списка сотрудников
 const loadEmployees = async () => {
   try {
     employees.value = await getEmployees();
@@ -265,15 +303,14 @@ const loadEmployees = async () => {
   }
 };
 
-// Загрузка данных при монтировании компонента
 onMounted(() => {
   loadEmployees();
 });
 
-// Обработчик создания нового сотрудника
 const createEmployeeHandler = async () => {
   try {
     await createEmployee(newEmployee.value);
+    await loadEmployees();
     newEmployee.value = {
       id: '',
       name: '',
@@ -292,13 +329,11 @@ const createEmployeeHandler = async () => {
       housing: '',
       flat: '',
     };
-    await loadEmployees();
   } catch (error) {
     console.error('Ошибка добавления сотрудника:', error);
   }
 };
 
-// Обработчик обновления данных сотрудника
 const updateEmployeeHandler = async () => {
   if (editedEmployee.value) {
     try {
@@ -311,19 +346,16 @@ const updateEmployeeHandler = async () => {
   }
 };
 
-// Старт редактирования сотрудника
 const startEditingEmployee = (employee: Employee) => {
   editedEmployee.value = { ...employee };
   editMode.value = true;
 };
 
-// Отмена редактирования
 const cancelEdit = () => {
   editMode.value = false;
   editedEmployee.value = null;
 };
 
-// Обработчик удаления сотрудника
 const deleteEmployeeHandler = async (id: string) => {
   try {
     await deleteEmployee(id);

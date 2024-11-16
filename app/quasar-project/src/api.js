@@ -68,8 +68,8 @@ export const deletePosition = async (id) => {
 };
 
 // Функции для работы с Employees
-export const getEmployees = async () => {
-  const response = await api.get('/employees');
+export const getEmployee = async (id) => {
+  const response = await api.get(`/employees/${id}/details`);
   return response.data;
 };
 

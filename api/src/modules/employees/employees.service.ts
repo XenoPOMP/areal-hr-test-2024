@@ -1,16 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Employee } from '@models/employee.model';
+import { Address } from '@models/address.model';
+import { Passport } from '@models/passport.model';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {
   constructor(
-    @InjectModel(Employee)
-    private readonly employeeModel: typeof Employee,
+    @InjectModel(Employee) private employeeModel: typeof Employee,
+    @InjectModel(Address) private addressModel: typeof Address,
+    @InjectModel(Passport) private passportModel: typeof Passport,
   ) {}
 
+  async getEmployeeWithDetails(id: string) {
+    return this.employeeModel.findOne({
+      where: { id },
+      include: [Address, Passport],
+    });
+  }
   async findAll(): Promise<Employee[]> {
     return this.employeeModel.findAll({ include: { all: true } });
   }

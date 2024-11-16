@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Компонент шапки для навигации -->
     <AppHeader />
 
     <h1>Кадровые операции</h1>
@@ -17,6 +16,13 @@
         v-model="newAction.date"
         label="Дата"
         type="date"
+        filled
+        required
+      />
+      <q-input
+        v-model="newAction.salary"
+        label="Зарплата"
+        type="number"
         filled
         required
       />
@@ -67,6 +73,13 @@
           filled
           required
         />
+        <q-input
+          v-model="editedAction.salary"
+          label="Зарплата"
+          type="number"
+          filled
+          required
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -85,16 +98,22 @@ import {
 } from 'src/api';
 import { QTableColumn } from 'quasar';
 
-// Интерфейс для кадровой операции
+// Обновленный интерфейс для кадровой операции, включая поле salary
 interface HRActions {
   id: string;
   action_type: string;
   date: string;
+  salary: number;
 }
 
 // Состояния для операции, новой операции и редактируемой операции
 const actions = ref<HRActions[]>([]);
-const newAction = ref<HRActions>({ id: '', action_type: '', date: '' });
+const newAction = ref<HRActions>({
+  id: '',
+  action_type: '',
+  date: '',
+  salary: 0,
+});
 const editMode = ref(false);
 const editedAction = ref<HRActions | null>(null);
 
@@ -108,6 +127,13 @@ const columns: QTableColumn[] = [
     required: true,
   },
   { name: 'date', label: 'Дата', align: 'left', field: 'date', required: true },
+  {
+    name: 'salary',
+    label: 'Зарплата',
+    align: 'right',
+    field: 'salary',
+    required: true,
+  },
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
 
@@ -130,8 +156,9 @@ const createActionHandler = async () => {
     await createHRAction({
       action_type: newAction.value.action_type.slice(0, 50),
       date: newAction.value.date,
+      salary: newAction.value.salary,
     });
-    newAction.value = { id: '', action_type: '', date: '' };
+    newAction.value = { id: '', action_type: '', date: '', salary: 0 };
     await loadActions();
   } catch (error) {
     console.error('Ошибка добавления операции:', error);
@@ -144,6 +171,7 @@ const updateActionHandler = async () => {
       await updateHRAction(editedAction.value.id, {
         action_type: editedAction.value.action_type,
         date: editedAction.value.date,
+        salary: editedAction.value.salary,
       });
       await loadActions();
       cancelEdit();

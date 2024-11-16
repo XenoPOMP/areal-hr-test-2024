@@ -144,6 +144,7 @@ export const getHRActions = async () => {
 export const createHRAction = async (data: {
   action_type: string;
   date: string;
+  salary: number;
 }) => {
   const response = await axios.post(`${API_URL}/hr_actions`, data);
   return response.data;
@@ -151,7 +152,7 @@ export const createHRAction = async (data: {
 
 export const updateHRAction = async (
   id: string,
-  data: { action_type: string; date: string }
+  data: { action_type: string; date: string; salary: number }
 ) => {
   const response = await axios.put(`${API_URL}/hr_actions/${id}`, data);
   return response.data;
