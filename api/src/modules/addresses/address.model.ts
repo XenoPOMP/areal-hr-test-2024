@@ -7,9 +7,9 @@ import {
   DataType,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Employee } from '../employees/employee.model'; // импорт модели Employee
+import { Employee } from '../employees/employee.model';
 
-@Table({ tableName: 'addresses' })
+@Table({ tableName: 'address', freezeTableName: true, timestamps: false })
 export class Address extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -34,7 +34,6 @@ export class Address extends Model {
   @Column({ type: DataType.STRING(50), allowNull: true })
   flat: string;
 
-  // Ассоциация связи 1:1 с Employee
-  @BelongsTo(() => Employee)
+  @BelongsTo(() => Employee, { foreignKey: 'id' })
   employee: Employee;
 }

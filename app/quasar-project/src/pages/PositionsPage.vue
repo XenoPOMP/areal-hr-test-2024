@@ -7,7 +7,12 @@
 
     <!-- Форма для добавления новой должности -->
     <form @submit.prevent="createPositionHandler" class="form-container">
-      <q-input v-model="newPosition.name" label="Название должности" filled required />
+      <q-input
+        v-model="newPosition.name"
+        label="Название должности"
+        filled
+        required
+      />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
@@ -42,7 +47,12 @@
     <div v-if="editMode && editedPosition" class="edit-form">
       <h3>Изменить должность</h3>
       <form @submit.prevent="updatePositionHandler">
-        <q-input v-model="editedPosition.name" label="Название должности" filled required />
+        <q-input
+          v-model="editedPosition.name"
+          label="Название должности"
+          filled
+          required
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -53,7 +63,12 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getPositions, createPosition, updatePosition, deletePosition } from 'src/api';
+import {
+  getPositions,
+  createPosition,
+  updatePosition,
+  deletePosition,
+} from 'src/api';
 import { QTableColumn } from 'quasar';
 
 // Интерфейс для должности
@@ -70,8 +85,19 @@ const editedPosition = ref<Position | null>(null);
 
 // Определение колонок для таблицы
 const columns: QTableColumn[] = [
-  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
-  { name: 'actions', label: 'Действия', align: 'center', field: row => row.id }
+  {
+    name: 'name',
+    label: 'Название',
+    align: 'left',
+    field: 'name',
+    required: true,
+  },
+  {
+    name: 'actions',
+    label: 'Действия',
+    align: 'center',
+    field: (row) => row.id,
+  },
 ];
 
 // Загрузка списка должностей
@@ -94,7 +120,7 @@ const createPositionHandler = async () => {
       name: newPosition.value.name.slice(0, 255),
     });
     newPosition.value = { id: '', name: '' };
-    loadPositions();
+    await loadPositions();
   } catch (error) {
     console.error('Ошибка добавления должности:', error);
   }
@@ -127,7 +153,7 @@ const cancelEdit = () => {
 const deletePositionHandler = async (id: string) => {
   try {
     await deletePosition(id);
-    loadPositions();
+    await loadPositions();
   } catch (error) {
     console.error('Ошибка удаления должности:', error);
   }
@@ -135,7 +161,8 @@ const deletePositionHandler = async (id: string) => {
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;

@@ -7,7 +7,7 @@ import {
   DataType,
 } from 'sequelize-typescript';
 
-@Table({ tableName: 'users' })
+@Table({ tableName: 'user', freezeTableName: true, timestamps: false })
 export class User extends Model {
   @PrimaryKey
   @AutoIncrement

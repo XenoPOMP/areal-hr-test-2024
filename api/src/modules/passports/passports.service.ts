@@ -11,35 +11,25 @@ export class PassportsService {
     private readonly passportModel: typeof Passport,
   ) {}
 
-  async findAll(): Promise<Passport[]> {
-    return this.passportModel.findAll();
+  async findByEmployeeId(id: number): Promise<Passport | null> {
+    // Используем id как ключ для поиска связанного паспорта
+    return this.passportModel.findOne({ where: { id } });
   }
 
-  // Find passport by employee ID
-  async findByEmployeeId(employeeId: number): Promise<Passport | null> {
-    return this.passportModel.findOne({ where: { employeeId } });
+  async create(id: number, dto: CreatePassportDto): Promise<Passport> {
+    return this.passportModel.create({ id, ...dto });
   }
 
-  // Create passport for an employee
-  async create(
-    employeeId: number,
-    createDto: CreatePassportDto,
-  ): Promise<Passport> {
-    return this.passportModel.create({ ...createDto, employeeId });
+  async update(id: number, dto: UpdatePassportDto): Promise<Passport | null> {
+    const passport = await this.findByEmployeeId(id);
+    if (passport) {
+      return passport.update({ ...dto });
+    }
+    return null;
   }
 
-  // Update passport for an employee
-  async update(
-    employeeId: number,
-    updateDto: UpdatePassportDto,
-  ): Promise<Passport | null> {
-    const passport = await this.findByEmployeeId(employeeId);
-    return passport ? passport.update(updateDto) : null;
-  }
-
-  // Remove passport by employee ID
-  async remove(employeeId: number): Promise<void> {
-    const passport = await this.findByEmployeeId(employeeId);
+  async remove(id: number): Promise<void> {
+    const passport = await this.findByEmployeeId(id);
     if (passport) {
       await passport.destroy();
     }

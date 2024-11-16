@@ -12,7 +12,7 @@ import { Employee } from '../employees/employee.model'; // Путь к моде�
 import { Department } from '../departments/department.model'; // Путь к модели департамента
 import { Position } from '../positions/position.model'; // Путь к модели позиции
 
-@Table({ tableName: 'hr_actions' })
+@Table({ tableName: 'hr_action', freezeTableName: true, timestamps: false })
 export class HrAction extends Model {
   @PrimaryKey
   @AutoIncrement

@@ -17,47 +17,45 @@ import { Passport } from './passport.model';
 export class PassportsController {
   constructor(private readonly passportsService: PassportsService) {}
 
-  // Get passport by employee ID
-  @Get(':employeeId')
-  async getPassport(
-    @Param('employeeId') employeeId: number,
-  ): Promise<Passport> {
-    const passport = await this.passportsService.findByEmployeeId(employeeId);
+  // Получить паспорт по ID сотрудника
+  @Get(':id')
+  async getPassport(@Param('id') id: number): Promise<Passport> {
+    const passport = await this.passportsService.findByEmployeeId(id);
     if (!passport) {
-      throw new NotFoundException('Passport not found');
+      throw new NotFoundException('Паспорт не найден');
     }
     return passport;
   }
 
-  // Create a new passport for an employee
-  @Post(':employeeId')
+  // Создать новый паспорт для сотрудника
+  @Post(':id')
   async createPassport(
-    @Param('employeeId') employeeId: number,
+    @Param('id') id: number,
     @Body() createDto: CreatePassportDto,
   ): Promise<Passport> {
-    return this.passportsService.create(employeeId, createDto);
+    return this.passportsService.create(id, createDto);
   }
 
-  // Update an employee's passport
-  @Put(':employeeId')
+  // Обновить паспорт сотрудника
+  @Put(':id')
   async updatePassport(
-    @Param('employeeId') employeeId: number,
+    @Param('id') id: number,
     @Body() updateDto: UpdatePassportDto,
   ): Promise<Passport> {
-    const passport = await this.passportsService.update(employeeId, updateDto);
+    const passport = await this.passportsService.update(id, updateDto);
     if (!passport) {
-      throw new NotFoundException('Passport not found');
+      throw new NotFoundException('Паспорт не найден');
     }
     return passport;
   }
 
-  // Remove an employee's passport
-  @Delete(':employeeId')
-  async removePassport(@Param('employeeId') employeeId: number): Promise<void> {
-    const passport = await this.passportsService.findByEmployeeId(employeeId);
+  // Удалить паспорт сотрудника
+  @Delete(':id')
+  async removePassport(@Param('id') id: number): Promise<void> {
+    const passport = await this.passportsService.findByEmployeeId(id);
     if (!passport) {
-      throw new NotFoundException('Passport not found');
+      throw new NotFoundException('Паспорт не найден');
     }
-    return this.passportsService.remove(employeeId);
+    return this.passportsService.remove(id);
   }
 }

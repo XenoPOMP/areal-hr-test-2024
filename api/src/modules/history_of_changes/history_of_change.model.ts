@@ -10,7 +10,11 @@ import {
 } from 'sequelize-typescript';
 import { User } from '../users/user.model'; // Импортируем модель User
 
-@Table({ tableName: 'history_of_changes' })
+@Table({
+  tableName: 'history_of_change',
+  freezeTableName: true,
+  timestamps: false,
+})
 export class HistoryOfChange extends Model {
   @PrimaryKey
   @AutoIncrement

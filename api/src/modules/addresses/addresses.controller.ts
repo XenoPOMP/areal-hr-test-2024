@@ -26,7 +26,7 @@ export class AddressesController {
   async findOne(@Param('id') id: number): Promise<Address> {
     const address = await this.addressesService.findOne(id);
     if (!address) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException('Адрес не найден');
     }
     return address;
   }
@@ -43,7 +43,7 @@ export class AddressesController {
   ): Promise<Address> {
     const updatedAddress = await this.addressesService.update(id, updateDto);
     if (!updatedAddress) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException('Адрес не найден');
     }
     return updatedAddress;
   }
@@ -52,7 +52,7 @@ export class AddressesController {
   async remove(@Param('id') id: number): Promise<void> {
     const address = await this.addressesService.findOne(id);
     if (!address) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException('Адрес не найден');
     }
     return this.addressesService.remove(id);
   }

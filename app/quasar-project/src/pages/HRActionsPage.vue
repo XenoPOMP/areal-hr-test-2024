@@ -7,8 +7,19 @@
 
     <!-- Форма для добавления новой кадровой операции -->
     <form @submit.prevent="createActionHandler" class="form-container">
-      <q-input v-model="newAction.action_type" label="Тип операции" filled required />
-      <q-input v-model="newAction.date" label="Дата" type="date" filled required />
+      <q-input
+        v-model="newAction.action_type"
+        label="Тип операции"
+        filled
+        required
+      />
+      <q-input
+        v-model="newAction.date"
+        label="Дата"
+        type="date"
+        filled
+        required
+      />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
@@ -43,8 +54,19 @@
     <div v-if="editMode && editedAction" class="edit-form">
       <h3>Изменить данные операции</h3>
       <form @submit.prevent="updateActionHandler">
-        <q-input v-model="editedAction.action_type" label="Тип операции" filled required />
-        <q-input v-model="editedAction.date" label="Дата" type="date" filled required />
+        <q-input
+          v-model="editedAction.action_type"
+          label="Тип операции"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedAction.date"
+          label="Дата"
+          type="date"
+          filled
+          required
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -55,7 +77,12 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getHRActions, createHRAction, updateHRAction, deleteHRAction } from 'src/api';
+import {
+  getHRActions,
+  createHRAction,
+  updateHRAction,
+  deleteHRAction,
+} from 'src/api';
 import { QTableColumn } from 'quasar';
 
 // Интерфейс для кадровой операции
@@ -73,7 +100,13 @@ const editedAction = ref<HRActions | null>(null);
 
 // Определение колонок для таблицы
 const columns: QTableColumn[] = [
-  { name: 'action_type', label: 'Тип операции', align: 'left', field: 'action_type', required: true },
+  {
+    name: 'action_type',
+    label: 'Тип операции',
+    align: 'left',
+    field: 'action_type',
+    required: true,
+  },
   { name: 'date', label: 'Дата', align: 'left', field: 'date', required: true },
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
@@ -99,7 +132,7 @@ const createActionHandler = async () => {
       date: newAction.value.date,
     });
     newAction.value = { id: '', action_type: '', date: '' };
-    loadActions();
+    await loadActions();
   } catch (error) {
     console.error('Ошибка добавления операции:', error);
   }
@@ -110,7 +143,7 @@ const updateActionHandler = async () => {
     try {
       await updateHRAction(editedAction.value.id, {
         action_type: editedAction.value.action_type,
-        date: editedAction.value.date
+        date: editedAction.value.date,
       });
       await loadActions();
       cancelEdit();
@@ -133,7 +166,7 @@ const cancelEdit = () => {
 const deleteActionHandler = async (id: string) => {
   try {
     await deleteHRAction(id);
-    loadActions();
+    await loadActions();
   } catch (error) {
     console.error('Ошибка удаления операции:', error);
   }
@@ -141,7 +174,8 @@ const deleteActionHandler = async (id: string) => {
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;

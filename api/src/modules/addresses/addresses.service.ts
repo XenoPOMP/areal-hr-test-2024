@@ -15,36 +15,25 @@ export class AddressesService {
     return this.addressModel.findAll();
   }
 
-  // Создание адреса
-  async create(createDto: CreateAddressDto): Promise<Address> {
-    // Деструктурируем DTO для передачи всех данных
-    const { region, settlement, street, house, housing, flat } = createDto;
-
-    // Создаем адрес, передавая все данные как объект
-    return this.addressModel.create({
-      region,
-      settlement,
-      street,
-      house,
-      housing,
-      flat,
-    });
+  async findOne(id: number): Promise<Address | null> {
+    // Используем id как ключ для поиска связанного адреса
+    return this.addressModel.findOne({ where: { id } });
   }
 
-  async findOne(id: number): Promise<Address | null> {
-    return this.addressModel.findByPk(id);
+  async create(dto: CreateAddressDto): Promise<Address> {
+    return this.addressModel.create({ ...dto });
   }
 
   async update(id: number, dto: UpdateAddressDto): Promise<Address | null> {
-    const address = await this.addressModel.findByPk(id);
+    const address = await this.findOne(id);
     if (address) {
-      return address.update(dto);
+      return address.update({ ...dto });
     }
     return null;
   }
 
   async remove(id: number): Promise<void> {
-    const address = await this.addressModel.findByPk(id);
+    const address = await this.findOne(id);
     if (address) {
       await address.destroy();
     }

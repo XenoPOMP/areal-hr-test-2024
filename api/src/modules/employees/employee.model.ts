@@ -7,10 +7,13 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  HasOne,
 } from 'sequelize-typescript';
-import { Position } from '../positions/position.model'; // Импорт модели позиции
+import { Position } from '../positions/position.model';
+import { Passport } from '../passports/passport.model';
+import { Address } from '../addresses/address.model'; // Импорт модели позиции
 
-@Table({ tableName: 'employees' })
+@Table({ tableName: 'employee', freezeTableName: true, timestamps: false })
 export class Employee extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -35,4 +38,10 @@ export class Employee extends Model {
 
   @BelongsTo(() => Position)
   position: Position;
+
+  @HasOne(() => Passport, { foreignKey: 'id' })
+  passport: Passport;
+
+  @HasOne(() => Address, { foreignKey: 'id' })
+  address: Address;
 }

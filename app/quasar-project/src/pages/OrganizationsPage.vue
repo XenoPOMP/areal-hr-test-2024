@@ -7,7 +7,12 @@
 
     <!-- Форма для добавления новой организации -->
     <form @submit.prevent="createOrganizationHandler" class="form-container">
-      <q-input v-model="newOrganization.name" label="Название организации" filled required />
+      <q-input
+        v-model="newOrganization.name"
+        label="Название организации"
+        filled
+        required
+      />
       <q-input v-model="newOrganization.comment" label="Комментарий" filled />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
@@ -43,8 +48,17 @@
     <div v-if="editMode && editedOrganization" class="edit-form">
       <h3>Изменить организацию</h3>
       <form @submit.prevent="updateOrganizationHandler">
-        <q-input v-model="editedOrganization.name" label="Название организации" filled required />
-        <q-input v-model="editedOrganization.comment" label="Комментарий организации" filled />
+        <q-input
+          v-model="editedOrganization.name"
+          label="Название организации"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedOrganization.comment"
+          label="Комментарий организации"
+          filled
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -54,15 +68,31 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getOrganizations, createOrganization, updateOrganization, deleteOrganization } from 'src/api';
+import {
+  getOrganizations,
+  createOrganization,
+  updateOrganization,
+  deleteOrganization,
+} from 'src/api';
 import { QTableColumn } from 'quasar';
 import AppHeader from 'components/AppHeader.vue';
 
 // Определение колонок для таблицы
 const columns: QTableColumn[] = [
-  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
+  {
+    name: 'name',
+    label: 'Название',
+    align: 'left',
+    field: 'name',
+    required: true,
+  },
   { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
-  { name: 'actions', label: 'Действия', align: 'center', field: row => row.id }
+  {
+    name: 'actions',
+    label: 'Действия',
+    align: 'center',
+    field: (row) => row.id,
+  },
 ];
 
 // Интерфейс для организации
@@ -75,8 +105,8 @@ interface Organization {
 // Состояния для организаций, новой организации и редактируемой организации
 const organizations = ref<Organization[]>([]);
 const newOrganization = ref<Organization>({ id: '', name: '', comment: '' });
-const editMode = ref(false);  // Режим редактирования
-const editedOrganization = ref<Organization | null>(null);  // Текущая редактируемая организация
+const editMode = ref(false); // Режим редактирования
+const editedOrganization = ref<Organization | null>(null); // Текущая редактируемая организация
 
 // Загрузка списка организаций
 const loadOrganizations = async () => {
@@ -98,8 +128,8 @@ const createOrganizationHandler = async () => {
       name: newOrganization.value.name.slice(0, 255),
       comment: newOrganization.value.comment,
     });
-    newOrganization.value = { id: '', name: '', comment: '' };  // Очистка формы
-    loadOrganizations();  // Обновление списка организаций
+    newOrganization.value = { id: '', name: '', comment: '' }; // Очистка формы
+    await loadOrganizations(); // Обновление списка организаций
   } catch (error) {
     console.error('Ошибка добавления организации:', error);
   }
@@ -112,7 +142,7 @@ const updateOrganizationHandler = async () => {
         name: editedOrganization.value.name,
         comment: editedOrganization.value.comment,
       });
-      await loadOrganizations();  // Перезагрузка списка организаций из базы данных
+      await loadOrganizations(); // Перезагрузка списка организаций из базы данных
       cancelEdit();
     } catch (error) {
       console.error('Ошибка обновления организации:', error);
@@ -122,8 +152,8 @@ const updateOrganizationHandler = async () => {
 
 // Обработчик начала редактирования
 const startEditingOrganization = (organization: Organization) => {
-  editedOrganization.value = { ...organization };  // Копируем данные организации для редактирования
-  editMode.value = true;  // Включаем режим редактирования
+  editedOrganization.value = { ...organization }; // Копируем данные организации для редактирования
+  editMode.value = true; // Включаем режим редактирования
 };
 
 // Отмена редактирования
@@ -136,7 +166,7 @@ const cancelEdit = () => {
 const deleteOrganizationHandler = async (id: string) => {
   try {
     await deleteOrganization(id);
-    loadOrganizations();  // Обновление списка организаций после удаления
+    await loadOrganizations(); // Обновление списка организаций после удаления
   } catch (error) {
     console.error('Ошибка удаления организации:', error);
   }
@@ -144,7 +174,8 @@ const deleteOrganizationHandler = async (id: string) => {
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;

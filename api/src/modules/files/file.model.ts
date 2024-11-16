@@ -9,7 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { Employee } from '../employees/employee.model'; // Импорт модели сотрудника
 
-@Table({ tableName: 'files' })
+@Table({ tableName: 'file', freezeTableName: true, timestamps: false })
 export class File extends Model {
   @PrimaryKey
   @AutoIncrement

@@ -44,7 +44,12 @@
       <h3>Изменить данные файла</h3>
       <form @submit.prevent="updateFileHandler">
         <q-input v-model="editedFile.name" label="Название" filled required />
-        <q-input v-model="editedFile.link" label="Ссылка на файл" filled required />
+        <q-input
+          v-model="editedFile.link"
+          label="Ссылка на файл"
+          filled
+          required
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -73,8 +78,20 @@ const editedFile = ref<File | null>(null);
 
 // Определение колонок для таблицы
 const columns: QTableColumn[] = [
-  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
-  { name: 'link', label: 'Ссылка на файл', align: 'left', field: 'link', required: true },
+  {
+    name: 'name',
+    label: 'Название',
+    align: 'left',
+    field: 'name',
+    required: true,
+  },
+  {
+    name: 'link',
+    label: 'Ссылка на файл',
+    align: 'left',
+    field: 'link',
+    required: true,
+  },
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
 
@@ -99,7 +116,7 @@ const createFileHandler = async () => {
       link: newFile.value.link.slice(0, 255),
     });
     newFile.value = { id: '', name: '', link: '' };
-    loadFiles();
+    await await loadFiles();
   } catch (error) {
     console.error('Ошибка добавления файла:', error);
   }
@@ -110,7 +127,7 @@ const updateFileHandler = async () => {
     try {
       await updateFile(editedFile.value.id, {
         name: editedFile.value.name,
-        link: editedFile.value.link
+        link: editedFile.value.link,
       });
       await loadFiles();
       cancelEdit();
@@ -133,7 +150,7 @@ const cancelEdit = () => {
 const deleteFileHandler = async (id: string) => {
   try {
     await deleteFile(id);
-    loadFiles();
+    await loadFiles();
   } catch (error) {
     console.error('Ошибка удаления файла:', error);
   }
@@ -141,7 +158,8 @@ const deleteFileHandler = async (id: string) => {
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
