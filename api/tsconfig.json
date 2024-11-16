@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "outDir": "./dist",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
@@ -15,7 +15,8 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "paths": {
-      "*": ["*", "src/*"]
+      "*": ["*", "src/*"],
+      "@models/*": ["src/models/*"],
     },
     "incremental": true,
     "strictNullChecks": false,
