@@ -15,6 +15,11 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
+  @Get()
+  async findAll() {
+    return this.employeesService.findAll();
+  }
+
   @Get(':id/details')
   async getEmployeeDetails(@Param('id') id: string) {
     return this.employeesService.getEmployeeWithDetails(id);

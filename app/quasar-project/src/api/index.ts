@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { UnwrapRef } from 'vue';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -93,14 +94,10 @@ export const createEmployee = async (data: {
   return response.data;
 };
 
+import { Employee } from 'src/types/Employee';
 export const updateEmployee = async (
-  id: string,
-  data: {
-    name: string;
-    surname: string;
-    second_name?: string;
-    date_birth: string;
-  }
+  id: number,
+  data: UnwrapRef<Employee | null>
 ) => {
   const response = await axios.put(`${API_URL}/employees/${id}`, data);
   return response.data;

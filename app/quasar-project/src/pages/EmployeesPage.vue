@@ -20,49 +20,64 @@
 
       <!-- Форма для данных паспорта -->
       <q-input
-        v-model="newEmployee.serial"
+        v-model="newEmployee.passport.serial"
         label="Серия паспорта"
         filled
         required
       />
       <q-input
-        v-model="newEmployee.number"
+        v-model="newEmployee.passport.number"
         label="Номер паспорта"
         filled
         required
       />
       <q-input
-        v-model="newEmployee.date_issue"
+        v-model="newEmployee.passport.date_issue"
         label="Дата выдачи"
         type="date"
         filled
         required
       />
       <q-input
-        v-model="newEmployee.code"
+        v-model="newEmployee.passport.code"
         label="Код подразделения"
         filled
         required
       />
       <q-input
-        v-model="newEmployee.issued_by"
+        v-model="newEmployee.passport.issued_by"
         label="Кем выдан"
         filled
         required
       />
 
       <!-- Форма для данных адреса -->
-      <q-input v-model="newEmployee.region" label="Регион" filled required />
       <q-input
-        v-model="newEmployee.settlement"
+        v-model="newEmployee.address.region"
+        label="Регион"
+        filled
+        required
+      />
+      <q-input
+        v-model="newEmployee.address.settlement"
         label="Населенный пункт"
         filled
         required
       />
-      <q-input v-model="newEmployee.street" label="Улица" filled required />
-      <q-input v-model="newEmployee.house" label="Дом" filled required />
-      <q-input v-model="newEmployee.housing" label="Корпус" filled />
-      <q-input v-model="newEmployee.flat" label="Квартира" filled />
+      <q-input
+        v-model="newEmployee.address.street"
+        label="Улица"
+        filled
+        required
+      />
+      <q-input
+        v-model="newEmployee.address.house"
+        label="Дом"
+        filled
+        required
+      />
+      <q-input v-model="newEmployee.address.housing" label="Корпус" filled />
+      <q-input v-model="newEmployee.address.flat" label="Квартира" filled />
 
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
@@ -76,6 +91,12 @@
       bordered
       class="table-container"
     >
+      <template v-slot:body-cell="props">
+        <q-td :props="props">
+          {{ getNestedField(props.row, props.col.field) }}
+        </q-td>
+      </template>
+
       <template v-slot:body-cell-actions="props">
         <q-btn
           color="primary"
@@ -116,32 +137,32 @@
 
         <!-- Форма для данных паспорта -->
         <q-input
-          v-model="editedEmployee.serial"
+          v-model="editedEmployee.passport.serial"
           label="Серия паспорта"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.number"
+          v-model="editedEmployee.passport.number"
           label="Номер паспорта"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.date_issue"
+          v-model="editedEmployee.passport.date_issue"
           label="Дата выдачи"
           type="date"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.code"
+          v-model="editedEmployee.passport.code"
           label="Код подразделения"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.issued_by"
+          v-model="editedEmployee.passport.issued_by"
           label="Кем выдан"
           filled
           required
@@ -149,26 +170,39 @@
 
         <!-- Форма для данных адреса -->
         <q-input
-          v-model="editedEmployee.region"
+          v-model="editedEmployee.address.region"
           label="Регион"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.settlement"
+          v-model="editedEmployee.address.settlement"
           label="Населенный пункт"
           filled
           required
         />
         <q-input
-          v-model="editedEmployee.street"
+          v-model="editedEmployee.address.street"
           label="Улица"
           filled
           required
         />
-        <q-input v-model="editedEmployee.house" label="Дом" filled required />
-        <q-input v-model="editedEmployee.housing" label="Корпус" filled />
-        <q-input v-model="editedEmployee.flat" label="Квартира" filled />
+        <q-input
+          v-model="editedEmployee.address.house"
+          label="Дом"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedEmployee.address.housing"
+          label="Корпус"
+          filled
+        />
+        <q-input
+          v-model="editedEmployee.address.flat"
+          label="Квартира"
+          filled
+        />
 
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
@@ -189,42 +223,50 @@ import {
 import { QTableColumn } from 'quasar';
 
 interface Employee {
-  id: string;
+  id: number;
   name: string;
   surname: string;
   second_name?: string;
   date_birth: string;
-  serial: string;
-  number: string;
-  date_issue: string;
-  code: string;
-  issued_by: string;
-  region: string;
-  settlement: string;
-  street: string;
-  house: string;
-  housing?: string;
-  flat?: string;
+  passport: {
+    serial: string;
+    number: string;
+    date_issue: string;
+    code: string;
+    issued_by: string;
+  };
+  address: {
+    region: string;
+    settlement: string;
+    street: string;
+    house: string;
+    housing?: string;
+    flat?: string;
+  };
 }
 
 const employees = ref<Employee[]>([]);
 const newEmployee = ref<Employee>({
-  id: '',
+  id: 0,
   name: '',
   surname: '',
   second_name: '',
   date_birth: '',
-  serial: '',
-  number: '',
-  date_issue: '',
-  code: '',
-  issued_by: '',
-  region: '',
-  settlement: '',
-  street: '',
-  house: '',
-  housing: '',
-  flat: '',
+  passport: {
+    serial: '',
+    number: '',
+    date_issue: '',
+    code: '',
+    issued_by: '',
+  },
+  address: {
+    region: '',
+    settlement: '',
+    street: '',
+    house: '',
+    housing: '',
+    flat: '',
+  },
 });
 const editMode = ref(false);
 const editedEmployee = ref<Employee | null>(null);
@@ -251,104 +293,148 @@ const columns: QTableColumn[] = [
     field: 'date_birth',
     required: true,
   },
+
+  // Паспортные данные
   {
     name: 'serial',
     label: 'Серия паспорта',
     align: 'left',
-    field: 'serial',
-    required: true,
+    field: 'passport.serial',
   },
   {
     name: 'number',
     label: 'Номер паспорта',
     align: 'left',
-    field: 'number',
-    required: true,
+    field: 'passport.number',
   },
   {
-    name: 'region',
-    label: 'Регион',
+    name: 'date_issue',
+    label: 'Дата выдачи',
     align: 'left',
-    field: 'region',
-    required: true,
+    field: 'passport.date_issue',
   },
+  {
+    name: 'code',
+    label: 'Код подразделения',
+    align: 'left',
+    field: 'passport.code',
+  },
+  {
+    name: 'issued_by',
+    label: 'Кем выдан',
+    align: 'left',
+    field: 'passport.issued_by',
+  },
+
+  // Адрес
+  { name: 'region', label: 'Регион', align: 'left', field: 'address.region' },
   {
     name: 'settlement',
     label: 'Населенный пункт',
     align: 'left',
-    field: 'settlement',
-    required: true,
+    field: 'address.settlement',
   },
-  {
-    name: 'street',
-    label: 'Улица',
-    align: 'left',
-    field: 'street',
-    required: true,
-  },
-  {
-    name: 'house',
-    label: 'Дом',
-    align: 'left',
-    field: 'house',
-    required: true,
-  },
+  { name: 'street', label: 'Улица', align: 'left', field: 'address.street' },
+  { name: 'house', label: 'Дом', align: 'left', field: 'address.house' },
+  { name: 'housing', label: 'Корпус', align: 'left', field: 'address.housing' },
+  { name: 'flat', label: 'Квартира', align: 'left', field: 'address.flat' },
 ];
 
-const loadEmployees = async () => {
-  try {
-    employees.value = await getEmployees();
-  } catch (error) {
-    console.error('Ошибка загрузки сотрудников:', error);
-  }
+const getNestedField = (row: Record<string, unknown>, field: string) => {
+  return field
+    .split('.')
+    .reduce<Record<string, unknown> | undefined>((obj, key) => {
+      if (obj && typeof obj === 'object' && key in obj) {
+        return (obj as Record<string, unknown>)[key] as
+          | Record<string, unknown>
+          | undefined;
+      }
+      return undefined; // Возвращаем undefined, если объект не найден или свойство отсутствует
+    }, row); // Указываем начальное значение как row
 };
 
-onMounted(() => {
-  loadEmployees();
-});
+const loadEmployees = async () => {
+  employees.value = await getEmployees();
+};
 
 const createEmployeeHandler = async () => {
-  try {
-    await createEmployee(newEmployee.value);
-    await loadEmployees();
-    newEmployee.value = {
-      id: '',
-      name: '',
-      surname: '',
-      second_name: '',
-      date_birth: '',
+  await createEmployee(newEmployee.value);
+  await loadEmployees();
+  newEmployee.value = {
+    id: 0,
+    name: '',
+    surname: '',
+    second_name: '',
+    date_birth: '',
+    passport: {
       serial: '',
       number: '',
       date_issue: '',
       code: '',
       issued_by: '',
+    },
+    address: {
       region: '',
       settlement: '',
       street: '',
       house: '',
       housing: '',
       flat: '',
-    };
-  } catch (error) {
-    console.error('Ошибка добавления сотрудника:', error);
-  }
+    },
+  };
+};
+
+const deleteEmployeeHandler = async (id: number) => {
+  await deleteEmployee(String(id));
+  await loadEmployees();
+};
+
+const startEditingEmployee = (employee: Employee) => {
+  editMode.value = true;
+  editedEmployee.value = { ...employee };
 };
 
 const updateEmployeeHandler = async () => {
   if (editedEmployee.value) {
+    const {
+      id,
+      name,
+      surname,
+      second_name = '',
+      date_birth,
+      passport,
+      address,
+    } = editedEmployee.value;
+
+    // Формируем объект в нужном формате
+    const employeeData = {
+      id,
+      name,
+      surname,
+      second_name,
+      date_birth,
+      serial: passport.serial,
+      number: passport.number,
+      date_issue: passport.date_issue,
+      code: passport.code,
+      issued_by: passport.issued_by,
+      region: address.region,
+      settlement: address.settlement,
+      street: address.street,
+      house: address.house,
+      housing: address.housing || '',
+      flat: address.flat || '',
+    };
+
     try {
-      await updateEmployee(editedEmployee.value.id, editedEmployee.value);
+      await updateEmployee(employeeData.id, employeeData);
       await loadEmployees();
-      cancelEdit();
+      editMode.value = false;
+      editedEmployee.value = null;
     } catch (error) {
-      console.error('Ошибка обновления сотрудника:', error);
+      console.error('Ошибка при обновлении сотрудника:', error);
     }
   }
-};
-
-const startEditingEmployee = (employee: Employee) => {
-  editedEmployee.value = { ...employee };
-  editMode.value = true;
 };
 
 const cancelEdit = () => {
@@ -356,24 +442,22 @@ const cancelEdit = () => {
   editedEmployee.value = null;
 };
 
-const deleteEmployeeHandler = async (id: string) => {
-  try {
-    await deleteEmployee(id);
-    await loadEmployees();
-  } catch (error) {
-    console.error('Ошибка удаления сотрудника:', error);
-  }
-};
+onMounted(loadEmployees);
 </script>
 
 <style scoped>
-.form-container,
-.edit-form {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
 .table-container {
-  margin-top: 1rem;
+  margin-top: 20px;
+}
+.form-container {
+  margin-top: 20px;
+  max-width: 600px;
+}
+.edit-form {
+  margin-top: 20px;
+}
+.edit-form form {
+  display: flex;
+  flex-direction: column;
 }
 </style>

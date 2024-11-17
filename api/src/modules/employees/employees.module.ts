@@ -4,9 +4,13 @@ import { EmployeesService } from './employees.service';
 import { EmployeesController } from './employees.controller';
 import { Employee } from '@models/employee.model';
 import { Position } from '@models/position.model';
+import { Address } from 'models/address.model';
+import { Passport } from 'models/passport.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Employee, Position])],
+  imports: [
+    SequelizeModule.forFeature([Employee, Position, Address, Passport]),
+  ],
   providers: [EmployeesService],
   controllers: [EmployeesController],
 })

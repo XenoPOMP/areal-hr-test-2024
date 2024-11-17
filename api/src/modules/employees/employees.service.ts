@@ -21,7 +21,9 @@ export class EmployeesService {
     });
   }
   async findAll(): Promise<Employee[]> {
-    return this.employeeModel.findAll({ include: { all: true } });
+    return this.employeeModel.findAll({
+      include: [{ model: Passport }, { model: Address }],
+    });
   }
 
   async create(createDto: CreateEmployeeDto): Promise<Employee> {
