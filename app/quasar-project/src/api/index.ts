@@ -133,29 +133,39 @@ export const deleteFile = async (id: string) => {
 };
 
 // Функции для работы с кадровыми операциями
-export const getHRActions = async () => {
+export const getHrActions = async () => {
   const response = await axios.get(`${API_URL}/hr_actions`);
   return response.data;
 };
 
-export const createHRAction = async (data: {
+export const createHrAction = async (data: {
   action_type: string;
   date: string;
   salary: number;
+  employee_id: number | null;
+  department_id: number | null;
+  position_id: number | null;
 }) => {
   const response = await axios.post(`${API_URL}/hr_actions`, data);
   return response.data;
 };
 
-export const updateHRAction = async (
+export const updateHrAction = async (
   id: string,
-  data: { action_type: string; date: string; salary: number }
+  data: {
+    action_type: string;
+    date: string;
+    salary: number;
+    employee_id: number | null;
+    department_id: number | null;
+    position_id: number | null;
+  }
 ) => {
   const response = await axios.put(`${API_URL}/hr_actions/${id}`, data);
   return response.data;
 };
 
-export const deleteHRAction = async (id: string) => {
+export const deleteHrAction = async (id: string) => {
   const response = await axios.delete(`${API_URL}/hr_actions/${id}`);
   return response.data;
 };

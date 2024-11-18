@@ -11,10 +11,35 @@ import {
 import { HrActionsService } from './hr_actions.service';
 import { CreateHrActionDto } from './dto/create-hr_action.dto';
 import { HrAction } from '@models/hr_action.model';
+import { EmployeesService } from 'modules/employees/employees.service';
+import { DepartmentsService } from 'modules/departments/departments.service';
+import { PositionsService } from 'modules/positions/positions.service';
 
-@Controller('hr-actions')
+@Controller('hr_actions')
 export class HrActionsController {
-  constructor(private readonly hrActionsService: HrActionsService) {}
+  constructor(
+    private readonly hrActionsService: HrActionsService,
+    private readonly employeesService: EmployeesService,
+    private readonly departmentsService: DepartmentsService,
+    private readonly positionsService: PositionsService,
+  ) {}
+
+  @Get('employees')
+  async getEmployees() {
+    return await this.employeesService.findAll();
+  }
+
+  // Получение списка департаментов
+  @Get('departments')
+  async getDepartments() {
+    return await this.departmentsService.findAll();
+  }
+
+  // Получение списка должностей
+  @Get('positions')
+  async getPositions() {
+    return await this.positionsService.findAll();
+  }
 
   @Get()
   async findAll(): Promise<HrAction[]> {

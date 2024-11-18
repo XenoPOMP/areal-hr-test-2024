@@ -22,14 +22,13 @@ export class HrActionsService {
     return this.hrActionModel.create({
       action_type: createDto.action_type,
       date: createDto.date,
+      salary: createDto.salary,
       employee_id: createDto.employee_id,
       department_id: createDto.department_id,
       position_id: createDto.position_id,
-      salary: createDto.salary,
     });
   }
 
-  // Метод для поиска записи по id
   async findOne(id: number): Promise<HrAction | null> {
     return this.hrActionModel.findByPk(id);
   }

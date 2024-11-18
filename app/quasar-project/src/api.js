@@ -107,22 +107,22 @@ export const deleteFile = async (id) => {
 };
 
 // Функции для работы с hr_actions
-export const getHRActions = async () => {
+export const getHrActions = async () => {
   const response = await api.get('/hr_actions');
   return response.data;
 };
 
-export const createHRAction = async (data) => {
+export const createHrAction = async (data) => {
   const response = await api.post('/hr_actions', data);
   return response.data;
 };
 
-export const updateHRAction = async (id, data) => {
+export const updateHrAction = async (id, data) => {
   const response = await api.put(`/hr_actions/${id}`, data);
   return response.data;
 };
 
-export const deleteHRAction = async (id) => {
+export const deleteHrAction = async (id) => {
   const response = await api.delete(`/hr_actions/${id}`);
   return response.data;
 };

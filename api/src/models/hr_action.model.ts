@@ -8,9 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Employee } from './employee.model'; // Путь к модели сотрудника
-import { Department } from './department.model'; // Путь к модели департамента
-import { Position } from './position.model'; // Путь к модели позиции
+import { Employee } from './employee.model';
+import { Department } from './department.model';
+import { Position } from './position.model';
 
 @Table({ tableName: 'hr_action', freezeTableName: true, timestamps: false })
 export class HrAction extends Model {

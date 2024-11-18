@@ -20,7 +20,7 @@ export class EmployeesService {
       include: [Address, Passport],
     });
   }
-  async findAll(): Promise<Employee[]> {
+  async findAll() {
     return this.employeeModel.findAll({
       include: [{ model: Passport }, { model: Address }],
     });

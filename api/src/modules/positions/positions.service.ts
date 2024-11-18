@@ -11,7 +11,7 @@ export class PositionsService {
     private readonly positionModel: typeof Position,
   ) {}
 
-  async findAll(): Promise<Position[]> {
+  async findAll() {
     return this.positionModel.findAll();
   }
 

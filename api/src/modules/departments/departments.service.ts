@@ -11,7 +11,7 @@ export class DepartmentsService {
     private readonly departmentModel: typeof Department,
   ) {}
 
-  async findAll(): Promise<Department[]> {
+  async findAll() {
     return this.departmentModel.findAll();
   }
 

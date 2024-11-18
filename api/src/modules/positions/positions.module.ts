@@ -8,5 +8,6 @@ import { PositionsController } from './positions.controller';
   imports: [SequelizeModule.forFeature([Position])],
   providers: [PositionsService],
   controllers: [PositionsController],
+  exports: [PositionsService],
 })
 export class PositionsModule {}

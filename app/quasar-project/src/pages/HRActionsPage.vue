@@ -26,6 +26,30 @@
         filled
         required
       />
+      <q-select
+        v-model="newAction.employee_id"
+        :options="employees"
+        option-label="label"
+        option-value="value"
+        label="Выберите сотрудника"
+        filled
+      />
+      <q-select
+        v-model="newAction.department_id"
+        :options="departments"
+        option-label="label"
+        option-value="value"
+        label="Выберите департамент"
+        filled
+      />
+      <q-select
+        v-model="newAction.position_id"
+        :options="positions"
+        option-label="label"
+        option-value="value"
+        label="Выберите должность"
+        filled
+      />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
@@ -88,36 +112,62 @@
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import {
-  getHRActions,
-  createHRAction,
-  updateHRAction,
-  deleteHRAction,
+  getHrActions,
+  createHrAction,
+  updateHrAction,
+  deleteHrAction,
 } from 'src/api';
 import { QTableColumn } from 'quasar';
 
-// Обновленный интерфейс для кадровой операции, включая поле salary
-interface HRActions {
+type SelectableValue = number | { label: string; value: number } | null;
+interface HrActions {
   id: string;
   action_type: string;
-  date: string;
+  date: string | null;
   salary: number;
+  employee_id: SelectableValue;
+  department_id: SelectableValue;
+  position_id: SelectableValue;
 }
 
-// Состояния для операции, новой операции и редактируемой операции
-const actions = ref<HRActions[]>([]);
-const newAction = ref<HRActions>({
+const actions = ref<HrActions[]>([]);
+const newAction = ref<HrActions>({
   id: '',
   action_type: '',
-  date: '',
+  date: new Date().toLocaleDateString('en-CA'),
   salary: 0,
+  employee_id: null,
+  department_id: null,
+  position_id: null,
 });
-const editMode = ref(false);
-const editedAction = ref<HRActions | null>(null);
 
-// Определение колонок для таблицы
+const editMode = ref(false);
+const editedAction = ref<HrActions | null>(null);
+
+interface Employee {
+  id: number;
+  name: string;
+  surname: string;
+}
+
+interface Department {
+  id: number;
+  name: string;
+}
+
+interface Position {
+  id: number;
+  name: string;
+}
+
+const employees = ref<Employee[]>([]);
+const departments = ref<Department[]>([]);
+const positions = ref<Position[]>([]);
+
 const columns: QTableColumn[] = [
   {
     name: 'action_type',
@@ -137,51 +187,139 @@ const columns: QTableColumn[] = [
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
 
-// Загрузка списка операций
 const loadActions = async () => {
   try {
-    actions.value = await getHRActions();
+    actions.value = await getHrActions();
   } catch (error) {
     console.error('Ошибка загрузки операций:', error);
   }
 };
 
-// Загрузка данных при монтировании компонента
+const loadSelectData = async () => {
+  try {
+    const employeesResponse = await axios.get(
+      'http://localhost:3000/employees'
+    );
+    const departmentsResponse = await axios.get(
+      'http://localhost:3000/departments'
+    );
+    const positionsResponse = await axios.get(
+      'http://localhost:3000/positions'
+    );
+
+    employees.value = employeesResponse.data.map((emp: Employee) => ({
+      label: `${emp.name} ${emp.surname}`,
+      value: emp.id,
+    }));
+    departments.value = departmentsResponse.data.map((dep: Department) => ({
+      label: dep.name,
+      value: dep.id,
+    }));
+    positions.value = positionsResponse.data.map((pos: Position) => ({
+      label: pos.name,
+      value: pos.id,
+    }));
+  } catch (error) {
+    console.error('Ошибка загрузки данных для выпадающих списков:', error);
+  }
+};
+
 onMounted(() => {
   loadActions();
+  loadSelectData();
 });
 
 const createActionHandler = async () => {
+  if (
+    newAction.value.employee_id == null ||
+    newAction.value.department_id == null ||
+    newAction.value.position_id == null
+  ) {
+    console.error(
+      'Все поля выбора (сотрудник, департамент, должность) должны быть заполнены.'
+    );
+    return;
+  }
+
   try {
-    await createHRAction({
+    const actionData = {
       action_type: newAction.value.action_type.slice(0, 50),
-      date: newAction.value.date,
+      date: newAction.value.date || new Date().toISOString().split('T')[0],
       salary: newAction.value.salary,
-    });
-    newAction.value = { id: '', action_type: '', date: '', salary: 0 };
+      employee_id:
+        typeof newAction.value.employee_id === 'object'
+          ? newAction.value.employee_id.value
+          : newAction.value.employee_id,
+      department_id:
+        typeof newAction.value.department_id === 'object'
+          ? newAction.value.department_id.value
+          : newAction.value.department_id,
+      position_id:
+        typeof newAction.value.position_id === 'object'
+          ? newAction.value.position_id.value
+          : newAction.value.position_id,
+    };
+
+    await createHrAction(actionData);
+
+    // Очистить значения после добавления
+    newAction.value = {
+      id: '',
+      action_type: '',
+      date: new Date().toISOString().split('T')[0],
+      salary: 0,
+      employee_id: null,
+      department_id: null,
+      position_id: null,
+    };
     await loadActions();
   } catch (error) {
     console.error('Ошибка добавления операции:', error);
+    throw error;
   }
 };
 
 const updateActionHandler = async () => {
   if (editedAction.value) {
+    if (
+      editedAction.value.employee_id == null ||
+      editedAction.value.department_id == null ||
+      editedAction.value.position_id == null
+    ) {
+      console.error(
+        'Все поля выбора (сотрудник, департамент, должность) должны быть заполнены.'
+      );
+      return;
+    }
+
     try {
-      await updateHRAction(editedAction.value.id, {
+      await updateHrAction(editedAction.value.id, {
         action_type: editedAction.value.action_type,
-        date: editedAction.value.date,
+        date: new Date().toISOString().split('T')[0],
         salary: editedAction.value.salary,
+        employee_id:
+          typeof editedAction.value.employee_id === 'object'
+            ? editedAction.value.employee_id.value
+            : editedAction.value.employee_id,
+        department_id:
+          typeof editedAction.value.department_id === 'object'
+            ? editedAction.value.department_id.value
+            : editedAction.value.department_id,
+        position_id:
+          typeof editedAction.value.position_id === 'object'
+            ? editedAction.value.position_id.value
+            : editedAction.value.position_id,
       });
       await loadActions();
       cancelEdit();
     } catch (error) {
       console.error('Ошибка обновления операции:', error);
+      throw error;
     }
   }
 };
 
-const startEditingAction = (action: HRActions) => {
+const startEditingAction = (action: HrActions) => {
   editedAction.value = { ...action };
   editMode.value = true;
 };
@@ -193,7 +331,7 @@ const cancelEdit = () => {
 
 const deleteActionHandler = async (id: string) => {
   try {
-    await deleteHRAction(id);
+    await deleteHrAction(id);
     await loadActions();
   } catch (error) {
     console.error('Ошибка удаления операции:', error);

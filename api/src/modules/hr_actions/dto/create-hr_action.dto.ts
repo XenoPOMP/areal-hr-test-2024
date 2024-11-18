@@ -8,13 +8,13 @@ export class CreateHrActionDto {
   readonly date: Date;
 
   @IsNumber()
-  readonly employee_id: number;
+  employee_id: number;
 
   @IsNumber()
-  readonly department_id: number;
+  department_id: number;
 
   @IsNumber()
-  readonly position_id: number;
+  position_id: number;
 
   @IsNumber()
   readonly salary: number;
