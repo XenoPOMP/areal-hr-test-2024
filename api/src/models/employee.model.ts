@@ -33,7 +33,10 @@ export class Employee extends Model {
   date_birth: string;
 
   @ForeignKey(() => Position)
-  @Column({ type: DataType.INTEGER, allowNull: true })
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
   position_id: number;
 
   @BelongsTo(() => Position)
@@ -44,4 +47,52 @@ export class Employee extends Model {
 
   @HasOne(() => Address, { foreignKey: 'id' })
   address: Address;
+
+  // Статический метод для создания сотрудника с ассоциациями
+  static async createWithAssociations(
+    employeeData: {
+      name: string;
+      surname: string;
+      second_name: string;
+      date_birth: string;
+      position_id: number;
+    },
+    passportData: {
+      serial: string;
+      number: string;
+      date_issue: string;
+      code?: string;
+      issued_by?: string;
+    },
+    addressData: {
+      region: string;
+      settlement: string;
+      street: string;
+      house: string;
+      housing?: string;
+      flat?: string;
+    },
+  ) {
+    const transaction = await this.sequelize.transaction();
+    try {
+      // Создаем сотрудника
+      const employee = await Employee.create(employeeData, { transaction });
+
+      // Создаем паспорт и адрес, связывая их по id сотрудника
+      await Passport.create(
+        { ...passportData, id: employee.id },
+        { transaction },
+      );
+      await Address.create(
+        { ...addressData, id: employee.id },
+        { transaction },
+      );
+
+      await transaction.commit();
+      return employee;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
 }

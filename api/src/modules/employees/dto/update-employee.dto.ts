@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDate, IsInt } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateEmployeeDto {
   @IsOptional()
@@ -20,4 +20,58 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsInt()
   position_id?: number;
+
+  @IsOptional()
+  passport?: PassportDto;
+
+  @IsOptional()
+  address?: AddressDto;
+}
+
+class PassportDto {
+  @IsOptional()
+  @IsString()
+  serial?: string;
+
+  @IsOptional()
+  @IsString()
+  number?: string;
+
+  @IsOptional()
+  @IsDate()
+  date_issue?: Date;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsString()
+  issued_by?: string;
+}
+
+class AddressDto {
+  @IsOptional()
+  @IsString()
+  region?: string;
+
+  @IsOptional()
+  @IsString()
+  settlement?: string;
+
+  @IsOptional()
+  @IsString()
+  street?: string;
+
+  @IsOptional()
+  @IsString()
+  house?: string;
+
+  @IsOptional()
+  @IsString()
+  housing?: string;
+
+  @IsOptional()
+  @IsString()
+  flat?: string;
 }

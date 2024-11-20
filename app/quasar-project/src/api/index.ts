@@ -89,16 +89,14 @@ export const createEmployee = async (data: {
   surname: string;
   second_name?: string;
   date_birth: string;
+  position_id: number | null;
 }) => {
   const response = await axios.post(`${API_URL}/employees`, data);
   return response.data;
 };
 
 import { Employee } from 'src/types/Employee';
-export const updateEmployee = async (
-  id: number,
-  data: UnwrapRef<Employee | null>
-) => {
+export const updateEmployee = async (id: string, data: Employee) => {
   const response = await axios.put(`${API_URL}/employees/${id}`, data);
   return response.data;
 };

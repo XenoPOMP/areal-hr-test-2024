@@ -13,6 +13,5 @@ import { Passport } from 'models/passport.model';
   ],
   providers: [EmployeesService],
   controllers: [EmployeesController],
-  exports: [EmployeesService],
 })
 export class EmployeesModule {}

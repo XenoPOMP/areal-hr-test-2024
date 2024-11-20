@@ -30,9 +30,9 @@ export class EmployeesController {
     return this.employeesService.findOne(id);
   }
 
-  @Post()
-  async create(@Body() createEmployeeDto: CreateEmployeeDto) {
-    return this.employeesService.create(createEmployeeDto);
+  @Post('create') // Маршрут POST /api/employees/create
+  async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto) {
+    return await this.employeesService.create(createEmployeeDto);
   }
 
   @Put(':id')

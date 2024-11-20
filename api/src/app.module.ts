@@ -10,7 +10,6 @@ import { HistoryOfChangesModule } from 'modules/history_of_changes/history_of_ch
 import { PassportsModule } from 'modules/passports/passports.module';
 import { AddressesModule } from 'modules/addresses/addresses.module';
 import { SequelizeConfig } from 'config/sequelize.config'; // Импорт конфигурации
-
 @Module({
   imports: [
     SequelizeModule.forRoot(SequelizeConfig), // Подключаем Sequelize
