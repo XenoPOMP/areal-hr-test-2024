@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { UnwrapRef } from 'vue';
 
 const API_URL = 'http://localhost:3000/api';
 

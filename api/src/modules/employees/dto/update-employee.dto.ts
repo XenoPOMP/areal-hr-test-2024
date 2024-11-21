@@ -1,4 +1,47 @@
-import { IsString, IsDate, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class PassportDto {
+  @IsString()
+  serial: string;
+
+  @IsString()
+  number: string;
+
+  @IsDate()
+  @Type(() => Date)
+  date_issue: Date;
+
+  @IsString()
+  @IsOptional()
+  code?: string;
+
+  @IsString()
+  @IsOptional()
+  issued_by?: string;
+}
+
+class AddressDto {
+  @IsString()
+  region: string;
+
+  @IsString()
+  settlement: string;
+
+  @IsString()
+  street: string;
+
+  @IsString()
+  house: string;
+
+  @IsString()
+  @IsOptional()
+  housing?: string;
+
+  @IsString()
+  @IsOptional()
+  flat?: string;
+}
 
 export class UpdateEmployeeDto {
   @IsOptional()
@@ -15,63 +58,18 @@ export class UpdateEmployeeDto {
 
   @IsOptional()
   @IsDate()
+  @Type(() => Date)
   date_birth?: Date;
 
   @IsOptional()
-  @IsInt()
+  @IsNumber()
   position_id?: number;
 
   @IsOptional()
+  @Type(() => PassportDto)
   passport?: PassportDto;
 
   @IsOptional()
+  @Type(() => AddressDto)
   address?: AddressDto;
-}
-
-class PassportDto {
-  @IsOptional()
-  @IsString()
-  serial?: string;
-
-  @IsOptional()
-  @IsString()
-  number?: string;
-
-  @IsOptional()
-  @IsDate()
-  date_issue?: Date;
-
-  @IsOptional()
-  @IsString()
-  code?: string;
-
-  @IsOptional()
-  @IsString()
-  issued_by?: string;
-}
-
-class AddressDto {
-  @IsOptional()
-  @IsString()
-  region?: string;
-
-  @IsOptional()
-  @IsString()
-  settlement?: string;
-
-  @IsOptional()
-  @IsString()
-  street?: string;
-
-  @IsOptional()
-  @IsString()
-  house?: string;
-
-  @IsOptional()
-  @IsString()
-  housing?: string;
-
-  @IsOptional()
-  @IsString()
-  flat?: string;
 }

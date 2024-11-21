@@ -1,39 +1,34 @@
 import {
   Column,
   Model,
-  PrimaryKey,
-  AutoIncrement,
   Table,
-  DataType,
-  BelongsTo,
+  PrimaryKey,
+  ForeignKey,
 } from 'sequelize-typescript';
 import { Employee } from './employee.model';
 
-@Table({ tableName: 'address', freezeTableName: true, timestamps: false })
+@Table
 export class Address extends Model {
   @PrimaryKey
-  @AutoIncrement
+  @ForeignKey(() => Employee)
   @Column
   id: number;
 
-  @Column({ type: DataType.STRING(255) })
+  @Column
   region: string;
 
-  @Column({ type: DataType.STRING(255) })
+  @Column
   settlement: string;
 
-  @Column({ type: DataType.STRING(255) })
+  @Column
   street: string;
 
-  @Column({ type: DataType.STRING(50), allowNull: true })
-  house: string;
+  @Column
+  house?: string;
 
-  @Column({ type: DataType.STRING(50), allowNull: true })
-  housing: string;
+  @Column
+  housing?: string;
 
-  @Column({ type: DataType.STRING(50), allowNull: true })
-  flat: string;
-
-  @BelongsTo(() => Employee, { foreignKey: 'id' })
-  employee: Employee;
+  @Column
+  flat?: string;
 }

@@ -1,49 +1,58 @@
-import { IsString, IsDate, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateEmployeeDto {
   @IsString()
   surname: string;
 
   @IsString()
-  @IsOptional()
-  second_name?: string;
+  second_name: string;
 
   @IsString()
   name: string;
 
-  @IsDate()
-  date_birth: Date; // Используем Date для даты рождения
+  @IsString()
+  date_birth: string;
 
   @IsNumber()
   position_id: number;
 
-  @IsOptional()
-  passport?: PassportDto;
+  @ValidateNested()
+  @Type(() => PassportDataDto)
+  passport: PassportDataDto;
 
-  @IsOptional()
-  address?: AddressDto;
+  @ValidateNested()
+  @Type(() => AddressDataDto)
+  address: AddressDataDto;
 }
 
-class PassportDto {
+export class PassportDataDto {
+  id?: number;
+
   @IsString()
   serial: string;
 
   @IsString()
   number: string;
 
-  @IsDate()
-  date_issue: Date;
+  @IsString()
+  date_issue: string;
 
   @IsString()
-  @IsOptional()
-  code?: string;
+  code: string;
 
   @IsString()
-  @IsOptional()
-  issued_by?: string;
+  issued_by: string;
 }
 
-class AddressDto {
+export class AddressDataDto {
+  id?: number;
+
   @IsString()
   region: string;
 
@@ -53,14 +62,15 @@ class AddressDto {
   @IsString()
   street: string;
 
+  @IsOptional()
   @IsString()
   house: string;
 
-  @IsString()
   @IsOptional()
-  housing?: string;
+  @IsString()
+  housing: string;
 
-  @IsString()
   @IsOptional()
-  flat?: string;
+  @IsString()
+  flat: string;
 }

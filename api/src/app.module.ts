@@ -9,7 +9,7 @@ import { HrActionsModule } from 'modules/hr_actions/hr_actions.module';
 import { HistoryOfChangesModule } from 'modules/history_of_changes/history_of_changes.module';
 import { PassportsModule } from 'modules/passports/passports.module';
 import { AddressesModule } from 'modules/addresses/addresses.module';
-import { SequelizeConfig } from 'config/sequelize.config'; // Импорт конфигурации
+import { SequelizeConfig } from 'config/sequelize.config';
 @Module({
   imports: [
     SequelizeModule.forRoot(SequelizeConfig), // Подключаем Sequelize

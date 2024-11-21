@@ -3,7 +3,6 @@ import { Employee } from 'models/employee.model';
 
 const router = Router();
 
-// Маршрут для создания сотрудника с ассоциациями
 router.post('/create', async (req, res) => {
   const { employeeData, passportData, addressData } = req.body;
 

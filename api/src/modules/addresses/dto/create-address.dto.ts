@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class CreateAddressDto {
   @IsString()
@@ -20,7 +20,4 @@ export class CreateAddressDto {
   @IsOptional()
   @IsString()
   flat?: string;
-
-  @IsInt()
-  employee_id: number; // Обязательно передаем ID сотрудника
 }

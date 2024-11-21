@@ -1,36 +1,31 @@
 import {
   Column,
   Model,
-  PrimaryKey,
-  AutoIncrement,
   Table,
-  DataType,
-  BelongsTo,
+  PrimaryKey,
+  ForeignKey,
 } from 'sequelize-typescript';
 import { Employee } from './employee.model';
 
-@Table({ tableName: 'passport', freezeTableName: true, timestamps: false })
+@Table
 export class Passport extends Model {
   @PrimaryKey
-  @AutoIncrement
+  @ForeignKey(() => Employee)
   @Column
   id: number;
 
-  @Column({ type: DataType.STRING(10) })
+  @Column
   serial: string;
 
-  @Column({ type: DataType.STRING(10) })
+  @Column
   number: string;
 
-  @Column({ type: DataType.DATEONLY })
+  @Column
   date_issue: string;
 
-  @Column({ type: DataType.STRING(10), allowNull: true })
+  @Column
   code: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column
   issued_by: string;
-
-  @BelongsTo(() => Employee, { foreignKey: 'id' })
-  employee: Employee;
 }

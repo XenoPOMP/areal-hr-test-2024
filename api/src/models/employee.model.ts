@@ -35,7 +35,7 @@ export class Employee extends Model {
   @ForeignKey(() => Position)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
   })
   position_id: number;
 
@@ -61,24 +61,22 @@ export class Employee extends Model {
       serial: string;
       number: string;
       date_issue: string;
-      code?: string;
-      issued_by?: string;
+      code: string;
+      issued_by: string;
     },
     addressData: {
       region: string;
       settlement: string;
       street: string;
       house: string;
-      housing?: string;
-      flat?: string;
+      housing: string;
+      flat: string;
     },
   ) {
     const transaction = await this.sequelize.transaction();
     try {
-      // Создаем сотрудника
       const employee = await Employee.create(employeeData, { transaction });
 
-      // Создаем паспорт и адрес, связывая их по id сотрудника
       await Passport.create(
         { ...passportData, id: employee.id },
         { transaction },
