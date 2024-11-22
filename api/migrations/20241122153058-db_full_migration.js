@@ -2,15 +2,6 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Создание таблицы "SequelizeMeta"
-    await queryInterface.createTable('SequelizeMeta', {
-      name: {
-        type: Sequelize.STRING(255),
-        allowNull: false,
-        primaryKey: true,
-      },
-    });
-
     // Создание таблицы "address"
     await queryInterface.createTable('address', {
       id: {
@@ -99,6 +90,14 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      passport_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      address_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
     });
 
     // Создание таблицы "file"
@@ -174,6 +173,10 @@ module.exports = {
         allowNull: true,
       },
       position_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      salary: {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
@@ -302,7 +305,7 @@ module.exports = {
     });
 
     await queryInterface.addConstraint('employee', {
-      fields: ['id'],
+      fields: ['address_id'],
       type: 'foreign key',
       name: 'add_emp_fk',
       references: {
@@ -314,7 +317,7 @@ module.exports = {
     });
 
     await queryInterface.addConstraint('employee', {
-      fields: ['id'],
+      fields: ['passport_id'],
       type: 'foreign key',
       name: 'pass_emp_fk',
       references: {
@@ -406,6 +409,5 @@ module.exports = {
     await queryInterface.dropTable('employee');
     await queryInterface.dropTable('department');
     await queryInterface.dropTable('address');
-    await queryInterface.dropTable('SequelizeMeta');
   },
 };
