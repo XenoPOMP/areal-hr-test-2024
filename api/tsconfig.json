@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "strict": true,
+    "strict": false,
     "outDir": "./dist",
     "baseUrl": "./",
     "emitDecoratorMetadata": true,
@@ -20,7 +20,7 @@
     },
     "incremental": true,
     "strictNullChecks": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false

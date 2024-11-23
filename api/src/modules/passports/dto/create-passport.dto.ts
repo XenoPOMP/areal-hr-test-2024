@@ -1,28 +1,19 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class CreatePassportDto {
   @IsString()
-  @IsNotEmpty()
-  readonly serial: string;
+  serial: string;
 
   @IsString()
-  @IsNotEmpty()
-  readonly number: string;
+  number: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  readonly date_issue: string;
+  date_issue: string;
 
   @IsOptional()
   @IsString()
-  readonly code?: string;
+  code?: string;
 
   @IsString()
-  @IsNotEmpty()
-  readonly issued_by: string;
+  issued_by: string;
 }

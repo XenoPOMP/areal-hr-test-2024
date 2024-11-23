@@ -22,6 +22,12 @@ export class CreateEmployeeDto {
   @IsNumber()
   position_id: number;
 
+  @IsNumber()
+  passport_id: number;
+
+  @IsNumber()
+  address_id: number;
+
   @ValidateNested()
   @Type(() => PassportDataDto)
   passport: PassportDataDto;

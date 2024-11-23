@@ -5,9 +5,8 @@ import {
   AutoIncrement,
   Table,
   DataType,
-  ForeignKey,
   BelongsTo,
-  HasOne,
+  ForeignKey,
 } from 'sequelize-typescript';
 import { Position } from './position.model';
 import { Passport } from './passport.model';
@@ -42,20 +41,35 @@ export class Employee extends Model {
   @BelongsTo(() => Position)
   position: Position;
 
-  @HasOne(() => Passport, { foreignKey: 'id' })
+  @ForeignKey(() => Passport)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  passport_id: number;
+
+  @BelongsTo(() => Passport)
   passport: Passport;
 
-  @HasOne(() => Address, { foreignKey: 'id' })
+  @ForeignKey(() => Address)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  address_id: number;
+
+  @BelongsTo(() => Address)
   address: Address;
 
-  // Статический метод для создания сотрудника с ассоциациями
   static async createWithAssociations(
     employeeData: {
       name: string;
       surname: string;
       second_name: string;
       date_birth: string;
-      position_id: number;
+      position_id: number | null;
+      passport_id?: number;
+      address_id?: number;
     },
     passportData: {
       serial: string;
@@ -74,15 +88,21 @@ export class Employee extends Model {
     },
   ) {
     const transaction = await this.sequelize.transaction();
-    try {
-      const employee = await Employee.create(employeeData, { transaction });
 
-      await Passport.create(
-        { ...passportData, id: employee.id },
+    try {
+      const passport = await Passport.create(
+        { ...passportData },
         { transaction },
       );
-      await Address.create(
-        { ...addressData, id: employee.id },
+
+      const address = await Address.create({ ...addressData }, { transaction });
+
+      const employee = await Employee.create(
+        {
+          ...employeeData,
+          passport_id: passport.id,
+          address_id: address.id,
+        },
         { transaction },
       );
 

@@ -94,8 +94,8 @@ export const createEmployee = async (data: {
   return response.data;
 };
 
-import { Employee } from 'src/types/Employee';
-export const updateEmployee = async (id: string, data: Employee) => {
+import { EmployeeBaseData } from 'src/types/Employee';
+export const updateEmployee = async (id: string, data: EmployeeBaseData) => {
   const response = await axios.put(`${API_URL}/employees/${id}`, data);
   return response.data;
 };

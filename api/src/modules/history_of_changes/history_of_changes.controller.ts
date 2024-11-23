@@ -7,7 +7,6 @@ import {
   Param,
   Body,
   NotFoundException,
-  Request,
 } from '@nestjs/common';
 import { HistoryOfChangesService } from './history_of_changes.service';
 import { CreateHistoryOfChangeDto } from './dto/create-history_of_change.dto';
@@ -33,10 +32,13 @@ export class HistoryOfChangesController {
   }
 
   @Post()
-  async create(
-    @Body() createDto: CreateHistoryOfChangeDto,
-    @Request() req,
-  ): Promise<HistoryOfChange> {
+  async create({
+    createDto,
+    req,
+  }: {
+    createDto: CreateHistoryOfChangeDto;
+    req: any;
+  }): Promise<HistoryOfChange> {
     const userId = req.user?.id; // Получаем user_id из запроса
     if (!userId) {
       throw new NotFoundException('User not found');

@@ -8,10 +8,11 @@ export interface PassportInfo {
 
 export interface AddressInfo {
   region: string;
-  city: string;
+  settlement: string;
   street: string;
-  building: string;
-  apartment: string;
+  house: string;
+  housing: string;
+  flat: string;
 }
 
 export interface EmployeeBaseData {
@@ -21,6 +22,8 @@ export interface EmployeeBaseData {
   second_name: string;
   date_birth: string;
   position_id: number | null;
+  passport_id?: number;
+  address_id?: number;
   passport: PassportInfo;
   address: AddressInfo;
 }

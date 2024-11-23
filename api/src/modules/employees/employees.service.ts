@@ -25,33 +25,36 @@ export class EmployeesService {
 
   async findAll() {
     return this.employeeModel.findAll({
-      include: [{ model: Passport }, { model: Address }],
+      include: [
+        { model: Passport, as: 'passport' },
+        { model: Address, as: 'address' },
+      ],
     });
   }
 
-  async createEmployee(employeeData: any) {
+  async createEmployee(employeeData: any, passportData: any, addressData: any) {
     const transaction = await this.sequelize.transaction();
 
     try {
-      const employee = await this.employeeModel.create(employeeData, {
-        transaction,
-      });
+      const passport = await Passport.create(passportData, { transaction });
 
-      const passport = await this.passportModel.create(
-        { ...employeeData.passport, id: employee.id },
-        { transaction },
-      );
+      const address = await Address.create(addressData, { transaction });
 
-      const address = await this.addressModel.create(
-        { ...employeeData.address, id: employee.id },
+      const employee = await Employee.create(
+        {
+          ...employeeData,
+          passport_id: passport.id,
+          address_id: address.id,
+        },
         { transaction },
       );
 
       await transaction.commit();
-      return employee;
+
+      console.log('Employee created with ID:', employee.id);
     } catch (error) {
       await transaction.rollback();
-      throw error;
+      console.error('Error during transaction:', error);
     }
   }
 

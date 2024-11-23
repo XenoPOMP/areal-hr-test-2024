@@ -8,74 +8,71 @@
       <h3>Добавить нового сотрудника</h3>
       <form @submit.prevent="createEmployeeHandler">
         <!-- Основные данные сотрудника -->
-        <q-input v-model="newEmployee.name" label="Имя" filled required />
+        <q-input v-model="employeeBaseData.name" label="Имя" filled required />
         <q-input
-          v-model="newEmployee.surname"
+          v-model="employeeBaseData.surname"
           label="Фамилия"
           filled
           required
         />
-        <q-input v-model="newEmployee.second_name" label="Отчество" filled />
         <q-input
-          v-model="newEmployee.date_birth"
+          v-model="employeeBaseData.second_name"
+          label="Отчество"
+          filled
+        />
+        <q-input
+          v-model="employeeBaseData.date_birth"
           label="Дата рождения"
           type="date"
           filled
           required
         />
         <q-select
-          v-model="newEmployee.position_id"
-          :options="positions"
-          option-value="id"
-          option-label="name"
-          label="Должность"
-          filled
-          required
+          v-model="employeeBaseData.position_id"
+          :options="
+            positions.map((p) => ({
+              label: p.name,
+              value: p.id,
+            }))
+          "
+          option-label="label"
+          option-value="value"
+          emit-value
+          label="Выберите должность"
         />
 
         <!-- Паспортные данные -->
         <h4>Паспортные данные</h4>
         <q-input
-          v-model="newEmployee.passport.serial"
+          v-model="passportInfo.serial"
           label="Серия паспорта"
           filled
           required
         />
         <q-input
-          v-model="newEmployee.passport.number"
+          v-model="passportInfo.number"
           label="Номер паспорта"
           filled
           required
         />
         <q-input
-          v-model="newEmployee.passport.date_issue"
+          v-model="passportInfo.date_issue"
           label="Дата выдачи"
           type="date"
           filled
           required
         />
-        <q-input
-          v-model="newEmployee.passport.issued_by"
-          label="Кем выдан"
-          filled
-        />
-        <q-input
-          v-model="newEmployee.passport.code"
-          label="Код подразделения"
-          filled
-        />
+        <q-input v-model="passportInfo.code" label="Код подразделения" filled />
+        <q-input v-model="passportInfo.issued_by" label="Кем выдан" filled />
 
         <!-- Адресные данные -->
         <h4>Адрес</h4>
-        <q-input v-model="newEmployee.address.region" label="Регион" filled />
-        <q-input v-model="newEmployee.address.city" label="Город" filled />
-        <q-input v-model="newEmployee.address.street" label="Улица" filled />
-        <q-input v-model="newEmployee.address.building" label="Дом" filled />
-        <q-input
-          v-model="newEmployee.address.apartment"
-          label="Квартира"
-          filled
-        />
+        <q-input v-model="addressInfo.region" label="Регион" filled />
+        <q-input v-model="addressInfo.settlement" label="Город" filled />
+        <q-input v-model="addressInfo.street" label="Улица" filled />
+        <q-input v-model="addressInfo.house" label="Дом" filled />
+        <q-input v-model="addressInfo.housing" label="Корпус" filled />
+        <q-input v-model="addressInfo.flat" label="Квартира" filled />
 
         <!-- Кнопка для добавления -->
         <q-btn type="submit" label="Добавить сотрудника" color="primary" />
@@ -178,11 +175,20 @@
           label="Регион"
           filled
         />
-        <q-input v-model="editedEmployee.address.city" label="Город" filled />
-        <q-input v-model="editedEmployee.address.street" label="Улица" filled />
-        <q-input v-model="editedEmployee.address.building" label="Дом" filled />
         <q-input
-          v-model="editedEmployee.address.apartment"
+          v-model="editedEmployee.address.settlement"
+          label="Город"
+          filled
+        />
+        <q-input v-model="editedEmployee.address.street" label="Улица" filled />
+        <q-input v-model="editedEmployee.address.house" label="Дом" filled />
+        <q-input
+          v-model="editedEmployee.address.housing"
+          label="Корпус"
+          filled
+        />
+        <q-input
+          v-model="editedEmployee.address.flat"
           label="Квартира"
           filled
         />
@@ -197,7 +203,7 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
 import {
@@ -207,32 +213,32 @@ import {
 } from 'src/types/Employee';
 
 const $q = useQuasar();
-
-const newEmployee = ref<EmployeeBaseData>({
+reactive<EmployeeBaseData>({
   id: 0,
   name: '',
   surname: '',
   second_name: '',
   date_birth: '',
   position_id: null,
-  passport: {
+  passport: reactive({
     serial: '',
     number: '',
     date_issue: '',
     issued_by: '',
     code: '',
-  },
-  address: {
+  }),
+  address: reactive({
     region: '',
-    city: '',
+    settlement: '',
     street: '',
-    building: '',
-    apartment: '',
-  },
+    house: '',
+    housing: '',
+    flat: '',
+  }),
 });
 
 const clearForm = () => {
-  newEmployee.value = {
+  employeeBaseData.value = {
     id: 0,
     name: '',
     surname: '',
@@ -248,10 +254,11 @@ const clearForm = () => {
     },
     address: {
       region: '',
-      city: '',
+      settlement: '',
       street: '',
-      building: '',
-      apartment: '',
+      house: '',
+      housing: '',
+      flat: '',
     },
   };
 };
@@ -260,17 +267,36 @@ const employees = ref([]);
 
 const getEmployees = async () => {
   try {
-    const response = await axios.get('/employees');
-    employees.value = response.data; // Обновляем массив сотрудников
+    const response = await axios.get('http://localhost:3000/employees');
+    employees.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке сотрудников', error);
   }
 };
 
-getEmployees();
-
-const employeeBaseData = ref<EmployeeBaseData>({
-  id: 0,
+const employeeBaseData = ref<{
+  id?: number;
+  name: string;
+  surname: string;
+  second_name: string;
+  date_birth: string;
+  position_id: number | null;
+  passport: {
+    serial: string;
+    number: string;
+    date_issue: string;
+    code: string;
+    issued_by: string;
+  };
+  address: {
+    region: string;
+    settlement: string;
+    street: string;
+    house: string;
+    housing: string;
+    flat: string;
+  };
+}>({
   name: '',
   surname: '',
   second_name: '',
@@ -280,15 +306,16 @@ const employeeBaseData = ref<EmployeeBaseData>({
     serial: '',
     number: '',
     date_issue: '',
-    issued_by: '',
     code: '',
+    issued_by: '',
   },
   address: {
     region: '',
-    city: '',
+    settlement: '',
     street: '',
-    building: '',
-    apartment: '',
+    house: '',
+    housing: '',
+    flat: '',
   },
 });
 
@@ -302,127 +329,160 @@ const passportInfo = ref<PassportInfo>({
 
 const addressInfo = ref<AddressInfo>({
   region: '',
-  city: '',
+  settlement: '',
   street: '',
-  building: '',
-  apartment: '',
+  house: '',
+  housing: '',
+  flat: '',
 });
 
 const columns = ref([
-  { name: 'name', label: 'Имя', align: 'left', field: 'name' },
-  { name: 'surname', label: 'Фамилия', align: 'left', field: 'surname' },
+  { name: 'name', label: 'Имя', align: 'left' as const, field: 'name' },
+  {
+    name: 'surname',
+    label: 'Фамилия',
+    align: 'left' as const,
+    field: 'surname',
+  },
   {
     name: 'second_name',
     label: 'Отчество',
-    align: 'left',
+    align: 'left' as const,
     field: 'second_name',
   },
   {
     name: 'date_birth',
     label: 'Дата рождения',
-    align: 'center',
+    align: 'center' as const,
     field: 'date_birth',
   },
   {
     name: 'passport.serial',
     label: 'Серия паспорта',
-    align: 'center',
+    align: 'center' as const,
     field: 'passport.serial',
   },
   {
     name: 'passport.number',
     label: 'Номер паспорта',
-    align: 'center',
+    align: 'center' as const,
     field: 'passport.number',
   },
   {
     name: 'passport.date_issue',
     label: 'Дата выдачи',
-    align: 'center',
+    align: 'center' as const,
     field: 'passport.date_issue',
   },
   {
     name: 'passport.code',
     label: 'Код подразделения',
-    align: 'center',
+    align: 'center' as const,
     field: 'passport.code',
   },
   {
     name: 'passport.issued_by',
     label: 'Кем выдан',
-    align: 'left',
+    align: 'left' as const,
     field: 'passport.issued_by',
   },
   {
     name: 'address.region',
     label: 'Регион',
-    align: 'left',
+    align: 'left' as const,
     field: 'address.region',
   },
   {
     name: 'address.settlement',
     label: 'Город',
-    align: 'left',
+    align: 'left' as const,
     field: 'address.settlement',
   },
   {
     name: 'address.street',
     label: 'Улица',
-    align: 'left',
+    align: 'left' as const,
     field: 'address.street',
   },
   {
     name: 'address.house',
     label: 'Дом',
-    align: 'center',
+    align: 'center' as const,
     field: 'address.house',
   },
   {
     name: 'address.housing',
-    label: 'Квартира',
-    align: 'center',
+    label: 'Корпус',
+    align: 'center' as const,
     field: 'address.housing',
   },
   {
     name: 'address.flat',
     label: 'Квартира',
-    align: 'center',
+    align: 'center' as const,
     field: 'address.flat',
   },
 ]);
 
 const createEmployeeHandler = async () => {
-  const employeePayload = {
-    ...employeeBaseData.value,
-    passport: passportInfo.value,
-    address: addressInfo.value,
+  console.log('employeeBaseData:', employeeBaseData.value);
+  console.log('passportInfo:', passportInfo.value);
+  console.log('addressInfo:', addressInfo.value);
+
+  const passportData = {
+    serial: passportInfo.value.serial || '',
+    number: passportInfo.value.number || '',
+    date_issue: formatDate(passportInfo.value.date_issue) || '',
+    issued_by: passportInfo.value.issued_by || '',
+    code: passportInfo.value.code || '',
   };
 
+  const addressData = {
+    region: addressInfo.value.region || '',
+    settlement: addressInfo.value.settlement || '',
+    street: addressInfo.value.street || '',
+    house: addressInfo.value.house || '',
+    housing: addressInfo.value.housing || '',
+    flat: addressInfo.value.flat || '',
+  };
+
+  const employeePayload = {
+    name: employeeBaseData.value.name,
+    surname: employeeBaseData.value.surname,
+    second_name: employeeBaseData.value.second_name || '',
+    date_birth: formatDate(employeeBaseData.value.date_birth),
+    position_id: employeeBaseData.value.position_id,
+    passportData,
+    addressData,
+  };
+
+  $q.notify({
+    type: 'info',
+    message: 'Отправка данных...',
+  });
+
   try {
-    await axios.post('/employees', employeePayload);
-    $q.notify({ type: 'positive', message: 'Сотрудник успешно добавлен!' });
-    clearForm();
+    const response = await axios.post(
+      'http://localhost:3000/employees',
+      employeePayload
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      $q.notify({
+        type: 'positive',
+        message: 'Сотрудник успешно добавлен!',
+      });
+      clearForm();
+    } else {
+      console.error('Unexpected response:', response);
+      throw new Error('Не удалось добавить сотрудника');
+    }
   } catch (error) {
+    console.error('Caught error:', error);
     $q.notify({
       type: 'negative',
-      message: 'Ошибка при добавлении сотрудника',
+      message: 'Ошибка при добавлении сотрудника. Попробуйте еще раз.',
     });
-  }
-};
-
-const positions = ref<{ label: string; value: number }[]>([]);
-
-const loadPositions = async () => {
-  try {
-    const response = await axios.get('http://localhost:3000/positions');
-    positions.value = response.data.map(
-      (position: { id: number; name: string }) => ({
-        label: position.name,
-        value: position.id,
-      })
-    );
-  } catch (error) {
-    console.error('Ошибка при загрузке должностей:', error);
   }
 };
 
@@ -430,6 +490,32 @@ onMounted(() => {
   getEmployees();
   loadPositions();
 });
+
+function formatDate(date: string | Date | null): string | null {
+  if (!date) return null;
+  const d = new Date(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0'
+  )}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const positions = ref<{ id: number; name: string }[]>([]);
+const positionOptions = ref<{ label: string; value: number }[]>([]);
+
+const loadPositions = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/positions');
+    positions.value = response.data;
+
+    positionOptions.value = positions.value.map((pos) => ({
+      label: pos.name,
+      value: pos.id,
+    }));
+  } catch (error) {
+    console.error('Ошибка при загрузке должностей:', error);
+  }
+};
 
 const getNestedField = (
   row: Record<string, unknown>,
@@ -469,11 +555,10 @@ const updateEmployeeHandler = async () => {
     );
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // Убираем предупреждение, если `response` не нужен
     console.log(response);
 
     $q.notify({ type: 'positive', message: 'Данные сотрудника обновлены' });
-    getEmployees();
+    await getEmployees();
     cancelEdit();
   } catch (error) {
     $q.notify({
@@ -491,8 +576,7 @@ const cancelEdit = () => {
 const deleteEmployeeHandler = async (employeeId: number) => {
   try {
     await axios.delete(`/employees/${employeeId}`);
-    // После успешного удаления перезагружаем список сотрудников
-    getEmployees();
+    await getEmployees();
     $q.notify({ type: 'positive', message: 'Сотрудник удален' });
   } catch (error) {
     $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });

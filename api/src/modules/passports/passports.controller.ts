@@ -17,7 +17,11 @@ import { Passport } from '@models/passport.model';
 export class PassportsController {
   constructor(private readonly passportsService: PassportsService) {}
 
-  // Получить паспорт по ID сотрудника
+  @Get()
+  async findAll(): Promise<Passport[]> {
+    return this.passportsService.findAll();
+  }
+
   @Get(':id')
   async getPassport(@Param('id') id: number): Promise<Passport> {
     const passport = await this.passportsService.findByEmployeeId(id);
@@ -27,16 +31,11 @@ export class PassportsController {
     return passport;
   }
 
-  // Создать новый паспорт для сотрудника
-  @Post(':id')
-  async createPassport(
-    @Param('id') id: number,
-    @Body() createDto: CreatePassportDto,
-  ): Promise<Passport> {
-    return this.passportsService.create(id, createDto);
+  @Post()
+  async create(@Body() createDto: CreatePassportDto): Promise<Passport> {
+    return this.passportsService.create(createDto);
   }
 
-  // Обновить паспорт сотрудника
   @Put(':id')
   async updatePassport(
     @Param('id') id: number,
@@ -49,7 +48,6 @@ export class PassportsController {
     return passport;
   }
 
-  // Удалить паспорт сотрудника
   @Delete(':id')
   async removePassport(@Param('id') id: number): Promise<void> {
     const passport = await this.passportsService.findByEmployeeId(id);

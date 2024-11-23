@@ -32,7 +32,13 @@ export class EmployeesController {
 
   @Post()
   async createEmployee(@Body() employeeData: any) {
-    return this.employeesService.createEmployee(employeeData);
+    const { passportData, addressData, ...employeeBaseData } = employeeData;
+
+    return this.employeesService.createEmployee(
+      employeeBaseData,
+      passportData,
+      addressData,
+    );
   }
 
   @Put(':id')

@@ -11,13 +11,16 @@ export class PassportsService {
     private readonly passportModel: typeof Passport,
   ) {}
 
+  async findAll(): Promise<Passport[]> {
+    return this.passportModel.findAll();
+  }
+
   async findByEmployeeId(id: number): Promise<Passport | null> {
-    // Используем id как ключ для поиска связанного паспорта
     return this.passportModel.findOne({ where: { id } });
   }
 
-  async create(id: number, dto: CreatePassportDto): Promise<Passport> {
-    return this.passportModel.create({ id, ...dto });
+  async create(dto: CreatePassportDto): Promise<Passport> {
+    return this.passportModel.create({ ...dto });
   }
 
   async update(id: number, dto: UpdatePassportDto): Promise<Passport | null> {

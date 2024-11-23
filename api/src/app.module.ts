@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize'; // Изменено
+import { SequelizeModule } from '@nestjs/sequelize';
 import { OrganizationsModule } from 'modules/organizations/organizations.module';
 import { DepartmentsModule } from 'modules/departments/departments.module';
 import { PositionsModule } from 'modules/positions/positions.module';
@@ -12,7 +12,7 @@ import { AddressesModule } from 'modules/addresses/addresses.module';
 import { SequelizeConfig } from 'config/sequelize.config';
 @Module({
   imports: [
-    SequelizeModule.forRoot(SequelizeConfig), // Подключаем Sequelize
+    SequelizeModule.forRoot(SequelizeConfig),
     OrganizationsModule,
     DepartmentsModule,
     PositionsModule,
