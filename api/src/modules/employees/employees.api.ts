@@ -26,7 +26,10 @@ export const updateEmployee = async (
     date_birth?: Date;
   },
 ) => {
-  const response = await axios.put(`${API_URL}/${id}`, empData);
+  const response = await axios.put(
+    `http://localhost:3000/employees/${id}`,
+    empData,
+  );
   return response.data;
 };
 

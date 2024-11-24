@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Employee } from '@models/employee.model';
 import { Address } from '@models/address.model';
@@ -62,15 +62,32 @@ export class EmployeesService {
     return this.employeeModel.findByPk(id, { include: { all: true } });
   }
 
-  async update(
-    id: number,
-    updateDto: UpdateEmployeeDto,
-  ): Promise<Employee | null> {
-    const employee = await this.employeeModel.findByPk(id);
-    if (employee) {
-      return employee.update(updateDto);
+  async update(id: string, updateData: UpdateEmployeeDto) {
+    const employee = await this.employeeModel.findOne({
+      where: { id },
+      include: [Passport, Address],
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
     }
-    return null;
+
+    Object.assign(employee, updateData);
+
+    if (updateData.passport && employee.passport) {
+      await Passport.update(updateData.passport, {
+        where: { id: employee.passport_id },
+      });
+    }
+
+    if (updateData.address && employee.address) {
+      await Address.update(updateData.address, {
+        where: { id: employee.address_id },
+      });
+    }
+
+    await employee.save();
+    return employee;
   }
 
   async remove(id: number): Promise<void> {

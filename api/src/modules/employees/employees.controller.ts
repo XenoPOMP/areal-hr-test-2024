@@ -42,11 +42,11 @@ export class EmployeesController {
   }
 
   @Put(':id')
-  async update(
-    @Param('id') id: number,
-    @Body() updateEmployeeDto: UpdateEmployeeDto,
+  async updateEmployee(
+    @Param('id') id: string,
+    @Body() updateData: UpdateEmployeeDto,
   ) {
-    return this.employeesService.update(id, updateEmployeeDto);
+    return await this.employeesService.update(id, updateData);
   }
 
   @Delete(':id')

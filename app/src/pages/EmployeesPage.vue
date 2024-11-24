@@ -550,20 +550,23 @@ const updateEmployeeHandler = async () => {
 
   try {
     const response = await axios.put(
-      `/employees/${editedEmployee.value.id}`,
+      `http://localhost:3000/employees/${editedEmployee.value.id}`,
       editedEmployee.value
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    console.log(response);
-
-    $q.notify({ type: 'positive', message: 'Данные сотрудника обновлены' });
-    await getEmployees();
-    cancelEdit();
+    if (response.status === 200) {
+      $q.notify({
+        type: 'positive',
+        message: 'Данные сотрудника обновлены!',
+      });
+      await getEmployees();
+      cancelEdit();
+    }
   } catch (error) {
+    console.error(error);
     $q.notify({
       type: 'negative',
-      message: 'Ошибка при обновлении сотрудника',
+      message: 'Ошибка при обновлении сотрудника. Попробуйте еще раз.',
     });
   }
 };
