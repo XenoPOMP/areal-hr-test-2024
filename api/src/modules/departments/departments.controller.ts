@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Param, Body } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { Department } from '@models/department.model';
 import { CreateDepartmentDto } from './dto/create-department.dto';
@@ -34,8 +26,9 @@ export class DepartmentsController {
     return this.departmentsService.update(id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
-    return this.departmentsService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteDepartment(@Param('id') id: number) {
+    await this.departmentsService.softDeleteDepartment(id);
+    return;
   }
 }

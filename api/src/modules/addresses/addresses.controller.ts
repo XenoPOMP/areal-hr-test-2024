@@ -49,11 +49,8 @@ export class AddressesController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    const address = await this.addressesService.findOne(id);
-    if (!address) {
-      throw new NotFoundException('Адрес не найден');
-    }
-    return this.addressesService.remove(id);
+  async softDeleteAddress(@Param('id') id: number) {
+    await this.addressesService.softDeleteAddress(id);
+    return;
   }
 }

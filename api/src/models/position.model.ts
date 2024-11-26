@@ -16,4 +16,7 @@ export class Position extends Model {
 
   @Column({ type: DataType.STRING(255), allowNull: false })
   name: string;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

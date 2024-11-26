@@ -31,6 +31,9 @@ export class Passport extends Model {
   @Column({ type: DataType.STRING, allowNull: false })
   issued_by: string;
 
+  @Column({ allowNull: true, type: DataType.DATE })
+  deleted_at: Date | null;
+
   @BelongsTo(() => Employee, { foreignKey: 'id' })
   employee: Employee;
 }

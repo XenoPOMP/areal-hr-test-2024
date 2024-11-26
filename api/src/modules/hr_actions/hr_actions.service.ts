@@ -13,7 +13,11 @@ export class HrActionsService {
 
   // Метод для получения всех записей
   async findAll(): Promise<HrAction[]> {
-    return this.hrActionModel.findAll();
+    return this.hrActionModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   // Метод для создания записи
@@ -43,10 +47,14 @@ export class HrActionsService {
   }
 
   // Метод для удаления записи
-  async remove(id: number): Promise<void> {
-    const action = await this.hrActionModel.findByPk(id);
-    if (action) {
-      await action.destroy();
+  async softDeleteHrAction(id: number): Promise<void> {
+    const action = await HrAction.findByPk(id);
+
+    if (!action) {
+      throw new Error('Hr action not found');
     }
+
+    action.deleted_at = new Date();
+    await action.save();
   }
 }

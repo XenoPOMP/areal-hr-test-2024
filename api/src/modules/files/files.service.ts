@@ -12,7 +12,11 @@ export class FilesService {
   ) {}
 
   async findAll(): Promise<File[]> {
-    return this.fileModel.findAll();
+    return this.fileModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   async findOne(id: number): Promise<File | null> {
@@ -31,10 +35,14 @@ export class FilesService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const file = await this.fileModel.findByPk(id);
-    if (file) {
-      await file.destroy();
+  async softDeleteFile(id: number): Promise<void> {
+    const file = await File.findByPk(id);
+
+    if (!file) {
+      throw new Error('File not found');
     }
+
+    file.deleted_at = new Date();
+    await file.save();
   }
 }

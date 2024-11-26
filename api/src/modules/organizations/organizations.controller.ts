@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Put,
-  Delete,
+  Patch,
   Param,
   Body,
   NotFoundException,
@@ -53,12 +53,9 @@ export class OrganizationsController {
     return updatedOrganization;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    const organization = await this.organizationsService.findOne(id);
-    if (!organization) {
-      throw new NotFoundException('Organization not found');
-    }
-    return this.organizationsService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteOrganization(@Param('id') id: number) {
+    await this.organizationsService.softDeleteOrganization(id);
+    return;
   }
 }

@@ -48,4 +48,7 @@ export class HistoryOfChange extends Model {
 
   @BelongsTo(() => User) // Устанавливаем связь с пользователем
   user: User;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

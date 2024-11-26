@@ -112,16 +112,13 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import {
-  getHrActions,
-  createHrAction,
-  updateHrAction,
-  deleteHrAction,
-} from 'src/api';
+import { getHrActions, createHrAction, updateHrAction } from 'src/api';
 import { QTableColumn } from 'quasar';
+import { useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
 type SelectableValue = number | { label: string; value: number } | null;
 interface HrActions {
@@ -329,12 +326,17 @@ const cancelEdit = () => {
   editedAction.value = null;
 };
 
-const deleteActionHandler = async (id: string) => {
+const deleteActionHandler = async (hrId: number) => {
   try {
-    await deleteHrAction(id);
+    const response = await axios.patch(
+      `http://localhost:3000/hr_actions/${hrId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await loadActions();
+    $q.notify({ type: 'positive', message: 'Действие успешно удалено' }); // Успешное уведомление
   } catch (error) {
-    console.error('Ошибка удаления операции:', error);
+    console.error('Ошибка удаления действия:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении действия' }); // Ошибка
   }
 };
 </script>

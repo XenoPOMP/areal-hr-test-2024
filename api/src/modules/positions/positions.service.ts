@@ -12,7 +12,11 @@ export class PositionsService {
   ) {}
 
   async findAll() {
-    return this.positionModel.findAll();
+    return this.positionModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   async create(createDto: CreatePositionDto): Promise<Position> {
@@ -32,10 +36,14 @@ export class PositionsService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const position = await this.positionModel.findByPk(id);
-    if (position) {
-      await position.destroy();
+  async softDeletePosition(id: number): Promise<void> {
+    const position = await Position.findByPk(id);
+
+    if (!position) {
+      throw new Error('Position not found');
     }
+
+    position.deleted_at = new Date();
+    await position.save();
   }
 }

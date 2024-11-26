@@ -11,8 +11,12 @@ export class DepartmentsService {
     private readonly departmentModel: typeof Department,
   ) {}
 
-  async findAll() {
-    return this.departmentModel.findAll();
+  async findAll(): Promise<Department[]> {
+    return this.departmentModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   async create(dto: CreateDepartmentDto): Promise<Department> {
@@ -30,10 +34,14 @@ export class DepartmentsService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const department = await this.departmentModel.findByPk(id);
-    if (department) {
-      await department.destroy();
+  async softDeleteDepartment(id: number): Promise<void> {
+    const department = await Department.findByPk(id);
+
+    if (!department) {
+      throw new Error('Department not found');
     }
+
+    department.deleted_at = new Date();
+    await department.save();
   }
 }

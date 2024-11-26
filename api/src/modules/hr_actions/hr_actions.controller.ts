@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Put,
-  Delete,
+  Patch,
   Param,
   Body,
   NotFoundException,
@@ -29,13 +29,11 @@ export class HrActionsController {
     return await this.employeesService.findAll();
   }
 
-  // Получение списка департаментов
   @Get('departments')
   async getDepartments() {
     return await this.departmentsService.findAll();
   }
 
-  // Получение списка должностей
   @Get('positions')
   async getPositions() {
     return await this.positionsService.findAll();
@@ -72,12 +70,9 @@ export class HrActionsController {
     return updatedAction;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    const action = await this.hrActionsService.findOne(id);
-    if (!action) {
-      throw new NotFoundException('HR action not found');
-    }
-    return this.hrActionsService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteHrAction(@Param('id') id: number) {
+    await this.hrActionsService.softDeleteHrAction(id);
+    return;
   }
 }

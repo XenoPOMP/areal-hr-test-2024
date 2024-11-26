@@ -5,7 +5,7 @@
     <h1>Сотрудники</h1>
 
     <div class="add-form">
-      <h3>Добавить нового сотрудника</h3>
+      <h4>Добавить нового сотрудника</h4>
       <form @submit.prevent="createEmployeeHandler">
         <!-- Основные данные сотрудника -->
         <q-input v-model="employeeBaseData.name" label="Имя" filled required />
@@ -578,10 +578,14 @@ const cancelEdit = () => {
 
 const deleteEmployeeHandler = async (employeeId: number) => {
   try {
-    await axios.delete(`/employees/${employeeId}`);
+    const response = await axios.patch(
+      `http://localhost:3000/employees/${employeeId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await getEmployees();
     $q.notify({ type: 'positive', message: 'Сотрудник удален' });
   } catch (error) {
+    console.error('Error:', error);
     $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });
   }
 };

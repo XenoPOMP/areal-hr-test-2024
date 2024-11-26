@@ -61,6 +61,9 @@ export class Employee extends Model {
   @BelongsTo(() => Address)
   address: Address;
 
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
+
   static async createWithAssociations(
     employeeData: {
       name: string;
@@ -108,6 +111,33 @@ export class Employee extends Model {
 
       await transaction.commit();
       return employee;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+  static async softDeleteEmployee(id: number): Promise<void> {
+    const transaction = await this.sequelize.transaction();
+    try {
+      const employee = await this.findByPk(id, { transaction });
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+
+      employee.deleted_at = new Date();
+      await employee.save({ transaction });
+
+      if (employee.passport) {
+        employee.passport.deleted_at = new Date();
+        await employee.passport.save({ transaction });
+      }
+
+      if (employee.address) {
+        employee.address.deleted_at = new Date();
+        await employee.address.save({ transaction });
+      }
+
+      await transaction.commit();
     } catch (error) {
       await transaction.rollback();
       throw error;

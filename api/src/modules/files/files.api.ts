@@ -19,7 +19,3 @@ export const updateFile = async (
   const response = await axios.put(`${API_URL}/${id}`, fileData);
   return response.data;
 };
-
-export const deleteFile = async (id: number) => {
-  await axios.delete(`${API_URL}/${id}`);
-};

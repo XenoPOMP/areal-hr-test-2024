@@ -67,4 +67,7 @@ export class HrAction extends Model {
 
   @BelongsTo(() => Position)
   position: Position;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

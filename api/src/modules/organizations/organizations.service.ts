@@ -12,7 +12,11 @@ export class OrganisationsService {
   ) {}
 
   async findAll(): Promise<Organisation[]> {
-    return this.organisationModel.findAll();
+    return this.organisationModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   // Исправленная версия метода create
@@ -37,10 +41,14 @@ export class OrganisationsService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const organisation = await this.organisationModel.findByPk(id);
-    if (organisation) {
-      await organisation.destroy();
+  async softDeleteOrganization(id: number): Promise<void> {
+    const organization = await Organisation.findByPk(id);
+
+    if (!organization) {
+      throw new Error('Organization not found');
     }
+
+    organization.deleted_at = new Date();
+    await organization.save();
   }
 }

@@ -49,4 +49,7 @@ export class User extends Model {
     allowNull: true,
   })
   role: string;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

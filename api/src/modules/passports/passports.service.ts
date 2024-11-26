@@ -31,10 +31,14 @@ export class PassportsService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const passport = await this.findByEmployeeId(id);
-    if (passport) {
-      await passport.destroy();
+  async softDeletePassport(id: number): Promise<void> {
+    const passport = await Passport.findByPk(id);
+
+    if (!passport) {
+      throw new Error('Department not found');
     }
+
+    passport.deleted_at = new Date();
+    await passport.save();
   }
 }

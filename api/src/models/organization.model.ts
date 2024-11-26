@@ -19,4 +19,7 @@ export class Organisation extends Model {
 
   @Column({ type: DataType.TEXT, allowNull: true })
   comment?: string;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

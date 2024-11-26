@@ -72,10 +72,12 @@ import {
   getOrganizations,
   createOrganization,
   updateOrganization,
-  deleteOrganization,
 } from 'src/api';
 import { QTableColumn } from 'quasar';
 import AppHeader from 'components/AppHeader.vue';
+import { useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
 // Определение колонок для таблицы
 const columns: QTableColumn[] = [
@@ -156,19 +158,22 @@ const startEditingOrganization = (organization: Organization) => {
   editMode.value = true; // Включаем режим редактирования
 };
 
-// Отмена редактирования
 const cancelEdit = () => {
   editMode.value = false;
   editedOrganization.value = null;
 };
 
-// Удаление организации
-const deleteOrganizationHandler = async (id: string) => {
+const deleteOrganizationHandler = async (orgId: number) => {
   try {
-    await deleteOrganization(id);
-    await loadOrganizations(); // Обновление списка организаций после удаления
+    const response = await axios.patch(
+      `http://localhost:3000/organizations/${orgId}/soft-delete`
+    );
+    console.log('Response:', response.data);
+    await loadOrganizations();
+    $q.notify({ type: 'positive', message: 'Организация успешно удалена' });
   } catch (error) {
     console.error('Ошибка удаления организации:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении организации' });
   }
 };
 </script>

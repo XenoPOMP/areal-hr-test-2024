@@ -63,13 +63,11 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import {
-  getPositions,
-  createPosition,
-  updatePosition,
-  deletePosition,
-} from 'src/api';
+import { getPositions, createPosition, updatePosition } from 'src/api';
 import { QTableColumn } from 'quasar';
+import { useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
 // Интерфейс для должности
 interface Position {
@@ -150,12 +148,17 @@ const cancelEdit = () => {
   editedPosition.value = null;
 };
 
-const deletePositionHandler = async (id: string) => {
+const deletePositionHandler = async (posId: number) => {
   try {
-    await deletePosition(id);
+    const response = await axios.patch(
+      `http://localhost:3000/positions/${posId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await loadPositions();
+    $q.notify({ type: 'positive', message: 'Должность успешно удалена' }); // Успешное уведомление
   } catch (error) {
     console.error('Ошибка удаления должности:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении должности' }); // Ошибка
   }
 };
 </script>

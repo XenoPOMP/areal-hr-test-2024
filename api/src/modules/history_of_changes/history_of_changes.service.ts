@@ -12,7 +12,11 @@ export class HistoryOfChangesService {
   ) {}
 
   async findAll(): Promise<HistoryOfChange[]> {
-    return this.historyOfChangeModel.findAll();
+    return this.historyOfChangeModel.findAll({
+      where: {
+        deleted_at: null,
+      },
+    });
   }
 
   async findOne(id: number): Promise<HistoryOfChange | null> {
@@ -40,10 +44,14 @@ export class HistoryOfChangesService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const history = await this.historyOfChangeModel.findByPk(id);
-    if (history) {
-      await history.destroy();
+  async softDeleteHistory(id: number): Promise<void> {
+    const historyOfChange = await HistoryOfChange.findByPk(id);
+
+    if (!historyOfChange) {
+      throw new Error('History of change not found');
     }
+
+    historyOfChange.deleted_at = new Date();
+    await historyOfChange.save();
   }
 }

@@ -49,11 +49,8 @@ export class PassportsController {
   }
 
   @Delete(':id')
-  async removePassport(@Param('id') id: number): Promise<void> {
-    const passport = await this.passportsService.findByEmployeeId(id);
-    if (!passport) {
-      throw new NotFoundException('Паспорт не найден');
-    }
-    return this.passportsService.remove(id);
+  async softDeletePassport(@Param('id') id: number) {
+    await this.passportsService.softDeletePassport(id);
+    return;
   }
 }

@@ -3,9 +3,11 @@ import {
   Get,
   Post,
   Put,
-  Delete,
+  Patch,
   Param,
   Body,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -49,8 +51,19 @@ export class EmployeesController {
     return await this.employeesService.update(id, updateData);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return this.employeesService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteEmployee(@Param('id') id: number) {
+    console.log(
+      `Received PATCH request to soft-delete employee with ID: ${id}`,
+    );
+    try {
+      await this.employeesService.softDeleteEmployee(id);
+      return {
+        message: 'Employee and related records soft-deleted successfully',
+      };
+    } catch (error) {
+      console.error('Error in softDeleteEmployee:', error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

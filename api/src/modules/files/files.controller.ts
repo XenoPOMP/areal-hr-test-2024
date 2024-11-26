@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Put,
-  Delete,
+  Patch,
   Param,
   Body,
   NotFoundException,
@@ -48,12 +48,9 @@ export class FilesController {
     return updatedFile;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    const file = await this.filesService.findOne(id);
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-    return this.filesService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteFile(@Param('id') id: number) {
+    await this.filesService.softDeleteFile(id);
+    return;
   }
 }

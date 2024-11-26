@@ -25,4 +25,7 @@ export class Department extends Model {
 
   @Column({ type: DataType.INTEGER, allowNull: true })
   organisation_id?: number;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at: Date | null;
 }

@@ -80,11 +80,12 @@ import {
   getHistoryOfChanges,
   createHistoryOfChange,
   updateHistoryOfChange,
-  deleteHistoryOfChange,
 } from 'src/api';
 import { QTableColumn } from 'quasar';
+import { useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
-// Интерфейс для записи истории изменений
 interface HistoryRecord {
   id: string;
   object: string;
@@ -92,7 +93,6 @@ interface HistoryRecord {
   date: string;
 }
 
-// Состояния для записи, новой записи и редактируемой записи
 const historyRecords = ref<HistoryRecord[]>([]);
 const newRecord = ref<HistoryRecord>({
   id: '',
@@ -181,12 +181,17 @@ const cancelEdit = () => {
   editField.value = '';
 };
 
-const deleteRecordHandler = async (id: string) => {
+const deleteRecordHandler = async (historyId: number) => {
   try {
-    await deleteHistoryOfChange(id);
+    const response = await axios.patch(
+      `http://localhost:3000/history-of-changes/${historyId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await loadHistoryRecords();
+    $q.notify({ type: 'positive', message: 'История успешно удалена' });
   } catch (error) {
-    console.error('Ошибка удаления записи истории изменений:', error);
+    console.error('Ошибка удаления истории:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении истории' });
   }
 };
 </script>

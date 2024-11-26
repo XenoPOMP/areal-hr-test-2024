@@ -1,18 +1,15 @@
 <template>
   <div>
-    <!-- Компонент шапки для навигации -->
     <AppHeader />
 
     <h1>Файлы</h1>
 
-    <!-- Форма для добавления нового файла -->
     <form @submit.prevent="createFileHandler" class="form-container">
       <q-input v-model="newFile.name" label="Название" filled required />
       <q-input v-model="newFile.link" label="Ссылка на файл" filled required />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
-    <!-- Таблица файлов -->
     <q-table
       :rows="files"
       :columns="columns"
@@ -39,7 +36,6 @@
       </template>
     </q-table>
 
-    <!-- Форма редактирования сотрудника -->
     <div v-if="editMode && editedFile" class="edit-form">
       <h3>Изменить данные файла</h3>
       <form @submit.prevent="updateFileHandler">
@@ -60,23 +56,23 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getFiles, createFile, updateFile, deleteFile } from 'src/api';
+import { getFiles, createFile, updateFile } from 'src/api';
 import { QTableColumn } from 'quasar';
+import { useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
-// Интерфейс для файла
 interface File {
   id: string;
   name: string;
   link: string;
 }
 
-// Состояния для файла, нового файла и редактируемого файла
 const files = ref<File[]>([]);
 const newFile = ref<File>({ id: '', name: '', link: '' });
 const editMode = ref(false);
 const editedFile = ref<File | null>(null);
 
-// Определение колонок для таблицы
 const columns: QTableColumn[] = [
   {
     name: 'name',
@@ -95,7 +91,6 @@ const columns: QTableColumn[] = [
   { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
 ];
 
-// Загрузка списка сотрудников
 const loadFiles = async () => {
   try {
     files.value = await getFiles();
@@ -104,7 +99,6 @@ const loadFiles = async () => {
   }
 };
 
-// Загрузка данных при монтировании компонента
 onMounted(() => {
   loadFiles();
 });
@@ -147,12 +141,17 @@ const cancelEdit = () => {
   editedFile.value = null;
 };
 
-const deleteFileHandler = async (id: string) => {
+const deleteFileHandler = async (fileId: number) => {
   try {
-    await deleteFile(id);
+    const response = await axios.patch(
+      `http://localhost:3000/files/${fileId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await loadFiles();
+    $q.notify({ type: 'positive', message: 'Файл успешно удален' }); // Успешное уведомление
   } catch (error) {
     console.error('Ошибка удаления файла:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении файла' }); // Ошибка
   }
 };
 </script>

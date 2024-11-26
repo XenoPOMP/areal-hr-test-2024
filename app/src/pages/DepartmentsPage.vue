@@ -1,18 +1,20 @@
 <template>
   <div>
-    <!-- Компонент шапки для навигации -->
     <AppHeader />
 
     <h1>Отделы</h1>
 
-    <!-- Форма для добавления нового отдела -->
     <form @submit.prevent="createDepartmentHandler" class="form-container">
-      <q-input v-model="newDepartment.name" label="Название отдела" filled required />
+      <q-input
+        v-model="newDepartment.name"
+        label="Название отдела"
+        filled
+        required
+      />
       <q-input v-model="newDepartment.comment" label="Комментарий" filled />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
-    <!-- Таблица отделов -->
     <q-table
       :rows="departments"
       :columns="columns"
@@ -39,12 +41,20 @@
       </template>
     </q-table>
 
-    <!-- Форма редактирования отдела -->
     <div v-if="editMode && editedDepartment" class="edit-form">
       <h3>Изменить отдел</h3>
       <form @submit.prevent="updateDepartmentHandler">
-        <q-input v-model="editedDepartment.name" label="Название отдела" filled required />
-        <q-input v-model="editedDepartment.comment" label="Комментарий отдела" filled />
+        <q-input
+          v-model="editedDepartment.name"
+          label="Название отдела"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedDepartment.comment"
+          label="Комментарий отдела"
+          filled
+        />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
       </form>
@@ -55,30 +65,39 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getDepartments, createDepartment, updateDepartment, deleteDepartment } from 'src/api';
-import { QTableColumn } from 'quasar';
+import { getDepartments, createDepartment, updateDepartment } from 'src/api';
+import { QTableColumn, useQuasar } from 'quasar';
+import axios from 'axios';
+const $q = useQuasar();
 
-// Интерфейс для отдела
 interface Department {
   id: string;
   name: string;
   comment: string;
 }
 
-// Состояния для отделов, нового отдела и редактируемого отдела
 const departments = ref<Department[]>([]);
 const newDepartment = ref<Department>({ id: '', name: '', comment: '' });
 const editMode = ref(false);
 const editedDepartment = ref<Department | null>(null);
 
-// Определение колонок для таблицы
 const columns: QTableColumn[] = [
-  { name: 'name', label: 'Название', align: 'left', field: 'name', required: true },
+  {
+    name: 'name',
+    label: 'Название',
+    align: 'left',
+    field: 'name',
+    required: true,
+  },
   { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
-  { name: 'actions', label: 'Действия', align: 'center', field: row => row.id }
+  {
+    name: 'actions',
+    label: 'Действия',
+    align: 'center',
+    field: (row) => row.id,
+  },
 ];
 
-// Загрузка списка отделов
 const loadDepartments = async () => {
   try {
     departments.value = await getDepartments();
@@ -87,7 +106,6 @@ const loadDepartments = async () => {
   }
 };
 
-// Загрузка данных при монтировании компонента
 onMounted(() => {
   loadDepartments();
 });
@@ -130,18 +148,24 @@ const cancelEdit = () => {
   editedDepartment.value = null;
 };
 
-const deleteDepartmentHandler = async (id: string) => {
+const deleteDepartmentHandler = async (departmentId: number) => {
   try {
-    await deleteDepartment(id);
+    const response = await axios.patch(
+      `http://localhost:3000/departments/${departmentId}/soft-delete`
+    );
+    console.log('Response:', response.data);
     await loadDepartments();
+    $q.notify({ type: 'positive', message: 'Отдел удален' }); // Успешное уведомление
   } catch (error) {
-    console.error('Ошибка удаления отдела:', error);
+    console.error('Error:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении отдела' }); // Ошибка
   }
 };
 </script>
 
 <style scoped>
-.form-container, .edit-form {
+.form-container,
+.edit-form {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;

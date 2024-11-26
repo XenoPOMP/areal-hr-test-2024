@@ -32,10 +32,14 @@ export class AddressesService {
     return null;
   }
 
-  async remove(id: number): Promise<void> {
-    const address = await this.findOne(id);
-    if (address) {
-      await address.destroy();
+  async softDeleteAddress(id: number): Promise<void> {
+    const address = await Address.findByPk(id);
+
+    if (!address) {
+      throw new Error('Address not found');
     }
+
+    address.deleted_at = new Date();
+    await address.save();
   }
 }

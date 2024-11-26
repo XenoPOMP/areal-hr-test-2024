@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Put,
-  Delete,
+  Patch,
   Param,
   Body,
   NotFoundException,
@@ -58,12 +58,9 @@ export class HistoryOfChangesController {
     return updatedHistory;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    const history = await this.historyService.findOne(id);
-    if (!history) {
-      throw new NotFoundException('History of change not found');
-    }
-    return this.historyService.remove(id);
+  @Patch(':id/soft-delete')
+  async softDeleteHistory(@Param('id') id: number) {
+    await this.historyService.softDeleteHistory(id);
+    return;
   }
 }

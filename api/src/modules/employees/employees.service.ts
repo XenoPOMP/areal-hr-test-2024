@@ -16,19 +16,22 @@ export class EmployeesService {
     private sequelize: Sequelize,
   ) {}
 
-  async getEmployeeWithDetails(id: string) {
-    return this.employeeModel.findOne({
-      where: { id },
-      include: [Address, Passport],
-    });
-  }
-
   async findAll() {
     return this.employeeModel.findAll({
       include: [
         { model: Passport, as: 'passport' },
         { model: Address, as: 'address' },
       ],
+      where: {
+        deleted_at: null,
+      },
+    });
+  }
+
+  async getEmployeeWithDetails(id: string) {
+    return this.employeeModel.findOne({
+      where: { id },
+      include: [Address, Passport],
     });
   }
 
@@ -90,10 +93,30 @@ export class EmployeesService {
     return employee;
   }
 
-  async remove(id: number): Promise<void> {
-    const employee = await this.employeeModel.findByPk(id);
-    if (employee) {
-      await employee.destroy();
+  async softDeleteEmployee(id: number) {
+    try {
+      const employee = await this.employeeModel.findOne({ where: { id } });
+
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+
+      employee.deleted_at = new Date();
+      await employee.save();
+
+      if (employee.passport) {
+        employee.passport.deleted_at = new Date();
+        await employee.passport.save();
+      }
+
+      if (employee.address) {
+        employee.address.deleted_at = new Date();
+        await employee.address.save();
+      }
+
+      return employee;
+    } catch (error) {
+      throw new Error(`Error soft-deleting employee: ${error.message}`);
     }
   }
 }
