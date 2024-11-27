@@ -24,11 +24,6 @@ export const updateOrganization = async (
   return response.data;
 };
 
-export const deleteOrganization = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/organizations/${id}`);
-  return response.data;
-};
-
 // Функции для работы с департаментами
 export const getDepartments = async () => {
   const response = await axios.get(`${API_URL}/departments`);
@@ -51,11 +46,6 @@ export const updateDepartment = async (
   return response.data;
 };
 
-export const deleteDepartment = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/departments/${id}`);
-  return response.data;
-};
-
 // Функции для работы с должностями
 export const getPositions = async () => {
   const response = await axios.get(`${API_URL}/positions`);
@@ -72,36 +62,15 @@ export const updatePosition = async (id: string, data: { name: string }) => {
   return response.data;
 };
 
-export const deletePosition = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/positions/${id}`);
-  return response.data;
-};
-
 // Функции для работы с сотрудниками
 export const getEmployees = async () => {
   const response = await axios.get(`${API_URL}/employees`);
   return response.data;
 };
 
-export const createEmployee = async (data: {
-  name: string;
-  surname: string;
-  second_name?: string;
-  date_birth: string;
-  position_id: number | null;
-}) => {
-  const response = await axios.post(`${API_URL}/employees`, data);
-  return response.data;
-};
-
 import { EmployeeBaseData } from 'src/types/Employee';
 export const updateEmployee = async (id: string, data: EmployeeBaseData) => {
   const response = await axios.put(`${API_URL}/employees/${id}`, data);
-  return response.data;
-};
-
-export const deleteEmployee = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/employees/${id}`);
   return response.data;
 };
 
@@ -121,11 +90,6 @@ export const updateFile = async (
   data: { name: string; link: string }
 ) => {
   const response = await axios.put(`${API_URL}/files/${id}`, data);
-  return response.data;
-};
-
-export const deleteFile = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/files/${id}`);
   return response.data;
 };
 
@@ -162,39 +126,8 @@ export const updateHrAction = async (
   return response.data;
 };
 
-export const deleteHrAction = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/hr_actions/${id}`);
-  return response.data;
-};
-
 // Функции для работы с историей изменений
 export const getHistoryOfChanges = async () => {
   const response = await axios.get(`${API_URL}/history_of_changes`);
-  return response.data;
-};
-
-export const createHistoryOfChange = async (data: {
-  object: string;
-  field: object;
-  date: string;
-}) => {
-  const response = await axios.post(`${API_URL}/history_of_changes`, data);
-  return response.data;
-};
-
-export const updateHistoryOfChange = async (
-  id: string,
-  data: {
-    object: string;
-    field: object;
-    date: string;
-  }
-) => {
-  const response = await axios.put(`${API_URL}/history_of_changes/${id}`, data);
-  return response.data;
-};
-
-export const deleteHistoryOfChange = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/history_of_changes/${id}`);
   return response.data;
 };

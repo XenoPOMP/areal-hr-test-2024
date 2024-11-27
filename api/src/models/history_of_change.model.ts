@@ -8,14 +8,14 @@ import {
   BelongsTo,
   DataType,
 } from 'sequelize-typescript';
-import { User } from './user.model'; // Импортируем модель User
+import { User } from './user.model';
 
 @Table({
-  tableName: 'history_of_change',
+  tableName: 'history_of_changes',
   freezeTableName: true,
   timestamps: false,
 })
-export class HistoryOfChange extends Model {
+export class HistoryOfChanges extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -23,32 +23,35 @@ export class HistoryOfChange extends Model {
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: true,
+    allowNull: false,
   })
-  object?: string; // Название объекта, с которым произошло изменение
+  object: string;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
   })
-  field?: object; // Данные поля, которые изменились
+  field?: Record<string, any>;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  date: Date;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  user_id: number;
+
+  @BelongsTo(() => User)
+  user: User;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  date?: string; // Дата изменения
-
-  @ForeignKey(() => User) // Связь с таблицей пользователей
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-  })
-  user_id?: number; // id пользователя, который сделал изменение
-
-  @BelongsTo(() => User) // Устанавливаем связь с пользователем
-  user: User;
-
-  @Column({ type: DataType.DATE, allowNull: true })
   deleted_at: Date | null;
 }

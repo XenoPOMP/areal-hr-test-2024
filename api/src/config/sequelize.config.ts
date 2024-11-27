@@ -5,7 +5,7 @@ import { Position } from '@models/position.model';
 import { Employee } from '@models/employee.model';
 import { File } from '@models/file.model';
 import { HrAction } from '@models/hr_action.model';
-import { HistoryOfChange } from '@models/history_of_change.model';
+import { HistoryOfChanges } from '@models/history_of_change.model';
 import { Passport } from '@models/passport.model';
 import { Address } from '@models/address.model';
 import { User } from '@models/user.model';
@@ -24,7 +24,7 @@ export const SequelizeConfig: SequelizeModuleOptions = {
     Employee,
     File,
     HrAction,
-    HistoryOfChange,
+    HistoryOfChanges,
     Passport,
     Address,
     User,

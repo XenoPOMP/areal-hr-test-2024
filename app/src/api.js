@@ -129,21 +129,6 @@ export const deleteHrAction = async (id) => {
 
 // Функции для работы с history_of_changes
 export const getHistoryOfChanges = async () => {
-  const response = await api.get('/history_of_changes');
-  return response.data;
-};
-
-export const createHistoryOfChange = async (data) => {
-  const response = await api.post('/history_of_changes', data);
-  return response.data;
-};
-
-export const updateHistoryOfChange = async (id, data) => {
-  const response = await api.put(`/history_of_changes/${id}`, data);
-  return response.data;
-};
-
-export const deleteHistoryOfChange = async (id) => {
-  const response = await api.delete(`/history_of_changes/${id}`);
+  const response = await api.get('/history-of-changes');
   return response.data;
 };

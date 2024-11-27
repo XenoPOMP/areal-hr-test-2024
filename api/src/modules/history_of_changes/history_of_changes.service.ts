@@ -1,57 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { HistoryOfChange } from '@models/history_of_change.model';
-import { CreateHistoryOfChangeDto } from './dto/create-history_of_change.dto';
-import { UpdateHistoryOfChangeDto } from './dto/update-history_of_change.dto';
+import { HistoryOfChanges } from '@models/history_of_change.model';
+
+export interface SimplifiedHistoryRecord {
+  object: string;
+  field: Record<string, any>;
+  date: Date;
+}
 
 @Injectable()
 export class HistoryOfChangesService {
   constructor(
-    @InjectModel(HistoryOfChange)
-    private readonly historyOfChangeModel: typeof HistoryOfChange,
+    @InjectModel(HistoryOfChanges)
+    private readonly historyOfChangeModel: typeof HistoryOfChanges,
   ) {}
 
-  async findAll(): Promise<HistoryOfChange[]> {
-    return this.historyOfChangeModel.findAll({
-      where: {
-        deleted_at: null,
-      },
+  async findAll(): Promise<SimplifiedHistoryRecord[]> {
+    const history = await this.historyOfChangeModel.findAll({
+      where: { deleted_at: null }, // Исключаем мягко удаленные записи
     });
+
+    // Преобразуем данные к SimplifiedHistoryRecord
+    return history.map((entry) => ({
+      object: entry.object,
+      field: entry.field,
+      date: entry.date,
+    }));
   }
 
-  async findOne(id: number): Promise<HistoryOfChange | null> {
-    return this.historyOfChangeModel.findByPk(id);
-  }
-
-  async create(
-    dto: CreateHistoryOfChangeDto,
-    userId: number,
-  ): Promise<HistoryOfChange> {
-    return this.historyOfChangeModel.create({
-      ...dto,
-      user_id: userId, // Добавляем user_id
+  async findOne(id: number): Promise<HistoryOfChanges | null> {
+    return this.historyOfChangeModel.findOne({
+      where: { id, deleted_at: null },
     });
-  }
-
-  async update(
-    id: number,
-    dto: UpdateHistoryOfChangeDto,
-  ): Promise<HistoryOfChange | null> {
-    const history = await this.historyOfChangeModel.findByPk(id);
-    if (history) {
-      return history.update(dto);
-    }
-    return null;
   }
 
   async softDeleteHistory(id: number): Promise<void> {
-    const historyOfChange = await HistoryOfChange.findByPk(id);
+    const historyOfChanges = await this.historyOfChangeModel.findOne({
+      where: { id, deleted_at: null },
+    });
 
-    if (!historyOfChange) {
+    if (!historyOfChanges) {
       throw new Error('History of change not found');
     }
 
-    historyOfChange.deleted_at = new Date();
-    await historyOfChange.save();
+    historyOfChanges.deleted_at = new Date();
+    await historyOfChanges.save();
   }
 }

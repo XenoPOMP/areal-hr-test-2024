@@ -4,25 +4,6 @@
 
     <h1>История изменений</h1>
 
-    <!-- Форма для добавления новой записи в историю изменений -->
-    <form @submit.prevent="createHistoryRecordHandler" class="form-container">
-      <q-input v-model="newRecord.object" label="Объект" filled required />
-      <q-input
-        v-model="newField"
-        label="Измененные поля (JSON)"
-        filled
-        required
-      />
-      <q-input
-        v-model="newRecord.date"
-        label="Дата"
-        filled
-        type="date"
-        required
-      />
-      <q-btn type="submit" label="Добавить" color="primary" />
-    </form>
-
     <q-table
       :rows="historyRecords"
       :columns="columns"
@@ -31,14 +12,11 @@
       bordered
       class="table-container"
     >
+      <template v-slot:body-cell-field="props">
+        <span>{{ formatField(props.row.field) }}</span>
+      </template>
+
       <template v-slot:body-cell-actions="props">
-        <q-btn
-          color="primary"
-          label="Изменить"
-          @click="startEditingRecord(props.row)"
-          flat
-          size="sm"
-        />
         <q-btn
           color="negative"
           label="Удалить"
@@ -48,62 +26,27 @@
         />
       </template>
     </q-table>
-
-    <div v-if="editMode && editedRecord" class="edit-form">
-      <h3>Изменить запись истории изменений</h3>
-      <form @submit.prevent="updateHistoryRecordHandler">
-        <q-input v-model="editedRecord.object" label="Объект" filled required />
-        <q-input
-          v-model="editField"
-          label="Измененные поля (JSON)"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedRecord.date"
-          label="Дата"
-          filled
-          type="date"
-          required
-        />
-        <q-btn type="submit" label="Изменить" color="primary" />
-        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
-      </form>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import {
-  getHistoryOfChanges,
-  createHistoryOfChange,
-  updateHistoryOfChange,
-} from 'src/api';
+import { getHistoryOfChanges } from 'src/api';
 import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
+
 const $q = useQuasar();
 
 interface HistoryRecord {
-  id: string;
+  id: number;
   object: string;
   field: Record<string, unknown>; // JSON как объект
   date: string;
 }
 
 const historyRecords = ref<HistoryRecord[]>([]);
-const newRecord = ref<HistoryRecord>({
-  id: '',
-  object: '',
-  field: {},
-  date: '',
-});
-const newField = ref(''); // строка для ввода JSON
-const editMode = ref(false);
-const editedRecord = ref<HistoryRecord | null>(null);
-const editField = ref(''); // строка для редактирования JSON
 
 const columns: QTableColumn[] = [
   {
@@ -115,7 +58,7 @@ const columns: QTableColumn[] = [
   },
   {
     name: 'field',
-    label: 'Измененные поля',
+    label: 'Изменённые поля',
     align: 'left',
     field: 'field',
     required: true,
@@ -126,83 +69,43 @@ const columns: QTableColumn[] = [
 
 const loadHistoryRecords = async () => {
   try {
-    historyRecords.value = await getHistoryOfChanges();
+    const records = await getHistoryOfChanges();
+    historyRecords.value = records.map((record: HistoryRecord) => ({
+      ...record,
+      date: new Date(record.date).toLocaleString(), // Форматируем дату
+    }));
   } catch (error) {
     console.error('Ошибка загрузки истории изменений:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при загрузке данных' });
+  }
+};
+
+const formatField = (field: Record<string, unknown>): string => {
+  // Форматируем JSON-поле для отображения
+  return Object.entries(field)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(', ');
+};
+
+const deleteRecordHandler = async (historyId: number) => {
+  try {
+    await axios.patch(
+      `http://localhost:3000/history-of-changes/${historyId}/soft-delete`
+    );
+    await loadHistoryRecords();
+    $q.notify({ type: 'positive', message: 'Запись успешно удалена' });
+  } catch (error) {
+    console.error('Ошибка удаления записи:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении записи' });
   }
 };
 
 onMounted(() => {
   loadHistoryRecords();
 });
-
-const createHistoryRecordHandler = async () => {
-  try {
-    newRecord.value.field = JSON.parse(newField.value);
-    await createHistoryOfChange({
-      object: newRecord.value.object,
-      field: newRecord.value.field,
-      date: newRecord.value.date,
-    });
-    newRecord.value = { id: '', object: '', field: {}, date: '' };
-    newField.value = '';
-    await loadHistoryRecords();
-  } catch (error) {
-    console.error('Ошибка добавления записи в историю изменений:', error);
-  }
-};
-
-const updateHistoryRecordHandler = async () => {
-  if (editedRecord.value) {
-    try {
-      editedRecord.value.field = JSON.parse(editField.value);
-      await updateHistoryOfChange(editedRecord.value.id, {
-        object: editedRecord.value.object,
-        field: editedRecord.value.field,
-        date: editedRecord.value.date,
-      });
-      await loadHistoryRecords();
-      cancelEdit();
-    } catch (error) {
-      console.error('Ошибка обновления записи истории изменений:', error);
-    }
-  }
-};
-
-const startEditingRecord = (record: HistoryRecord) => {
-  editedRecord.value = { ...record };
-  editField.value = JSON.stringify(record.field); // Показ JSON для редактирования
-  editMode.value = true;
-};
-
-const cancelEdit = () => {
-  editMode.value = false;
-  editedRecord.value = null;
-  editField.value = '';
-};
-
-const deleteRecordHandler = async (historyId: number) => {
-  try {
-    const response = await axios.patch(
-      `http://localhost:3000/history-of-changes/${historyId}/soft-delete`
-    );
-    console.log('Response:', response.data);
-    await loadHistoryRecords();
-    $q.notify({ type: 'positive', message: 'История успешно удалена' });
-  } catch (error) {
-    console.error('Ошибка удаления истории:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении истории' });
-  }
-};
 </script>
 
 <style scoped>
-.form-container,
-.edit-form {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
 .table-container {
   margin-top: 1rem;
 }
