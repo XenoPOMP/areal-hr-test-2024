@@ -1,11 +1,9 @@
 <template>
   <div>
-    <!-- Компонент шапки для навигации -->
     <AppHeader />
 
     <h1>Организации</h1>
 
-    <!-- Форма для добавления новой организации -->
     <form @submit.prevent="createOrganizationHandler" class="form-container">
       <q-input
         v-model="newOrganization.name"
@@ -77,9 +75,10 @@ import { QTableColumn } from 'quasar';
 import AppHeader from 'components/AppHeader.vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
+import Joi from 'joi'; // Подключаем Joi для валидации
+
 const $q = useQuasar();
 
-// Определение колонок для таблицы
 const columns: QTableColumn[] = [
   {
     name: 'name',
@@ -97,20 +96,17 @@ const columns: QTableColumn[] = [
   },
 ];
 
-// Интерфейс для организации
 interface Organization {
   id: string;
   name: string;
   comment: string;
 }
 
-// Состояния для организаций, новой организации и редактируемой организации
 const organizations = ref<Organization[]>([]);
 const newOrganization = ref<Organization>({ id: '', name: '', comment: '' });
-const editMode = ref(false); // Режим редактирования
-const editedOrganization = ref<Organization | null>(null); // Текущая редактируемая организация
+const editMode = ref(false);
+const editedOrganization = ref<Organization | null>(null);
 
-// Загрузка списка организаций
 const loadOrganizations = async () => {
   try {
     organizations.value = await getOrganizations();
@@ -119,43 +115,94 @@ const loadOrganizations = async () => {
   }
 };
 
-// Загрузка данных при монтировании компонента
 onMounted(() => {
   loadOrganizations();
 });
 
+const organizationSchema = Joi.object({
+  name: Joi.string().min(3).max(255).required().messages({
+    'string.min': 'Название организации должно содержать хотя бы 3 символа',
+    'string.max': 'Название организации не должно превышать 255 символов',
+    'string.empty': 'Название организации обязательно',
+  }),
+  comment: Joi.string().max(500).optional().messages({
+    'string.max': 'Комментарий не должен превышать 500 символов',
+  }),
+  id: Joi.forbidden(),
+  deleted_at: Joi.forbidden(),
+});
+
 const createOrganizationHandler = async () => {
+  const organizationData = {
+    name: newOrganization.value.name,
+    comment: newOrganization.value.comment,
+  };
+
+  const { error } = organizationSchema.validate(organizationData, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    error.details.forEach((err) =>
+      $q.notify({ type: 'negative', message: err.message })
+    );
+    return;
+  }
+
   try {
-    await createOrganization({
-      name: newOrganization.value.name.slice(0, 255),
-      comment: newOrganization.value.comment,
-    });
-    newOrganization.value = { id: '', name: '', comment: '' }; // Очистка формы
-    await loadOrganizations(); // Обновление списка организаций
+    await createOrganization(organizationData);
+    newOrganization.value = {
+      id: '',
+      name: '',
+      comment: '',
+    };
+    await loadOrganizations();
+    $q.notify({ type: 'positive', message: 'Организация успешно добавлена' });
   } catch (error) {
     console.error('Ошибка добавления организации:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Ошибка при добавлении организации',
+    });
   }
 };
 
 const updateOrganizationHandler = async () => {
-  if (editedOrganization.value) {
-    try {
-      await updateOrganization(editedOrganization.value.id, {
-        name: editedOrganization.value.name,
-        comment: editedOrganization.value.comment,
-      });
-      await loadOrganizations(); // Перезагрузка списка организаций из базы данных
-      cancelEdit();
-    } catch (error) {
-      console.error('Ошибка обновления организации:', error);
-    }
+  if (!editedOrganization.value) return;
+
+  const organizationData = {
+    name: editedOrganization.value.name,
+    comment: editedOrganization.value.comment,
+  };
+
+  const { error } = organizationSchema.validate(organizationData, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    error.details.forEach((err) =>
+      $q.notify({ type: 'negative', message: err.message })
+    );
+    return;
+  }
+
+  try {
+    await updateOrganization(editedOrganization.value.id, organizationData);
+    await loadOrganizations();
+    cancelEdit();
+    $q.notify({ type: 'positive', message: 'Организация успешно обновлена' });
+  } catch (error) {
+    console.error('Ошибка обновления организации:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Ошибка при обновлении организации',
+    });
   }
 };
 
-// Обработчик начала редактирования
 const startEditingOrganization = (organization: Organization) => {
-  editedOrganization.value = { ...organization }; // Копируем данные организации для редактирования
-  editMode.value = true; // Включаем режим редактирования
+  editedOrganization.value = { ...organization };
+  editMode.value = true;
 };
 
 const cancelEdit = () => {

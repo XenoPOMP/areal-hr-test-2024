@@ -59,6 +59,7 @@ import { ref, onMounted } from 'vue';
 import { getFiles, createFile, updateFile } from 'src/api';
 import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
+import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();
 
@@ -103,20 +104,56 @@ onMounted(() => {
   loadFiles();
 });
 
+const validateFile = (file: File) => {
+  const namePattern = /^[a-zA-Z0-9а-яА-ЯёЁ\s]+$/;
+  const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+
+  if (!file.name || !namePattern.test(file.name)) {
+    $q.notify({ type: 'negative', message: 'Некорректное имя файла' });
+    return false;
+  }
+
+  if (!file.link || !urlPattern.test(file.link)) {
+    $q.notify({ type: 'negative', message: 'Некорректная ссылка на файл' });
+    return false;
+  }
+
+  return true;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const fileSchema = Joi.object({
+  name: Joi.string().max(255).required().messages({
+    'string.empty': 'Название файла обязательно',
+    'string.max': 'Название файла не должно превышать 255 символов',
+  }),
+  link: Joi.string().uri().required().messages({
+    'string.empty': 'Ссылка на файл обязательна',
+    'string.uri': 'Ссылка на файл должна быть валидным URL',
+  }),
+}).unknown(false);
+
 const createFileHandler = async () => {
+  if (!validateFile(newFile.value)) return;
+
   try {
-    await createFile({
-      name: newFile.value.name.slice(0, 255),
-      link: newFile.value.link.slice(0, 255),
-    });
+    // Передаем только необходимые данные, без id
+    const { name, link } = newFile.value;
+    await createFile({ name: name.slice(0, 255), link: link.slice(0, 255) });
     newFile.value = { id: '', name: '', link: '' };
-    await await loadFiles();
+    await loadFiles();
   } catch (error) {
     console.error('Ошибка добавления файла:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Не удалось добавить файл',
+    });
   }
 };
 
 const updateFileHandler = async () => {
+  if (editedFile.value && !validateFile(editedFile.value)) return;
+
   if (editedFile.value) {
     try {
       await updateFile(editedFile.value.id, {
@@ -148,10 +185,10 @@ const deleteFileHandler = async (fileId: number) => {
     );
     console.log('Response:', response.data);
     await loadFiles();
-    $q.notify({ type: 'positive', message: 'Файл успешно удален' }); // Успешное уведомление
+    $q.notify({ type: 'positive', message: 'Файл успешно удален' });
   } catch (error) {
     console.error('Ошибка удаления файла:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении файла' }); // Ошибка
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении файла' });
   }
 };
 </script>

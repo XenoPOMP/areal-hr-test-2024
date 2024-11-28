@@ -117,6 +117,7 @@ import { ref, onMounted } from 'vue';
 import { getHrActions, createHrAction, updateHrAction } from 'src/api';
 import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
+import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();
 
@@ -226,15 +227,60 @@ onMounted(() => {
   loadSelectData();
 });
 
+const actionSchema = Joi.object({
+  id: Joi.number().optional().allow(null),
+  action_type: Joi.string().max(50).required().messages({
+    'string.empty': 'Тип операции обязателен',
+    'string.max': 'Тип операции не должен превышать 50 символов',
+  }),
+  date: Joi.date().required().messages({
+    'date.base': 'Дата операции обязательна',
+  }),
+  salary: Joi.number().positive().required().messages({
+    'number.base': 'Зарплата должна быть положительным числом',
+    'number.empty': 'Зарплата обязательна',
+  }),
+  employee_id: Joi.number().integer().required().messages({
+    'number.base': 'Необходимо выбрать сотрудника',
+  }),
+  department_id: Joi.number().integer().required().messages({
+    'number.base': 'Необходимо выбрать отдел',
+  }),
+  position_id: Joi.number().integer().required().messages({
+    'number.base': 'Необходимо выбрать должность',
+  }),
+}).unknown(false);
+
 const createActionHandler = async () => {
-  if (
-    newAction.value.employee_id == null ||
-    newAction.value.department_id == null ||
-    newAction.value.position_id == null
-  ) {
-    console.error(
-      'Все поля выбора (сотрудник, департамент, должность) должны быть заполнены.'
-    );
+  const employeeId =
+    typeof newAction.value.employee_id === 'object'
+      ? newAction.value.employee_id!.value
+      : newAction.value.employee_id!;
+
+  const departmentId =
+    typeof newAction.value.department_id === 'object'
+      ? newAction.value.department_id!.value
+      : newAction.value.department_id!;
+
+  const positionId =
+    typeof newAction.value.position_id === 'object'
+      ? newAction.value.position_id!.value
+      : newAction.value.position_id!;
+
+  const { error } = actionSchema.validate({
+    action_type: newAction.value.action_type,
+    date: newAction.value.date,
+    salary: newAction.value.salary,
+    employee_id: employeeId,
+    department_id: departmentId,
+    position_id: positionId,
+  });
+
+  if (error) {
+    $q.notify({
+      type: 'negative',
+      message: error.details[0].message,
+    });
     return;
   }
 
@@ -243,23 +289,13 @@ const createActionHandler = async () => {
       action_type: newAction.value.action_type.slice(0, 50),
       date: newAction.value.date || new Date().toISOString().split('T')[0],
       salary: newAction.value.salary,
-      employee_id:
-        typeof newAction.value.employee_id === 'object'
-          ? newAction.value.employee_id.value
-          : newAction.value.employee_id,
-      department_id:
-        typeof newAction.value.department_id === 'object'
-          ? newAction.value.department_id.value
-          : newAction.value.department_id,
-      position_id:
-        typeof newAction.value.position_id === 'object'
-          ? newAction.value.position_id.value
-          : newAction.value.position_id,
+      employee_id: employeeId,
+      department_id: departmentId,
+      position_id: positionId,
     };
 
     await createHrAction(actionData);
 
-    // Очистить значения после добавления
     newAction.value = {
       id: '',
       action_type: '',
@@ -278,14 +314,35 @@ const createActionHandler = async () => {
 
 const updateActionHandler = async () => {
   if (editedAction.value) {
-    if (
-      editedAction.value.employee_id == null ||
-      editedAction.value.department_id == null ||
-      editedAction.value.position_id == null
-    ) {
-      console.error(
-        'Все поля выбора (сотрудник, департамент, должность) должны быть заполнены.'
-      );
+    const employeeId =
+      typeof editedAction.value.employee_id === 'object'
+        ? editedAction.value.employee_id!.value
+        : editedAction.value.employee_id!;
+
+    const departmentId =
+      typeof editedAction.value.department_id === 'object'
+        ? editedAction.value.department_id!.value
+        : editedAction.value.department_id!;
+
+    const positionId =
+      typeof editedAction.value.position_id === 'object'
+        ? editedAction.value.position_id!.value
+        : editedAction.value.position_id!;
+
+    const { error } = actionSchema.validate({
+      action_type: editedAction.value.action_type,
+      date: editedAction.value.date,
+      salary: editedAction.value.salary,
+      employee_id: employeeId,
+      department_id: departmentId,
+      position_id: positionId,
+    });
+
+    if (error) {
+      $q.notify({
+        type: 'negative',
+        message: error.details[0].message,
+      });
       return;
     }
 
@@ -294,18 +351,9 @@ const updateActionHandler = async () => {
         action_type: editedAction.value.action_type,
         date: new Date().toISOString().split('T')[0],
         salary: editedAction.value.salary,
-        employee_id:
-          typeof editedAction.value.employee_id === 'object'
-            ? editedAction.value.employee_id.value
-            : editedAction.value.employee_id,
-        department_id:
-          typeof editedAction.value.department_id === 'object'
-            ? editedAction.value.department_id.value
-            : editedAction.value.department_id,
-        position_id:
-          typeof editedAction.value.position_id === 'object'
-            ? editedAction.value.position_id.value
-            : editedAction.value.position_id,
+        employee_id: employeeId,
+        department_id: departmentId,
+        position_id: positionId,
       });
       await loadActions();
       cancelEdit();
@@ -315,7 +363,6 @@ const updateActionHandler = async () => {
     }
   }
 };
-
 const startEditingAction = (action: HrActions) => {
   editedAction.value = { ...action };
   editMode.value = true;
@@ -333,10 +380,10 @@ const deleteActionHandler = async (hrId: number) => {
     );
     console.log('Response:', response.data);
     await loadActions();
-    $q.notify({ type: 'positive', message: 'Действие успешно удалено' }); // Успешное уведомление
+    $q.notify({ type: 'positive', message: 'Действие успешно удалено' });
   } catch (error) {
     console.error('Ошибка удаления действия:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении действия' }); // Ошибка
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении действия' });
   }
 };
 </script>

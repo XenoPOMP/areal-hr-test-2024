@@ -205,6 +205,7 @@
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
+import { employeeSchema } from 'components/Employee.shemas';
 import axios from 'axios';
 import {
   EmployeeBaseData,
@@ -424,11 +425,29 @@ const columns = ref([
   },
 ]);
 
-const createEmployeeHandler = async () => {
-  console.log('employeeBaseData:', employeeBaseData.value);
-  console.log('passportInfo:', passportInfo.value);
-  console.log('addressInfo:', addressInfo.value);
+const validateEmployee = (employeeData: Record<string, unknown>): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id, passport_id, address_id, deleted_at, ...validData } =
+    employeeData;
 
+  const { error } = employeeSchema.validate(validData, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    error.details.forEach((err) =>
+      $q.notify({
+        type: 'negative',
+        message: err.message,
+      })
+    );
+    return false;
+  }
+
+  return true;
+};
+
+const createEmployeeHandler = async () => {
   const passportData = {
     serial: passportInfo.value.serial || '',
     number: passportInfo.value.number || '',
@@ -452,9 +471,11 @@ const createEmployeeHandler = async () => {
     second_name: employeeBaseData.value.second_name || '',
     date_birth: formatDate(employeeBaseData.value.date_birth),
     position_id: employeeBaseData.value.position_id,
-    passportData,
-    addressData,
+    passport: passportData,
+    address: addressData,
   };
+
+  if (!validateEmployee(employeePayload)) return;
 
   $q.notify({
     type: 'info',
@@ -548,10 +569,19 @@ const updateEmployeeHandler = async () => {
     return;
   }
 
+  const payload = {
+    ...editedEmployee.value,
+    passport: editedEmployee.value.passport,
+    address: editedEmployee.value.address,
+  };
+
+  // Валидация перед отправкой
+  if (!validateEmployee(payload)) return;
+
   try {
     const response = await axios.put(
       `http://localhost:3000/employees/${editedEmployee.value.id}`,
-      editedEmployee.value
+      payload
     );
 
     if (response.status === 200) {
