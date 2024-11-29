@@ -30,7 +30,7 @@ const passportSchema = Joi.object({
       'string.pattern.base': 'Код подразделения должен быть в формате 123-456',
     }),
   deleted_at: Joi.date().optional().allow(null),
-}).unknown(false);
+}).unknown(true);
 
 // Схема для адреса
 const addressSchema = Joi.object({
@@ -58,7 +58,7 @@ const addressSchema = Joi.object({
     'string.max': 'Квартира не должна превышать 50 символов',
   }),
   deleted_at: Joi.date().optional().allow(null),
-}).unknown(false);
+}).unknown(true);
 
 // Основная схема сотрудника
 const employeeSchema = Joi.object({

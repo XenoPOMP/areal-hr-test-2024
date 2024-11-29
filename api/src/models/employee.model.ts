@@ -92,6 +92,10 @@ export class Employee extends Model {
   ) {
     const transaction = await this.sequelize.transaction();
 
+    console.log('Passport Data:', passportData);
+    console.log('Address Data:', addressData);
+    console.log('Employee Data:', employeeData);
+
     try {
       const passport = await Passport.create(
         { ...passportData },

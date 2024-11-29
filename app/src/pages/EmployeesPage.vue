@@ -449,17 +449,17 @@ const validateEmployee = (employeeData: Record<string, unknown>): boolean => {
 
 const createEmployeeHandler = async () => {
   const passportData = {
-    serial: passportInfo.value.serial || '',
-    number: passportInfo.value.number || '',
-    date_issue: formatDate(passportInfo.value.date_issue) || '',
-    issued_by: passportInfo.value.issued_by || '',
+    serial: passportInfo.value.serial,
+    number: passportInfo.value.number,
+    date_issue: formatDate(passportInfo.value.date_issue),
+    issued_by: passportInfo.value.issued_by,
     code: passportInfo.value.code || '',
   };
 
   const addressData = {
-    region: addressInfo.value.region || '',
-    settlement: addressInfo.value.settlement || '',
-    street: addressInfo.value.street || '',
+    region: addressInfo.value.region,
+    settlement: addressInfo.value.settlement,
+    street: addressInfo.value.street,
     house: addressInfo.value.house || '',
     housing: addressInfo.value.housing || '',
     flat: addressInfo.value.flat || '',
@@ -471,18 +471,20 @@ const createEmployeeHandler = async () => {
     second_name: employeeBaseData.value.second_name || '',
     date_birth: formatDate(employeeBaseData.value.date_birth),
     position_id: employeeBaseData.value.position_id,
-    passport: passportData,
-    address: addressData,
+    passportData: passportData,
+    addressData: addressData,
   };
 
   if (!validateEmployee(employeePayload)) return;
-
+  console.log('Employee Payload:', JSON.stringify(employeePayload));
   $q.notify({
     type: 'info',
     message: 'Отправка данных...',
   });
 
   try {
+    console.log('Employee Payload:', employeePayload);
+
     const response = await axios.post(
       'http://localhost:3000/employees',
       employeePayload

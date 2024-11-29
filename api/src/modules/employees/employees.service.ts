@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Employee } from '@models/employee.model';
 import { Address } from '@models/address.model';
 import { Passport } from '@models/passport.model';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Sequelize } from 'sequelize-typescript';
@@ -39,9 +40,17 @@ export class EmployeesService {
     const transaction = await this.sequelize.transaction();
 
     try {
-      const passport = await Passport.create(passportData, { transaction });
+      // Создаем записи паспорта и адреса
+      const passport = passportData
+        ? await Passport.create(passportData, { transaction })
+        : null;
+      const address = addressData
+        ? await Address.create(addressData, { transaction })
+        : null;
 
-      const address = await Address.create(addressData, { transaction });
+      if (!passport || !address) {
+        throw new Error('Failed to create passport or address');
+      }
 
       const employee = await Employee.create(
         {
@@ -52,12 +61,15 @@ export class EmployeesService {
         { transaction },
       );
 
+      // Подтверждаем транзакцию
       await transaction.commit();
-
       console.log('Employee created with ID:', employee.id);
+
+      return employee;
     } catch (error) {
       await transaction.rollback();
       console.error('Error during transaction:', error);
+      throw new Error(`Error during employee creation: ${error.message}`);
     }
   }
 

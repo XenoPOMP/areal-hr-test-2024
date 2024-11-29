@@ -34,6 +34,17 @@ export class EmployeesController {
 
   @Post()
   async createEmployee(@Body() employeeData: any) {
+    console.log('Received employee data:', employeeData);
+
+    if (!employeeData.passportData || !employeeData.addressData) {
+      throw new HttpException(
+        {
+          message: 'Passport or address data missing',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const { passportData, addressData, ...employeeBaseData } = employeeData;
 
     return this.employeesService.createEmployee(
