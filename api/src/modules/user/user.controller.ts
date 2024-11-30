@@ -10,15 +10,26 @@ import {
 import { UserService } from './user.service';
 import { RolesGuard } from 'guards/roles.guard';
 import { User } from 'models/user.model';
+import { AuthService } from './auth.service';
 
 const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
+
+  @Post('login')
+  async login(@Body() body: { login: string; password: string }) {
+    const { login, password } = body;
+    const user = await this.authService.validateUser(login, password);
+    return { message: 'Login successful', user };
+  }
 
   @Post('register')
-  @Roles('admin') // Декоратор с ролью admin
+  @Roles('admin')
   @UseGuards(RolesGuard)
   async register(
     @Body()

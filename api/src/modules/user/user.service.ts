@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as argon2 from 'argon2';
-import { User } from 'api/src/models/user.model';
+import { User } from 'models/user.model';
 
 @Injectable()
 export class UserService {
