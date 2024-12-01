@@ -137,11 +137,15 @@ const createFileHandler = async () => {
   if (!validateFile(newFile.value)) return;
 
   try {
-    // Передаем только необходимые данные, без id
     const { name, link } = newFile.value;
     await createFile({ name: name.slice(0, 255), link: link.slice(0, 255) });
     newFile.value = { id: '', name: '', link: '' };
     await loadFiles();
+
+    $q.notify({
+      type: 'positive',
+      message: 'Файл успешно добавлен',
+    });
   } catch (error) {
     console.error('Ошибка добавления файла:', error);
     $q.notify({
@@ -162,8 +166,18 @@ const updateFileHandler = async () => {
       });
       await loadFiles();
       cancelEdit();
+
+      $q.notify({
+        type: 'positive',
+        message: 'Файл успешно обновлён',
+      });
     } catch (error) {
       console.error('Ошибка обновления файла:', error);
+
+      $q.notify({
+        type: 'negative',
+        message: 'Не удалось обновить файл',
+      });
     }
   }
 };

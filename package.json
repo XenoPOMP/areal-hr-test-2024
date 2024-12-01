@@ -12,7 +12,7 @@
   "scripts": {
     "start": "nest start",
     "migrate": "node-pg-migrate",
-    "dev": "vitepress dev docs"
+    "docs:dev": "vitepress dev"
   },
   "keywords": [],
   "author": "",

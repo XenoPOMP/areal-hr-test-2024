@@ -357,12 +357,22 @@ const updateActionHandler = async () => {
       });
       await loadActions();
       cancelEdit();
+
+      $q.notify({
+        type: 'positive',
+        message: 'Операция успешно обновлена',
+      });
     } catch (error) {
       console.error('Ошибка обновления операции:', error);
-      throw error;
+
+      $q.notify({
+        type: 'negative',
+        message: 'Не удалось обновить операцию',
+      });
     }
   }
 };
+
 const startEditingAction = (action: HrActions) => {
   editedAction.value = { ...action };
   editMode.value = true;
