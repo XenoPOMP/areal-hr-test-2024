@@ -1,3 +1,5 @@
 node_modules
 .env
 npx
+pgmigrate.config.js
+vite.config.js
