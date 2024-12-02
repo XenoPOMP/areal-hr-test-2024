@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { OrganizationsModule } from 'modules/organizations/organizations.module';
 import { DepartmentsModule } from 'modules/departments/departments.module';
@@ -12,6 +13,7 @@ import { AddressesModule } from 'modules/addresses/addresses.module';
 import { AuthModule } from 'modules/user/auth.module';
 import { UserModule } from 'modules/user/user.module';
 import { SequelizeConfig } from 'config/sequelize.config';
+import * as path from 'path';
 
 @Module({
   imports: [
@@ -27,6 +29,9 @@ import { SequelizeConfig } from 'config/sequelize.config';
     AddressesModule,
     AuthModule,
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: path.join(__dirname, '..', 'uploads'),
+    }),
   ],
 })
 export class AppModule {}
