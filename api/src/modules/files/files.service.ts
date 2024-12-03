@@ -24,6 +24,7 @@ export class FilesService {
   }
 
   async create(dto: CreateFileDto): Promise<File> {
+    console.log('DTO перед созданием:', dto);
     return this.fileModel.create({ ...dto });
   }
 

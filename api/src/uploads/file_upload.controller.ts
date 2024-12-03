@@ -13,7 +13,7 @@ export class EmployeeController {
   constructor(private readonly fileRepository: FileRepository) {}
 
   @Post('upload-image')
-  @UseInterceptors(FileInterceptor('image', { storage: upload.storage }))
+  @UseInterceptors(FileInterceptor('image', { storage: upload }))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { employee_id: number },

@@ -80,7 +80,11 @@ export const getFiles = async () => {
   return response.data;
 };
 
-export const createFile = async (data: { name: string; link: string }) => {
+export const createFile = async (data: {
+  name: string;
+  link: string;
+  employee_id?: number | null;
+}) => {
   const response = await axios.post(`${API_URL}/files`, data);
   return response.data;
 };

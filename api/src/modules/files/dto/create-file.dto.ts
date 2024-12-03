@@ -11,5 +11,5 @@ export class CreateFileDto {
 
   @IsOptional()
   @IsInt()
-  readonly employee_id?: number; // Связь с сотрудником
+  employee_id?: number;
 }

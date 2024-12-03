@@ -24,7 +24,7 @@ export class File extends Model {
 
   @ForeignKey(() => Employee)
   @Column({ type: DataType.INTEGER, allowNull: true })
-  employee_id?: number;
+  employee_id?: number | null;
 
   @Column({ type: DataType.DATE, allowNull: true })
   deleted_at: Date | null;

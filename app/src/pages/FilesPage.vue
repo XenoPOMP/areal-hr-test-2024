@@ -7,6 +7,16 @@
     <form @submit.prevent="createFileHandler" class="form-container">
       <q-input v-model="newFile.name" label="Название" filled required />
       <q-input v-model="newFile.link" label="Ссылка на файл" filled required />
+
+      <q-select
+        v-model="newFile.employee_id"
+        :options="employees"
+        option-label="label"
+        option-value="value"
+        label="Выберите сотрудника"
+        filled
+      />
+
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
@@ -63,16 +73,46 @@ import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();
 
+type SelectableValue = number | { label: string; value: number } | null;
+
 interface File {
   id: string;
   name: string;
   link: string;
+  employee_id: SelectableValue;
 }
 
 const files = ref<File[]>([]);
-const newFile = ref<File>({ id: '', name: '', link: '' });
+const newFile = ref<File>({
+  id: '',
+  name: '',
+  link: '',
+  employee_id: null,
+});
 const editMode = ref(false);
 const editedFile = ref<File | null>(null);
+
+interface Employee {
+  id: number;
+  name: string;
+  surname: string;
+}
+
+const employees = ref<Employee[]>([]);
+
+const loadSelectData = async () => {
+  try {
+    const employeesResponse = await axios.get(
+      'http://localhost:3000/employees'
+    );
+    employees.value = employeesResponse.data.map((emp: Employee) => ({
+      label: `${emp.name} ${emp.surname}`,
+      value: emp.id,
+    }));
+  } catch (error) {
+    console.error('Ошибка загрузки данных для сотрудников:', error);
+  }
+};
 
 const columns: QTableColumn[] = [
   {
@@ -102,11 +142,12 @@ const loadFiles = async () => {
 
 onMounted(() => {
   loadFiles();
+  loadSelectData();
 });
 
 const validateFile = (file: File) => {
   const namePattern = /^[a-zA-Z0-9а-яА-ЯёЁ\s]+$/;
-  const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+  const urlPattern = /^(https?|ftp):\/\/[^\s\/$.?#].\S*$/i;
 
   if (!file.name || !namePattern.test(file.name)) {
     $q.notify({ type: 'negative', message: 'Некорректное имя файла' });
@@ -131,16 +172,50 @@ const fileSchema = Joi.object({
     'string.empty': 'Ссылка на файл обязательна',
     'string.uri': 'Ссылка на файл должна быть валидным URL',
   }),
+  employee_id: Joi.number().integer().allow(null).messages({
+    'number.base': 'Необходимо выбрать сотрудника',
+  }),
 }).unknown(false);
 
 const createFileHandler = async () => {
-  if (!validateFile(newFile.value)) return;
+  let employeeId = newFile.value.employee_id;
+
+  if (typeof employeeId === 'object' && employeeId !== null) {
+    employeeId = employeeId.value;
+  }
+
+  if (!employeeId) {
+    $q.notify({
+      type: 'negative',
+      message: 'Необходимо выбрать сотрудника',
+    });
+    return;
+  }
+
+  const { error } = fileSchema.validate({
+    name: newFile.value.name,
+    link: newFile.value.link,
+    employee_id: employeeId,
+  });
+
+  if (error) {
+    $q.notify({
+      type: 'negative',
+      message: error.details[0].message,
+    });
+    return;
+  }
+
+  const fileData = {
+    name: newFile.value.name.slice(0, 255),
+    link: newFile.value.link.slice(0, 255),
+    employee_id: employeeId,
+  };
 
   try {
-    const { name, link } = newFile.value;
-    await createFile({ name: name.slice(0, 255), link: link.slice(0, 255) });
-    newFile.value = { id: '', name: '', link: '' };
-    await loadFiles();
+    await createFile(fileData);
+
+    newFile.value = { id: '', name: '', link: '', employee_id: null };
 
     $q.notify({
       type: 'positive',
@@ -148,6 +223,7 @@ const createFileHandler = async () => {
     });
   } catch (error) {
     console.error('Ошибка добавления файла:', error);
+
     $q.notify({
       type: 'negative',
       message: 'Не удалось добавить файл',
