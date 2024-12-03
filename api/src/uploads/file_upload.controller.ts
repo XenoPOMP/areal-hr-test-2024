@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { upload, FileRepository } from './file_upload.service'; // Импортируем уже настроенный multer
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Controller('employee')
 export class EmployeeController {
@@ -18,13 +20,29 @@ export class EmployeeController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { employee_id: number },
   ) {
-    const filePath = `/uploads/employee_images/${file.filename}`;
+    if (!body.employee_id) {
+      throw new Error('Employee ID is required');
+    }
 
-    // Сохраняем ссылку на изображение в базе данных
+    // Путь и логика сохранения изображения
+    const employeeFolder = path.join(
+      __dirname,
+      '..',
+      '..',
+      'files',
+      body.employee_id.toString(),
+    );
+    if (!fs.existsSync(employeeFolder)) {
+      fs.mkdirSync(employeeFolder, { recursive: true });
+    }
+    const filePath = path.join(employeeFolder, file.filename);
+    fs.renameSync(file.path, filePath);
+
+    // Сохраняем в базу данных
     await this.fileRepository.save({
       name: file.filename,
-      link: filePath,
-      employee_id: body.employee_id, // Связываем изображение с сотрудником
+      link: `/files/${body.employee_id}/${file.filename}`,
+      employee_id: body.employee_id,
     });
 
     return { message: 'Image uploaded successfully', filePath };

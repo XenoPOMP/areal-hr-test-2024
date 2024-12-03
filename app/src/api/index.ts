@@ -91,7 +91,7 @@ export const createFile = async (data: {
 
 export const updateFile = async (
   id: string,
-  data: { name: string; link: string }
+  data: { name: string; link: string; employee_id: number }
 ) => {
   const response = await axios.put(`${API_URL}/files/${id}`, data);
   return response.data;

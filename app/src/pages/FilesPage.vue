@@ -20,6 +20,27 @@
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
+    <div>
+      <h3>Загрузить изображение паспорта сотрудника</h3>
+
+      <q-file
+        filled
+        label="Выберите изображение"
+        v-model="selectedFile"
+        accept="image/*"
+        :disable="loading"
+      />
+      <q-btn
+        label="Загрузить"
+        color="primary"
+        :disable="loading || !selectedFile"
+        @click="uploadImage"
+      />
+
+      <q-spinner v-if="loading" size="30px" class="q-ma-xs" />
+      <q-notify v-if="message" :message="message" :color="notifyColor" />
+    </div>
+
     <q-table
       :rows="files"
       :columns="columns"
@@ -53,6 +74,15 @@
         <q-input
           v-model="editedFile.link"
           label="Ссылка на файл"
+          filled
+          required
+        />
+        <q-select
+          v-model="editedFile.employee_id"
+          :options="employees"
+          option-label="label"
+          option-value="value"
+          label="Выберите сотрудника"
           filled
           required
         />
@@ -145,6 +175,7 @@ onMounted(() => {
   loadSelectData();
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const validateFile = (file: File) => {
   const namePattern = /^[a-zA-Z0-9а-яА-ЯёЁ\s]+$/;
   const urlPattern = /^(https?|ftp):\/\/[^\s\/$.?#].\S*$/i;
@@ -232,14 +263,42 @@ const createFileHandler = async () => {
 };
 
 const updateFileHandler = async () => {
-  if (editedFile.value && !validateFile(editedFile.value)) return;
-
   if (editedFile.value) {
+    const employeeId =
+      typeof editedFile.value.employee_id === 'object' &&
+      editedFile.value.employee_id !== null
+        ? editedFile.value.employee_id.value
+        : editedFile.value.employee_id;
+
+    if (employeeId === null || employeeId === 0) {
+      $q.notify({
+        type: 'negative',
+        message: 'Необходимо выбрать сотрудника',
+      });
+      return;
+    }
+
+    const { error } = fileSchema.validate({
+      name: editedFile.value.name,
+      link: editedFile.value.link,
+      employee_id: employeeId,
+    });
+
+    if (error) {
+      $q.notify({
+        type: 'negative',
+        message: error.details[0].message,
+      });
+      return;
+    }
+
     try {
       await updateFile(editedFile.value.id, {
         name: editedFile.value.name,
         link: editedFile.value.link,
+        employee_id: employeeId,
       });
+
       await loadFiles();
       cancelEdit();
 
@@ -279,6 +338,54 @@ const deleteFileHandler = async (fileId: number) => {
   } catch (error) {
     console.error('Ошибка удаления файла:', error);
     $q.notify({ type: 'negative', message: 'Ошибка при удалении файла' });
+  }
+};
+
+const loading = ref(false);
+const message = ref('');
+const notifyColor = ref('positive');
+const selectedFile = ref<File | null>(null);
+
+const uploadImage = async () => {
+  if (!selectedFile.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'Пожалуйста, выберите изображение.',
+    });
+    return;
+  }
+
+  if (!(selectedFile.value instanceof File)) {
+    $q.notify({
+      type: 'negative',
+      message: 'Выбранный объект не является файлом.',
+    });
+    return;
+  }
+
+  loading.value = true;
+  message.value = '';
+  notifyColor.value = 'positive';
+
+  const formData = new FormData();
+  formData.append('image', selectedFile.value);
+  formData.append('employee_id', '');
+
+  try {
+    const response = await axios.post('/employee/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    message.value = response.data.message;
+    notifyColor.value = 'positive';
+  } catch (error) {
+    console.error(error);
+    message.value = 'Ошибка при загрузке изображения';
+    notifyColor.value = 'negative';
+  } finally {
+    loading.value = false;
   }
 };
 </script>

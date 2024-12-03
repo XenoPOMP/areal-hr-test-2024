@@ -17,11 +17,12 @@ export class FileRepository {
 // Конфигурация для Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/employee_images'); // Папка для хранения
+    // Папка для временного хранения изображений
+    cb(null, 'uploads/temp');
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname); // Получаем расширение файла
-    const filename = `employee_${Date.now()}${ext}`; // Генерируем уникальное имя
+    const filename = `temp_${Date.now()}${ext}`; // Генерируем уникальное имя
     cb(null, filename); // Устанавливаем имя файла
   },
 });
