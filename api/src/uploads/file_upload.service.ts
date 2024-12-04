@@ -1,31 +1,36 @@
 import { Injectable } from '@nestjs/common';
+import { File } from '@models/file.model';
 import { InjectModel } from '@nestjs/sequelize';
-import multer from 'multer';
-import * as path from 'node:path';
-import { File } from 'src/models/file.model';
+import { Employee } from '@models/employee.model';
+import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
 
-// Репозиторий для работы с файлами
 @Injectable()
-export class FileRepository {
-  constructor(@InjectModel(File) private fileModel: typeof File) {}
+export class FileUploadService {
+  constructor(
+    @InjectModel(File) private readonly fileModel: typeof File,
+    @InjectModel(Employee) private readonly employeeModel: typeof Employee,
+  ) {}
 
-  async save(fileData: any) {
-    return this.fileModel.create(fileData);
+  async uploadFile(
+    file: Express.Multer.File,
+    employee_id: number,
+  ): Promise<string> {
+    const fileExtension = path.extname(file.originalname);
+    const fileName = `${uuidv4()}${fileExtension}`;
+
+    const filePath = path.join(__dirname, '../../uploads', fileName);
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    const newFile = await this.fileModel.create({
+      name: file.originalname,
+      link: filePath,
+      employee_id,
+      deleted_at: null,
+    });
+
+    return newFile.link;
   }
 }
-
-// Конфигурация для Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Папка для временного хранения изображений
-    cb(null, 'uploads/temp');
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); // Получаем расширение файла
-    const filename = `temp_${Date.now()}${ext}`; // Генерируем уникальное имя
-    cb(null, filename); // Устанавливаем имя файла
-  },
-});
-
-// Создайте экземпляр multer с настройками
-export const upload = multer({ storage });

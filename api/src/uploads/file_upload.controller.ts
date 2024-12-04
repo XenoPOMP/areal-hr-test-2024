@@ -6,45 +6,23 @@ import {
   Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { upload, FileRepository } from './file_upload.service'; // Импортируем уже настроенный multer
-import * as fs from 'fs';
-import * as path from 'path';
+import { FileUploadService } from 'uploads/file_upload.service';
 
-@Controller('employee')
-export class EmployeeController {
-  constructor(private readonly fileRepository: FileRepository) {}
+@Controller('uploads')
+export class FileUploadController {
+  constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('upload-image')
-  @UseInterceptors(FileInterceptor('image', { storage: upload }))
+  @UseInterceptors(FileInterceptor('image'))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { employee_id: number },
+    @Body('employee_id') employee_id: number,
   ) {
-    if (!body.employee_id) {
+    if (!employee_id) {
       throw new Error('Employee ID is required');
     }
 
-    // Путь и логика сохранения изображения
-    const employeeFolder = path.join(
-      __dirname,
-      '..',
-      '..',
-      'files',
-      body.employee_id.toString(),
-    );
-    if (!fs.existsSync(employeeFolder)) {
-      fs.mkdirSync(employeeFolder, { recursive: true });
-    }
-    const filePath = path.join(employeeFolder, file.filename);
-    fs.renameSync(file.path, filePath);
-
-    // Сохраняем в базу данных
-    await this.fileRepository.save({
-      name: file.filename,
-      link: `/files/${body.employee_id}/${file.filename}`,
-      employee_id: body.employee_id,
-    });
-
-    return { message: 'Image uploaded successfully', filePath };
+    const filePath = await this.fileUploadService.uploadFile(file, employee_id);
+    return { filePath };
   }
 }

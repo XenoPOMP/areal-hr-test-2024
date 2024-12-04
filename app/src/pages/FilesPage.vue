@@ -7,7 +7,6 @@
     <form @submit.prevent="createFileHandler" class="form-container">
       <q-input v-model="newFile.name" label="Название" filled required />
       <q-input v-model="newFile.link" label="Ссылка на файл" filled required />
-
       <q-select
         v-model="newFile.employee_id"
         :options="employees"
@@ -20,27 +19,6 @@
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
 
-    <div>
-      <h3>Загрузить изображение паспорта сотрудника</h3>
-
-      <q-file
-        filled
-        label="Выберите изображение"
-        v-model="selectedFile"
-        accept="image/*"
-        :disable="loading"
-      />
-      <q-btn
-        label="Загрузить"
-        color="primary"
-        :disable="loading || !selectedFile"
-        @click="uploadImage"
-      />
-
-      <q-spinner v-if="loading" size="30px" class="q-ma-xs" />
-      <q-notify v-if="message" :message="message" :color="notifyColor" />
-    </div>
-
     <q-table
       :rows="files"
       :columns="columns"
@@ -50,20 +28,41 @@
       class="table-container"
     >
       <template v-slot:body-cell-actions="props">
-        <q-btn
-          color="primary"
-          label="Изменить"
-          @click="startEditingFile(props.row)"
-          flat
-          size="sm"
-        />
-        <q-btn
-          color="negative"
-          label="Удалить"
-          @click="deleteFileHandler(props.row.id)"
-          flat
-          size="sm"
-        />
+        <q-tr :props="props">
+          <q-td :props="props">
+            <q-btn
+              color="primary"
+              label="Изменить"
+              @click="startEditingFile(props.row)"
+              flat
+              size="sm"
+            />
+            <q-btn
+              color="negative"
+              label="Удалить"
+              @click="deleteFileHandler(props.row.id)"
+              flat
+              size="sm"
+            />
+            <!-- Кнопка для выбора изображения -->
+            <q-btn
+              color="primary"
+              label="Добавить скан"
+              icon="attach_file"
+              flat
+              size="sm"
+              @click="selectImage(props.row.employee_id)"
+            />
+            <input
+              type="file"
+              :ref="`fileImage_${props.row.employee_id}`"
+              :data-employee-id="props.row.employee_id"
+              accept="image/*"
+              @change="handleImageChange(props.row.employee_id)"
+              style="display: none"
+            />
+          </q-td>
+        </q-tr>
       </template>
     </q-table>
 
@@ -95,7 +94,7 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import { getFiles, createFile, updateFile } from 'src/api';
 import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
@@ -105,22 +104,22 @@ const $q = useQuasar();
 
 type SelectableValue = number | { label: string; value: number } | null;
 
-interface File {
+interface AppFile {
   id: string;
   name: string;
   link: string;
   employee_id: SelectableValue;
 }
 
-const files = ref<File[]>([]);
-const newFile = ref<File>({
+const files = ref<AppFile[]>([]);
+const newFile = ref<AppFile>({
   id: '',
   name: '',
   link: '',
   employee_id: null,
 });
 const editMode = ref(false);
-const editedFile = ref<File | null>(null);
+const editedFile = ref<AppFile | null>(null);
 
 interface Employee {
   id: number;
@@ -176,7 +175,7 @@ onMounted(() => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const validateFile = (file: File) => {
+const validateFile = (file: AppFile) => {
   const namePattern = /^[a-zA-Z0-9а-яА-ЯёЁ\s]+$/;
   const urlPattern = /^(https?|ftp):\/\/[^\s\/$.?#].\S*$/i;
 
@@ -317,7 +316,7 @@ const updateFileHandler = async () => {
   }
 };
 
-const startEditingFile = (file: File) => {
+const startEditingFile = (file: AppFile) => {
   editedFile.value = { ...file };
   editMode.value = true;
 };
@@ -341,24 +340,64 @@ const deleteFileHandler = async (fileId: number) => {
   }
 };
 
+const selectedFile = ref<File | null>(null);
 const loading = ref(false);
 const message = ref('');
 const notifyColor = ref('positive');
-const selectedFile = ref<File | null>(null);
 
-const uploadImage = async () => {
-  if (!selectedFile.value) {
+const fileImageInputs = ref<Record<string, HTMLInputElement | null>>({});
+console.log(fileImageInputs.value);
+console.log(JSON.stringify(fileImageInputs.value));
+
+const selectImage = (employee_id: number) => {
+  const fileInput = fileImageInputs.value[`fileImage_${employee_id}`];
+  console.log(`fileInput for employee ${employee_id}:`, fileInput);
+  if (fileInput && fileInput instanceof HTMLInputElement) {
+    fileInput.click();
+  } else {
+    console.error(`Не удалось найти input для сотрудника с id: ${employee_id}`);
+  }
+};
+
+const handleImageChange = (employee_id: number) => {
+  const fileInput = fileImageInputs.value[`fileImage_${employee_id}`];
+  console.log(`File input change for employee ${employee_id}:`, fileInput);
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    selectedFile.value = fileInput.files[0];
+    uploadImage(employee_id);
+  } else {
+    console.error('Файл не выбран');
     $q.notify({
       type: 'negative',
       message: 'Пожалуйста, выберите изображение.',
     });
-    return;
   }
+};
 
-  if (!(selectedFile.value instanceof File)) {
+watch(
+  () => files,
+  async () => {
+    await nextTick();
+    const inputs = document.querySelectorAll('input[type="file"]');
+    inputs.forEach((input: Element) => {
+      const employee_id = (input as HTMLInputElement).getAttribute(
+        'data-employee-id'
+      );
+      console.log(`Input for employee_id: ${employee_id}`);
+      if (employee_id) {
+        fileImageInputs.value[`fileImage_${employee_id}`] =
+          input as HTMLInputElement;
+      }
+    });
+  },
+  { immediate: true }
+);
+
+const uploadImage = async (employee_id: number) => {
+  if (!selectedFile.value) {
     $q.notify({
       type: 'negative',
-      message: 'Выбранный объект не является файлом.',
+      message: 'Пожалуйста, выберите изображение.',
     });
     return;
   }
@@ -369,16 +408,16 @@ const uploadImage = async () => {
 
   const formData = new FormData();
   formData.append('image', selectedFile.value);
-  formData.append('employee_id', '');
+  formData.append('employee_id', String(employee_id));
 
   try {
-    const response = await axios.post('/employee/upload-image', formData, {
+    const response = await axios.post('/uploads/upload-image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
 
-    message.value = response.data.message;
+    message.value = response.data.filePath;
     notifyColor.value = 'positive';
   } catch (error) {
     console.error(error);
