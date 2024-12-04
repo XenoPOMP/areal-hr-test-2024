@@ -17,9 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migrate": "npx node-pg-migrate up --migrations-dir migrations -d postgres://postgres:Spiridon_2017@localhost:5432/areal_hr",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -36,7 +34,6 @@
     "dotenv": "^16.4.5",
     "joi": "^17.13.3",
     "multer": "^1.4.5-lts.1",
-    "node-pg-migrate": "^7.8.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.13.1",
@@ -45,7 +42,8 @@
     "rxjs": "^7.8.1",
     "sequelize": "^6.37.5",
     "sequelize-cli": "^6.6.2",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
