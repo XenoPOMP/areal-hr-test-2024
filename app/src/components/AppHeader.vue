@@ -38,6 +38,14 @@
           @click="goTo('/history_of_changes')"
         />
       </q-tabs>
+      <!-- Кнопка "Выйти" -->
+      <q-btn
+        flat
+        label="Выйти"
+        icon="logout"
+        color="white"
+        @click="handleLogout"
+      />
     </q-toolbar>
   </q-header>
 </template>
@@ -45,6 +53,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { logout } from 'src/router/auth';
 
 const router = useRouter();
 const route = useRoute();
@@ -60,6 +69,11 @@ watch(
 
 const goTo = (path: string) => {
   router.push({ path });
+};
+
+const handleLogout = () => {
+  logout();
+  router.push('/login');
 };
 </script>
 

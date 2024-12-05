@@ -1,35 +1,32 @@
 import { route } from 'quasar/wrappers';
 import {
-  createMemoryHistory,
   createRouter,
-  createWebHashHistory,
   createWebHistory,
+  createWebHashHistory,
 } from 'vue-router';
-
 import routes from './routes';
 
 /*
- * If not building with SSR mode, you can
- * directly export the Router instantiation;
- *
+ * This is where we configure the Vue Router instance.
  * The function below can be async too; either use
- * async/await or return a Promise which resolves
+ * async/await or return a Promise that resolves
  * with the Router instance.
  */
 
 export default route(function (/* { store, ssrContext } */) {
-  const createHistory = process.env.SERVER
-    ? createMemoryHistory
-    : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
+  // Use 'hash' mode explicitly for debugging purposes
+  const createHistory =
+    process.env.VUE_ROUTER_MODE === 'history'
+      ? createWebHistory()
+      : createWebHashHistory();
+
+  // Debug: log which mode is being used
+  console.log('Router mode:', process.env.VUE_ROUTER_MODE || 'hash');
 
   const Router = createRouter({
-    scrollBehavior: () => ({ left: 0, top: 0 }),
+    history: createHistory,
     routes,
-
-    // Leave this as is and make changes in quasar.conf.js instead!
-    // quasar.conf.js -> build -> vueRouterMode
-    // quasar.conf.js -> build -> publicPath
-    history: createHistory(process.env.VUE_ROUTER_BASE),
+    scrollBehavior: () => ({ left: 0, top: 0 }),
   });
 
   return Router;

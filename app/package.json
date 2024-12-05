@@ -13,7 +13,7 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.13",
+    "@quasar/extras": "^1.16.14",
     "axios": "^1.2.1",
     "pinia": "^2.0.11",
     "quasar": "^2.16.0",

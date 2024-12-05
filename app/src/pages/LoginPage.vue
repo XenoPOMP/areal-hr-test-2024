@@ -34,6 +34,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { login as authLogin, getRedirectRoute } from 'src/router/auth';
 
 export default {
   name: 'LoginPage',
@@ -45,6 +46,8 @@ export default {
 
     const handleLogin = async () => {
       try {
+        error.value = null;
+
         const response = await axios.post('http://localhost:3000/users/login', {
           login: login.value,
           password: password.value,
@@ -53,13 +56,20 @@ export default {
         console.log('Login response:', response.data);
 
         if (response.data && response.data.user) {
-          router.push({ name: 'organizations' });
+          console.log('Successful login');
+          authLogin();
+          const redirectRoute = getRedirectRoute() || '/organizations';
+          console.log('Redirecting to:', redirectRoute);
+          router.push(redirectRoute);
         } else {
+          console.log('Invalid credentials');
           error.value = 'Неверный логин или пароль.';
         }
       } catch (err) {
         console.error('Login error:', err);
-        error.value = 'Ошибка авторизации. Попробуйте ещё раз.';
+        error.value =
+          err.response?.data?.message ||
+          'Ошибка авторизации. Попробуйте ещё раз.';
       }
     };
 
