@@ -10,10 +10,14 @@ import { HrActionsModule } from 'modules/hr_actions/hr_actions.module';
 import { HistoryOfChangesModule } from 'modules/history_of_changes/history_of_changes.module';
 import { PassportsModule } from 'modules/passports/passports.module';
 import { AddressesModule } from 'modules/addresses/addresses.module';
-import { AuthModule } from 'modules/user/auth.module';
+import { AuthModule } from 'auth/auth.module';
 import { UserModule } from 'modules/user/user.module';
 import { SequelizeConfig } from 'config/sequelize.config';
 import * as path from 'path';
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from 'auth/auth.service';
+import { AuthController } from 'auth/auth.controller';
+import { LocalStrategy } from 'auth/local.strategy';
 
 @Module({
   imports: [
@@ -29,9 +33,12 @@ import * as path from 'path';
     AddressesModule,
     AuthModule,
     UserModule,
+    PassportModule,
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'uploads'),
     }),
   ],
+  providers: [AuthService, LocalStrategy],
+  controllers: [AuthController],
 })
 export class AppModule {}

@@ -18,7 +18,7 @@ export class UserService {
     name: string,
     surname: string,
     second_name: string,
-    login: string,
+    login: string, // Используем login
     password: string,
     role: string = 'user',
   ) {
@@ -27,7 +27,7 @@ export class UserService {
       name,
       surname,
       second_name,
-      login,
+      login, // Используем login
       password: hashedPassword,
       role,
     });
@@ -36,7 +36,7 @@ export class UserService {
   }
 
   async findByLogin(login: string) {
-    return this.userModel.findOne({ where: { login } });
+    return this.userModel.findOne({ where: { login } }); // Используем login
   }
 
   async updateUser(id: number, updateData: Partial<User>) {

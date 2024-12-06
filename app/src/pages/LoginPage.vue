@@ -39,7 +39,7 @@ import { login as authLogin, getRedirectRoute } from 'src/router/auth';
 export default {
   name: 'LoginPage',
   setup() {
-    const login = ref('');
+    const login = ref(''); // Переименовано на username
     const password = ref('');
     const error = ref(null);
     const router = useRouter();
@@ -48,7 +48,7 @@ export default {
       try {
         error.value = null;
 
-        const response = await axios.post('http://localhost:3000/users/login', {
+        const response = await axios.post('http://localhost:3000/auth/login', {
           login: login.value,
           password: password.value,
         });
@@ -67,6 +67,7 @@ export default {
         }
       } catch (err) {
         console.error('Login error:', err);
+        // Теперь ошибка в response data может содержать поле message
         error.value =
           err.response?.data?.message ||
           'Ошибка авторизации. Попробуйте ещё раз.';

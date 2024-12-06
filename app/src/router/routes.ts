@@ -1,6 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-import { isAuthenticated, setRedirectRoute } from './auth';
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { isAuthenticated } from './auth';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -11,7 +10,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('src/layouts/MainLayout.vue'),
-    redirect: '/organizations', // Перенаправление на основной маршрут
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    redirect: (to) => {
+      return isAuthenticated() ? '/organizations' : '/login';
+    },
     children: [
       {
         path: 'organizations',
@@ -58,22 +60,5 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 ];
-
-// Глобальная защита маршрутов, требующих авторизации
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes,
-});
-
-router.beforeEach((to, from, next) => {
-  console.log('Navigating to:', to.fullPath);
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    console.log('User not authenticated, redirecting to login');
-    setRedirectRoute(to.fullPath);
-    next({ name: 'login' });
-  } else {
-    next(); // Продолжаем переход
-  }
-});
 
 export default routes;
