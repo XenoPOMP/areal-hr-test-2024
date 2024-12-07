@@ -1,32 +1,31 @@
 import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
-import passport from 'passport';
-import { AppModule } from 'app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Настройка CORS
   app.enableCors({
-    origin: 'http://localhost:9000',
-    methods: 'GET, POST, PUT, DELETE, OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization',
-    credentials: true,
+    origin: 'http://localhost:9000', // Разрешаем только origin фронтенда
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization', // Разрешаем эти заголовки
+    credentials: true, // Разрешаем передачу cookies
   });
 
   app.use(
     session({
       secret:
-        process.env.SESSION_SECRET ||
         'c8f23775e445ce1fb719237a4a13ea6bbe3ebefe3eed54c3b6b03130197329f3',
       resave: false,
       saveUninitialized: false,
-      cookie: { maxAge: 3600000 }, // Время действия сессии: 1 час
+      cookie: { secure: false, httpOnly: true, sameSite: 'lax' }, // cookie для сессии
     }),
   );
 
-  // Инициализация Passport
-  app.use(passport.initialize());
-  app.use(passport.session());
+  // Включение глобальных пайпов для валидации
+  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(3000);
 }

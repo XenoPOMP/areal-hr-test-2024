@@ -4,24 +4,38 @@ let redirectRoute = null; // Глобальная переменная для х
 // Функция для восстановления состояния авторизации
 export async function restoreAuthState() {
   try {
-    const response = await fetch('/session', {
-      credentials: 'include', // Передача cookie для сессий
+    const response = await fetch('http://localhost:3000/auth/session', {
+      credentials: 'include',
     });
 
+    if (response.status === 401) {
+      console.log('No active session (401)');
+      isUserAuthenticated = false;
+      return false; // Нет активной сессии
+    }
+
+    const data = await response.json();
+    console.log('Session response:', data);
+
     if (response.ok) {
-      const data = await response.json();
+      if (data.message === 'Not authenticated') {
+        console.log('No active session');
+        isUserAuthenticated = false;
+        return false; // Нет активной сессии
+      }
+
       console.log('Session restored:', data);
-      isUserAuthenticated = true; // Устанавливаем флаг авторизации в true
+      isUserAuthenticated = true;
       return true; // Пользователь авторизован
     } else {
-      console.log('No active session');
-      isUserAuthenticated = false; // Устанавливаем флаг авторизации в false
-      return false; // Нет активной сессии
+      console.log('Error: No active session');
+      isUserAuthenticated = false;
+      return false;
     }
   } catch (error) {
     console.error('Error restoring session:', error);
-    isUserAuthenticated = false; // Устанавливаем флаг авторизации в false
-    return false; // Ошибка при восстановлении
+    isUserAuthenticated = false;
+    return false;
   }
 }
 
@@ -36,28 +50,20 @@ export function getRedirectRoute() {
 }
 
 // Функция для выполнения входа
-export async function login(credentials) {
-  try {
-    const response = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-      credentials: 'include', // Включаем cookie для сессии
-    });
+export async function login(login, password) {
+  const response = await fetch('http://localhost:3000/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ login, password }),
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log('User logged in:', data);
-      isUserAuthenticated = true; // Устанавливаем флаг авторизации в true
-      return data; // Возвращаем данные пользователя
-    } else {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
-    }
-  } catch (error) {
-    console.error('Error during login:', error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Error: ${response.status}`);
   }
+
+  return await response.json();
 }
 
 // Функция для выполнения выхода

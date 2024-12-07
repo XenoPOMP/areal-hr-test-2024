@@ -1,57 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import * as argon2 from 'argon2';
-import { User } from 'models/user.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User)
-    private userModel: typeof User,
+    @InjectModel(User) private readonly userModel: typeof User, // Инжектим модель User
   ) {}
 
-  async getAllUsers() {
-    return this.userModel.findAll({ where: { deleted_at: null } });
-  }
-
-  async createUser(
-    name: string,
-    surname: string,
-    second_name: string,
-    login: string, // Используем login
-    password: string,
-    role: string = 'user',
-  ) {
-    const hashedPassword = await argon2.hash(password);
-    const user = await this.userModel.create({
-      name,
-      surname,
-      second_name,
-      login, // Используем login
-      password: hashedPassword,
-      role,
-    });
-
-    return user;
-  }
-
+  // Метод для поиска пользователя по логину
   async findByLogin(login: string) {
-    return this.userModel.findOne({ where: { login } }); // Используем login
+    return this.userModel.findOne({
+      where: { login },
+    });
   }
 
+  // Метод для создания нового пользователя
+  async createUser(login: string, password: string) {
+    const newUser = await this.userModel.create({ login, password });
+    return newUser;
+  }
+
+  // Метод для обновления данных пользователя
   async updateUser(id: number, updateData: Partial<User>) {
     const user = await this.userModel.findByPk(id);
-    if (user) {
-      return user.update(updateData);
+    if (!user) {
+      throw new Error('User not found');
     }
-    return null;
+
+    return user.update(updateData);
   }
 
+  // Метод для деактивации пользователя (например, через удаление или установку флага)
   async deactivateUser(id: number) {
     const user = await this.userModel.findByPk(id);
-    if (user) {
-      return user.update({ deleted_at: new Date() });
+    if (!user) {
+      throw new Error('User not found');
     }
-    return null;
+
+    return user.update({ deleted_at: new Date() }); // Устанавливаем deleted_at для "деактивации"
   }
 }

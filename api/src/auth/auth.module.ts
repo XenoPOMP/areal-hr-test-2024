@@ -1,13 +1,11 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { LocalAuthGuard } from 'src/guards/local-auth.guard';
-import { UserModule } from 'modules/user/user.module';
+import { Module } from '@nestjs/common';
+import { AuthController } from 'src/auth/auth.controller'; // Путь к контроллеру
+import { AuthService } from 'src/auth/auth.service'; // Путь к сервису
+import { UserModule } from 'src/modules/user/user.module'; // Путь к модулю пользователей
 
 @Module({
-  imports: [forwardRef(() => UserModule)], // forwardRef для избегания круговой зависимости
-  providers: [AuthService, LocalAuthGuard],
+  imports: [UserModule], // Добавляем UserModule сюда
   controllers: [AuthController],
-  exports: [AuthService], // Экспортируем AuthService
+  providers: [AuthService],
 })
 export class AuthModule {}

@@ -7,8 +7,12 @@ import {
   DataType,
 } from 'sequelize-typescript';
 
-@Table({ tableName: 'user', freezeTableName: true, timestamps: false })
-export class User extends Model {
+@Table({
+  tableName: 'user',
+  freezeTableName: true,
+  timestamps: false,
+})
+export class User extends Model<User> {
   @PrimaryKey
   @AutoIncrement
   @Column

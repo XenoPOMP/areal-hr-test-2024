@@ -1,19 +1,26 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
-import { AuthService } from 'auth/auth.service'; // Импортируйте ваш AuthService
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { UnauthorizedException } from '@nestjs/common';
+import { LoginDto } from 'auth/dto/login.dto'; // Импортируем LoginDto
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    super(); // Вызываем конструктор стратегии
+    super({ usernameField: 'login', passwordField: 'password' }); // Указываем поля для логина и пароля
   }
 
-  async validate(username: string, password: string): Promise<any> {
-    const user = await this.authService.validateUser(username, password);
+  async validate(login: string, password: string): Promise<any> {
+    const loginDto: LoginDto = { login, password }; // Создаем DTO из данных
+    const user = await this.authService.validateUser(
+      loginDto.login,
+      loginDto.password,
+      {},
+    ); // Передаем DTO в метод validateUser
     if (!user) {
-      throw new Error('Invalid credentials'); // Исключение для неправильных данных
+      throw new UnauthorizedException('Invalid credentials');
     }
-    return user; // Возвращаем данные пользователя после успешной аутентификации
+    return user; // Возвращаем пользователя, если он найден
   }
 }

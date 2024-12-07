@@ -24,62 +24,77 @@
         />
       </div>
 
-      <button type="submit">Войти</button>
+      <button type="submit" :disabled="isSubmitting">Войти</button>
     </form>
     <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="user" class="success">Добро пожаловать, {{ user.login }}!</p>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { login as authLogin, getRedirectRoute } from 'src/router/auth';
 
 export default {
-  name: 'LoginPage',
-  setup() {
-    const login = ref(''); // Переименовано на username
-    const password = ref('');
-    const error = ref(null);
-    const router = useRouter();
-
-    const handleLogin = async () => {
-      try {
-        error.value = null;
-
-        const response = await axios.post('http://localhost:3000/auth/login', {
-          login: login.value,
-          password: password.value,
-        });
-
-        console.log('Login response:', response.data);
-
-        if (response.data && response.data.user) {
-          console.log('Successful login');
-          authLogin();
-          const redirectRoute = getRedirectRoute() || '/organizations';
-          console.log('Redirecting to:', redirectRoute);
-          router.push(redirectRoute);
-        } else {
-          console.log('Invalid credentials');
-          error.value = 'Неверный логин или пароль.';
-        }
-      } catch (err) {
-        console.error('Login error:', err);
-        // Теперь ошибка в response data может содержать поле message
-        error.value =
-          err.response?.data?.message ||
-          'Ошибка авторизации. Попробуйте ещё раз.';
-      }
+  data() {
+    return {
+      login: '', // Логин пользователя
+      password: '', // Пароль пользователя
+      isSubmitting: false, // Флаг для блокировки кнопки отправки при отправке формы
+      user: null, // Данные пользователя после успешной авторизации
+      error: null, // Сообщение об ошибке
     };
+  },
+  methods: {
+    // Метод для отправки формы авторизации
+    handleLogin() {
+      this.isSubmitting = true; // Включаем индикатор отправки
+      this.error = null; // Сбрасываем ошибку
 
-    return { login, password, error, handleLogin };
+      axios
+        .post(
+          'http://localhost:3000/auth/login',
+          {
+            login: this.login,
+            password: this.password,
+          },
+          { withCredentials: true } // Убедитесь, что добавили this в запрос
+        )
+        .then((response) => {
+          this.isSubmitting = false; // Выключаем индикатор отправки
+
+          // Если авторизация успешна, сохраняем данные пользователя
+          this.user = response.data.user;
+          this.login = ''; // Очищаем поля логина и пароля
+          this.password = '';
+        })
+        .catch((error) => {
+          this.isSubmitting = false; // Выключаем индикатор отправки
+          console.error('Ошибка при авторизации:', error);
+          this.error = 'Неверный логин или пароль'; // Показываем ошибку
+        });
+    },
+    // Проверка сессии пользователя при загрузке страницы
+    checkSession() {
+      axios
+        .get('http://localhost:3000/auth/session', { withCredentials: true })
+        .then((response) => {
+          if (response.data.user) {
+            this.user = response.data.user; // Устанавливаем данные пользователя
+          }
+        })
+        .catch((error) => {
+          console.error('Ошибка при проверке сессии:', error);
+          this.error = 'Не удалось проверить сессию'; // В случае ошибки
+        });
+    },
+  },
+  created() {
+    this.checkSession(); // Проверяем сессию при загрузке компонента
   },
 };
 </script>
 
-<style>
+<style scoped>
 .login-page {
   max-width: 400px;
   margin: 50px auto;
@@ -117,8 +132,18 @@ button:hover {
   background-color: #0056b3;
 }
 
+button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
 .error {
   color: red;
+  margin-top: 10px;
+}
+
+.success {
+  color: green;
   margin-top: 10px;
 }
 </style>
