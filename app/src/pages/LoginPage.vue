@@ -47,30 +47,23 @@ export default {
   methods: {
     // Метод для отправки формы авторизации
     handleLogin() {
-      this.isSubmitting = true; // Включаем индикатор отправки
-      this.error = null; // Сбрасываем ошибку
+      this.isSubmitting = true;
+      this.error = null;
 
       axios
         .post(
           'http://localhost:3000/auth/login',
-          {
-            login: this.login,
-            password: this.password,
-          },
-          { withCredentials: true } // Убедитесь, что добавили this в запрос
+          { login: this.login, password: this.password },
+          { withCredentials: true }
         )
         .then((response) => {
-          this.isSubmitting = false; // Выключаем индикатор отправки
-
-          // Если авторизация успешна, сохраняем данные пользователя
+          console.log('Login successful:', response.data); // Для отладки
           this.user = response.data.user;
-          this.login = ''; // Очищаем поля логина и пароля
-          this.password = '';
+          this.$router.push('/organizations'); // Редирект
         })
         .catch((error) => {
-          this.isSubmitting = false; // Выключаем индикатор отправки
-          console.error('Ошибка при авторизации:', error);
-          this.error = 'Неверный логин или пароль'; // Показываем ошибку
+          console.error('Login error:', error);
+          this.error = 'Неверный логин или пароль';
         });
     },
     // Проверка сессии пользователя при загрузке страницы

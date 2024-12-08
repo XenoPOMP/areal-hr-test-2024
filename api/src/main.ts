@@ -8,10 +8,10 @@ async function bootstrap() {
 
   // Настройка CORS
   app.enableCors({
-    origin: 'http://localhost:9000', // Разрешаем только origin фронтенда
+    origin: 'http://localhost:9000', // Точно указываем URL фронтенда
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization', // Разрешаем эти заголовки
-    credentials: true, // Разрешаем передачу cookies
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true, // Включаем учетные данные
   });
 
   app.use(
@@ -20,7 +20,11 @@ async function bootstrap() {
         'c8f23775e445ce1fb719237a4a13ea6bbe3ebefe3eed54c3b6b03130197329f3',
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: false, httpOnly: true, sameSite: 'lax' }, // cookie для сессии
+      cookie: {
+        secure: false, // Установите false для разработки
+        httpOnly: true,
+        sameSite: 'lax', // Для работы в cross-origin
+      },
     }),
   );
 

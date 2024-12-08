@@ -26,20 +26,18 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(
-    @Body() loginDto: LoginDto,
-    @Session() session: any,
-    @Res() res: Response,
-  ) {
+  async login(@Body() loginDto: LoginDto, @Session() session: any) {
+    console.log('Login request received:', loginDto); // Для отладки
     const { login, password } = loginDto;
 
     const user = await this.authService.validateUser(login, password, session);
     if (!user) {
+      console.log('Unauthorized access attempt'); // Для отладки
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Редирект на страницу OrganizationsPage после успешной авторизации
-    return res.redirect('http://localhost:9000/organizations');
+    console.log('User authenticated successfully:', user); // Для отладки
+    return { message: 'Login successful', user };
   }
 
   @Post('logout')
