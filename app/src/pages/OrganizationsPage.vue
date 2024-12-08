@@ -71,30 +71,15 @@ import {
   createOrganization,
   updateOrganization,
 } from 'src/api';
-import { QTableColumn } from 'quasar';
 import AppHeader from 'components/AppHeader.vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
-import Joi from 'joi'; // Подключаем Joi для валидации
+import Joi from 'joi';
+import { organizationsColumns } from 'pages/columns'; // Подключаем Joi для валидации
 
 const $q = useQuasar();
 
-const columns: QTableColumn[] = [
-  {
-    name: 'name',
-    label: 'Название',
-    align: 'left',
-    field: 'name',
-    required: true,
-  },
-  { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
-  {
-    name: 'actions',
-    label: 'Действия',
-    align: 'center',
-    field: (row) => row.id,
-  },
-];
+const columns = ref(organizationsColumns);
 
 interface Organization {
   id: string;

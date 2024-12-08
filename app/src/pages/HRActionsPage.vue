@@ -115,8 +115,8 @@
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { getHrActions, createHrAction, updateHrAction } from 'src/api';
-import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
+import { HRactionsColumns } from 'pages/columns';
 import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();
@@ -166,24 +166,7 @@ const employees = ref<Employee[]>([]);
 const departments = ref<Department[]>([]);
 const positions = ref<Position[]>([]);
 
-const columns: QTableColumn[] = [
-  {
-    name: 'action_type',
-    label: 'Тип операции',
-    align: 'left',
-    field: 'action_type',
-    required: true,
-  },
-  { name: 'date', label: 'Дата', align: 'left', field: 'date', required: true },
-  {
-    name: 'salary',
-    label: 'Зарплата',
-    align: 'right',
-    field: 'salary',
-    required: true,
-  },
-  { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
-];
+const columns = ref(HRactionsColumns);
 
 const loadActions = async () => {
   try {

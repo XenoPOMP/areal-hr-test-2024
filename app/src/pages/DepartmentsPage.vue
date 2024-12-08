@@ -67,6 +67,7 @@ import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { getDepartments, createDepartment, updateDepartment } from 'src/api';
 import { QTableColumn, useQuasar } from 'quasar';
+import { departmentColumns } from './columns';
 import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();
@@ -90,22 +91,7 @@ const newDepartment = ref<Department>({
 const editMode = ref(false);
 const editedDepartment = ref<Department | null>(null);
 
-const columns: QTableColumn[] = [
-  {
-    name: 'name',
-    label: 'Название',
-    align: 'left',
-    field: 'name',
-    required: true,
-  },
-  { name: 'comment', label: 'Комментарий', align: 'left', field: 'comment' },
-  {
-    name: 'actions',
-    label: 'Действия',
-    align: 'center',
-    field: (row) => row.id,
-  },
-];
+const columns: QTableColumn[] = departmentColumns;
 
 const departmentSchema = Joi.object({
   name: Joi.string().max(255).required().messages({

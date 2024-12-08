@@ -63,8 +63,8 @@
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { getPositions, createPosition, updatePosition } from 'src/api';
-import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
+import { positionsColumns } from 'pages/columns';
 import axios from 'axios';
 import Joi from 'joi';
 
@@ -80,21 +80,7 @@ const newPosition = ref<Position>({ id: '', name: '' });
 const editMode = ref(false);
 const editedPosition = ref<Position | null>(null);
 
-const columns: QTableColumn[] = [
-  {
-    name: 'name',
-    label: 'Название',
-    align: 'left',
-    field: 'name',
-    required: true,
-  },
-  {
-    name: 'actions',
-    label: 'Действия',
-    align: 'center',
-    field: (row) => row.id,
-  },
-];
+const columns = ref(positionsColumns);
 
 const positionSchema = Joi.object({
   name: Joi.string().min(2).max(255).required().messages({

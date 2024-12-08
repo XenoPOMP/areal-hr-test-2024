@@ -33,9 +33,9 @@
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { getHistoryOfChanges } from 'src/api';
-import { QTableColumn } from 'quasar';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
+import { history_of_changesColumns } from 'pages/columns';
 
 const $q = useQuasar();
 
@@ -48,24 +48,7 @@ interface HistoryRecord {
 
 const historyRecords = ref<HistoryRecord[]>([]);
 
-const columns: QTableColumn[] = [
-  {
-    name: 'object',
-    label: 'Объект',
-    align: 'left',
-    field: 'object',
-    required: true,
-  },
-  {
-    name: 'field',
-    label: 'Изменённые поля',
-    align: 'left',
-    field: 'field',
-    required: true,
-  },
-  { name: 'date', label: 'Дата', align: 'left', field: 'date', required: true },
-  { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
-];
+const columns = ref(history_of_changesColumns);
 
 const loadHistoryRecords = async () => {
   try {

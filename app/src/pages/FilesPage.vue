@@ -94,12 +94,13 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
-import { ref, onMounted, nextTick, watch } from 'vue';
-import { getFiles, createFile, updateFile } from 'src/api';
-import { QTableColumn } from 'quasar';
+import { nextTick, onMounted, ref, watch } from 'vue';
+import { createFile, getFiles, updateFile } from 'src/api';
 import { useQuasar } from 'quasar';
+import { fileColumns } from './columns';
 import Joi from 'joi';
 import axios from 'axios';
+
 const $q = useQuasar();
 
 type SelectableValue = number | { label: string; value: number } | null;
@@ -143,23 +144,7 @@ const loadSelectData = async () => {
   }
 };
 
-const columns: QTableColumn[] = [
-  {
-    name: 'name',
-    label: 'Название',
-    align: 'left',
-    field: 'name',
-    required: true,
-  },
-  {
-    name: 'link',
-    label: 'Ссылка на файл',
-    align: 'left',
-    field: 'link',
-    required: true,
-  },
-  { name: 'actions', label: 'Действия', align: 'center', field: 'actions' },
-];
+const columns = ref(fileColumns);
 
 const loadFiles = async () => {
   try {
@@ -363,7 +348,7 @@ const handleImageChange = (employee_id: number) => {
   const fileInput = fileImageInputs.value[`fileImage_${employee_id}`];
   console.log(`File input change for employee ${employee_id}:`, fileInput);
   if (fileInput && fileInput.files && fileInput.files.length > 0) {
-    selectedFile.value = fileInput.files[0];
+    selectedFile.value = fileInput.files[0]; // Тип файла уже указан, этого будет достаточно
     uploadImage(employee_id);
   } else {
     console.error('Файл не выбран');
