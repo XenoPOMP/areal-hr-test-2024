@@ -1,4 +1,6 @@
 import { SequelizeModuleOptions } from '@nestjs/sequelize';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { Organisation } from '@models/organization.model';
 import { Department } from '@models/department.model';
 import { Position } from '@models/position.model';
@@ -10,13 +12,15 @@ import { Passport } from '@models/passport.model';
 import { Address } from '@models/address.model';
 import { User } from '@models/user.model';
 
+config({ path: resolve(__dirname, '../../../.env') });
+
 export const SequelizeConfig: SequelizeModuleOptions = {
   dialect: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'Spiridon_2017',
-  database: 'areal_hr',
+  host: process.env.PGHOST,
+  port: parseInt(process.env.PGPORT || '5432', 10),
+  username: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
   models: [
     Organisation,
     Department,
