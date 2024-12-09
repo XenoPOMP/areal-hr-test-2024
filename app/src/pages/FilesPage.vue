@@ -44,28 +44,32 @@
               flat
               size="sm"
             />
-            <!-- Кнопка для выбора изображения -->
             <q-btn
               color="primary"
               label="Добавить скан"
-              icon="attach_file"
+              @click="openModal(props.row.employee_id)"
               flat
               size="sm"
-              @click="selectImage(props.row.employee_id)"
-            />
-            <input
-              type="file"
-              :ref="`fileImage_${props.row.employee_id}`"
-              :data-employee-id="props.row.employee_id"
-              accept="image/*"
-              @change="handleImageChange(props.row.employee_id)"
-              style="display: none"
             />
           </q-td>
         </q-tr>
       </template>
     </q-table>
-
+    <!-- Модальное окно для загрузки скана -->
+    <q-dialog v-model="isModalOpen">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Добавить скан паспорта</div>
+        </q-card-section>
+        <q-card-section>
+          <input type="file" accept="image/*" @change="handleFileUpload" />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Закрыть" color="negative" @click="closeModal" />
+          <q-btn flat label="Загрузить" color="primary" @click="uploadImage" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div v-if="editMode && editedFile" class="edit-form">
       <h3>Изменить данные файла</h3>
       <form @submit.prevent="updateFileHandler">
@@ -94,10 +98,11 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { createFile, getFiles, updateFile } from 'src/api';
 import { useQuasar } from 'quasar';
 import { fileColumns } from './columns';
+import { useFileUpload } from 'src/components/useFileUpload';
 import Joi from 'joi';
 import axios from 'axios';
 
@@ -325,93 +330,28 @@ const deleteFileHandler = async (fileId: number) => {
   }
 };
 
-const selectedFile = ref<File | null>(null);
-const loading = ref(false);
-const message = ref('');
-const notifyColor = ref('positive');
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
-const fileImageInputs = ref<Record<string, HTMLInputElement | null>>({});
-console.log(fileImageInputs.value);
-console.log(JSON.stringify(fileImageInputs.value));
-
-const selectImage = (employee_id: number) => {
-  const fileInput = fileImageInputs.value[`fileImage_${employee_id}`];
-  console.log(`fileInput for employee ${employee_id}:`, fileInput);
-  if (fileInput && fileInput instanceof HTMLInputElement) {
-    fileInput.click();
-  } else {
-    console.error(`Не удалось найти input для сотрудника с id: ${employee_id}`);
-  }
-};
-
-const handleImageChange = (employee_id: number) => {
-  const fileInput = fileImageInputs.value[`fileImage_${employee_id}`];
-  console.log(`File input change for employee ${employee_id}:`, fileInput);
-  if (fileInput && fileInput.files && fileInput.files.length > 0) {
-    selectedFile.value = fileInput.files[0]; // Тип файла уже указан, этого будет достаточно
-    uploadImage(employee_id);
-  } else {
-    console.error('Файл не выбран');
-    $q.notify({
-      type: 'negative',
-      message: 'Пожалуйста, выберите изображение.',
-    });
-  }
-};
-
-watch(
-  () => files,
-  async () => {
-    await nextTick();
-    const inputs = document.querySelectorAll('input[type="file"]');
-    inputs.forEach((input: Element) => {
-      const employee_id = (input as HTMLInputElement).getAttribute(
-        'data-employee-id'
-      );
-      console.log(`Input for employee_id: ${employee_id}`);
-      if (employee_id) {
-        fileImageInputs.value[`fileImage_${employee_id}`] =
-          input as HTMLInputElement;
-      }
-    });
-  },
-  { immediate: true }
-);
-
-const uploadImage = async (employee_id: number) => {
-  if (!selectedFile.value) {
-    $q.notify({
-      type: 'negative',
-      message: 'Пожалуйста, выберите изображение.',
-    });
-    return;
-  }
-
-  loading.value = true;
-  message.value = '';
-  notifyColor.value = 'positive';
-
-  const formData = new FormData();
-  formData.append('image', selectedFile.value);
-  formData.append('employee_id', String(employee_id));
-
-  try {
-    const response = await axios.post('/uploads/upload-image', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    message.value = response.data.filePath;
-    notifyColor.value = 'positive';
-  } catch (error) {
-    console.error(error);
-    message.value = 'Ошибка при загрузке изображения';
-    notifyColor.value = 'negative';
-  } finally {
-    loading.value = false;
-  }
-};
+const {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  selectedEmployeeId,
+  isModalOpen,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  selectedFile,
+  openModal,
+  closeModal,
+  handleFileUpload,
+  uploadImage,
+} = useFileUpload();
 </script>
 
 <style scoped>

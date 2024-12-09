@@ -35,7 +35,8 @@ import { LocalStrategy } from 'auth/local.strategy';
     UserModule,
     PassportModule,
     ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '..', 'uploads'),
+      rootPath: path.join(__dirname, '../../../files'), // Указываем путь, откуда сервер будет обслуживать файлы
+      serveRoot: '/files', // URL-путь, по которому файлы будут доступны
     }),
   ],
   providers: [AuthService, LocalStrategy],

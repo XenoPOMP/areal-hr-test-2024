@@ -4,25 +4,30 @@ import {
   UseInterceptors,
   UploadedFile,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadService } from 'uploads/file_upload.service';
+import { FileUploadService } from './file_upload.service';
 
 @Controller('uploads')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('upload-image')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('file'))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Body('employee_id') employee_id: number,
   ) {
+    if (!file) {
+      throw new BadRequestException('Файл обязателен');
+    }
+
     if (!employee_id) {
-      throw new Error('Employee ID is required');
+      throw new BadRequestException('ID сотрудника обязателен');
     }
 
     const filePath = await this.fileUploadService.uploadFile(file, employee_id);
-    return { filePath };
+    return { message: 'Файл успешно загружен', filePath };
   }
 }

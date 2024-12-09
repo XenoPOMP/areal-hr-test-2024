@@ -17,13 +17,29 @@ export class FileUploadService {
     file: Express.Multer.File,
     employee_id: number,
   ): Promise<string> {
+    // Проверка существования сотрудника
+    const employee = await this.employeeModel.findByPk(employee_id);
+    if (!employee) {
+      throw new Error('Сотрудник не найден');
+    }
+
+    const uploadDir = path.join(
+      __dirname,
+      '../../../files',
+      String(employee_id),
+    );
+    console.log('Upload directory:', uploadDir);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
     const fileExtension = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExtension}`;
-
-    const filePath = path.join(__dirname, '../../uploads', fileName);
+    const filePath = path.join(uploadDir, fileName);
 
     fs.writeFileSync(filePath, file.buffer);
 
+    // Сохранение данных о файле в БД
     const newFile = await this.fileModel.create({
       name: file.originalname,
       link: filePath,
