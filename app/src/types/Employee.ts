@@ -26,4 +26,11 @@ export interface EmployeeBaseData {
   address_id?: number;
   passport: PassportInfo;
   address: AddressInfo;
+  files: File[];
+}
+
+export interface File {
+  id: number;
+  name: string;
+  link: string;
 }

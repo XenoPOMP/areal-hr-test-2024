@@ -7,6 +7,7 @@ import { Passport } from '@models/passport.model';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Sequelize } from 'sequelize-typescript';
+import { File } from '@models/file.model';
 
 @Injectable()
 export class EmployeesService {
@@ -34,6 +35,19 @@ export class EmployeesService {
       where: { id },
       include: [Address, Passport],
     });
+  }
+
+  async getEmployeeFiles(employeeId: number) {
+    const employee = await this.employeeModel.findOne({
+      where: { id: employeeId },
+      include: [{ model: File, as: 'files' }],
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${employeeId} not found`);
+    }
+
+    return employee.files; // Вернём только файлы
   }
 
   async createEmployee(employeeData: any, passportData: any, addressData: any) {

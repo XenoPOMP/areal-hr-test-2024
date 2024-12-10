@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from 'app.module';
 import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from 'node:path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Настройка CORS
   app.enableCors({
@@ -14,6 +16,7 @@ async function bootstrap() {
     credentials: true, // Включаем учетные данные
   });
 
+  // Настройка сессий
   app.use(
     session({
       secret:
@@ -27,6 +30,10 @@ async function bootstrap() {
       },
     }),
   );
+
+  // Добавление статической раздачи файлов
+  const filePath = path.join('E:/areal-hr-test-2024/files');
+  app.useStaticAssets(filePath, { prefix: '/files' });
 
   // Включение глобальных пайпов для валидации
   app.useGlobalPipes(new ValidationPipe());

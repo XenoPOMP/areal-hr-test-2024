@@ -23,26 +23,28 @@ export class FileUploadService {
       throw new Error('Сотрудник не найден');
     }
 
-    const uploadDir = path.join(
-      __dirname,
-      '../../../files',
-      String(employee_id),
-    );
+    // Указание директории для загрузки файлов
+    const uploadDir = path.join('files', String(employee_id));
     console.log('Upload directory:', uploadDir);
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+
+    const absoluteDir = path.join(__dirname, '../../../', uploadDir);
+
+    if (!fs.existsSync(absoluteDir)) {
+      fs.mkdirSync(absoluteDir, { recursive: true });
     }
 
     const fileExtension = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExtension}`;
-    const filePath = path.join(uploadDir, fileName);
+    const relativePath = path.join(uploadDir, fileName); // относительный путь
+    const absolutePath = path.join(absoluteDir, fileName); // абсолютный путь
 
-    fs.writeFileSync(filePath, file.buffer);
+    // Сохраняем файл
+    fs.writeFileSync(absolutePath, file.buffer);
 
     // Сохранение данных о файле в БД
     const newFile = await this.fileModel.create({
       name: file.originalname,
-      link: filePath,
+      link: `/${relativePath.replace(/\\/g, '/')}`, // относительный путь для сохранения
       employee_id,
       deleted_at: null,
     });

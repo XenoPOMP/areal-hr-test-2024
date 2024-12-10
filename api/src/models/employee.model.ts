@@ -7,10 +7,12 @@ import {
   DataType,
   BelongsTo,
   ForeignKey,
+  HasMany,
 } from 'sequelize-typescript';
 import { Position } from './position.model';
 import { Passport } from './passport.model';
 import { Address } from './address.model';
+import { File } from '@models/file.model';
 
 @Table({ tableName: 'employee', freezeTableName: true, timestamps: false })
 export class Employee extends Model {
@@ -147,4 +149,6 @@ export class Employee extends Model {
       throw error;
     }
   }
+  @HasMany(() => File)
+  files: File[];
 }

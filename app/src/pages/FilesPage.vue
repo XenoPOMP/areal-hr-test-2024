@@ -330,17 +330,6 @@ const deleteFileHandler = async (fileId: number) => {
   }
 };
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
 const {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   selectedEmployeeId,

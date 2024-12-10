@@ -32,6 +32,11 @@ export class EmployeesController {
     return this.employeesService.findOne(id);
   }
 
+  @Get(':id/files')
+  async getEmployeeFiles(@Param('id') id: number) {
+    return this.employeesService.getEmployeeFiles(id);
+  }
+
   @Post()
   async createEmployee(@Body() employeeData: any) {
     console.log('Received employee data:', employeeData);

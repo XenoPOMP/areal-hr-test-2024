@@ -110,10 +110,44 @@
               flat
               size="sm"
             />
+            <q-btn
+              color="primary"
+              label="Показать сканы"
+              @click="showScansHandler(props.row.id)"
+              flat
+              size="sm"
+            />
           </q-td>
         </q-tr>
       </template>
     </q-table>
+    <q-dialog v-model="isModalOpen">
+      <q-card>
+        <q-card-section>
+          <h4>Сканы паспорта</h4>
+          <div v-if="selectedEmployeeFiles.length">
+            <q-img
+              v-for="file in selectedEmployeeFiles"
+              :key="file.id"
+              :src="`http://localhost:3000${file.link}`"
+              :alt="file.name"
+              style="width: 100%; margin-bottom: 16px"
+            />
+          </div>
+          <div v-else>
+            <p>Сканы отсутствуют.</p>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Закрыть"
+            color="primary"
+            @click="isModalOpen = false"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Форма редактирования данных сотрудника -->
     <div v-if="editMode && editedEmployee" class="edit-form">
@@ -212,6 +246,7 @@ import {
   EmployeeBaseData,
   PassportInfo,
   AddressInfo,
+  File as EmployeeFile,
 } from 'src/types/Employee';
 
 const $q = useQuasar();
@@ -237,6 +272,7 @@ reactive<EmployeeBaseData>({
     housing: '',
     flat: '',
   }),
+  files: [],
 });
 
 const clearForm = () => {
@@ -265,7 +301,7 @@ const clearForm = () => {
   };
 };
 
-const employees = ref([]);
+const employees = ref<EmployeeBaseData[]>([]);
 
 const getEmployees = async () => {
   try {
@@ -536,6 +572,39 @@ const deleteEmployeeHandler = async (employeeId: number) => {
     $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });
   }
 };
+
+const isModalOpen = ref(false);
+const selectedEmployeeFiles = ref<EmployeeFile[]>([]);
+
+const showScansHandler = async (employee_id: number) => {
+  try {
+    console.log('Идентификатор сотрудника:', employee_id);
+
+    // Попробуем получить файлы с сервера
+    const response = await fetch(
+      `http://localhost:3000/employees/${employee_id}/files`
+    );
+    const files = await response.json();
+
+    console.log('Полученные файлы:', files);
+
+    if (files && files.length > 0) {
+      selectedEmployeeFiles.value = files; // Сохраняем файлы
+      isModalOpen.value = true; // Открываем модальное окно
+    } else {
+      $q.notify({
+        type: 'warning',
+        message: 'У сотрудника нет прикрепленных сканов.',
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке данных сотрудника:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Не удалось загрузить сканы.',
+    });
+  }
+};
 </script>
 
 <style scoped>
@@ -548,5 +617,12 @@ const deleteEmployeeHandler = async (employeeId: number) => {
 
 .table-container {
   margin-top: 20px;
+}
+
+q-img {
+  max-width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
 }
 </style>
