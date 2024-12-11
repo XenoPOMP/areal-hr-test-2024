@@ -121,7 +121,25 @@ onMounted(() => {
   loadDepartments();
 });
 
+const getUserId = (): string | null => {
+  const user = sessionStorage.getItem('user');
+  if (!user) return null;
+  try {
+    return JSON.parse(user)?.id || null;
+  } catch {
+    console.error('Ошибка парсинга пользователя из sessionStorage');
+    return null;
+  }
+};
+
 const createDepartmentHandler = async () => {
+  const user_id = getUserId();
+
+  if (!user_id) {
+    $q.notify({ type: 'negative', message: 'Пользователь не авторизован' });
+    return; // Останавливаем выполнение, если пользователь не авторизован
+  }
+
   const departmentData = {
     name: newDepartment.value.name,
     comment: newDepartment.value.comment,
@@ -141,7 +159,20 @@ const createDepartmentHandler = async () => {
   }
 
   try {
-    await createDepartment(departmentData);
+    const createdDepartment = await createDepartment(departmentData);
+
+    const historyRecord = {
+      object: 'department',
+      field: {
+        action: 'create',
+        departmentData: createdDepartment,
+      },
+      date: new Date(),
+      user_id: user_id,
+    };
+
+    await axios.post('http://localhost:3000/history-of-changes', historyRecord);
+
     newDepartment.value = {
       id: '',
       name: '',
@@ -179,7 +210,35 @@ const updateDepartmentHandler = async () => {
   }
 
   try {
-    await updateDepartment(editedDepartment.value.id, departmentData);
+    const updatedDepartment = await updateDepartment(
+      editedDepartment.value.id,
+      departmentData
+    );
+
+    // Получение user_id из сессии
+    const response = await axios.get('http://localhost:3000/auth/session');
+    const user_id = response.data.user?.id;
+
+    if (!user_id) {
+      $q.notify({
+        type: 'negative',
+        message: 'Не удалось определить пользователя',
+      });
+      return;
+    }
+
+    const historyRecord = {
+      object: 'department',
+      field: {
+        action: 'update',
+        departmentData: updatedDepartment,
+      },
+      date: new Date(),
+      user_id: user_id,
+    };
+
+    await axios.post('http://localhost:3000/history-of-changes', historyRecord);
+
     await loadDepartments();
     cancelEdit();
     $q.notify({ type: 'positive', message: 'Отдел успешно обновлен' });
@@ -204,9 +263,25 @@ const deleteDepartmentHandler = async (departmentId: number) => {
     const response = await axios.patch(
       `http://localhost:3000/departments/${departmentId}/soft-delete`
     );
+
+    const department = response.data;
+
+    await axios.post('http://localhost:3000/history-of-changes', {
+      object: 'department',
+      field: {
+        id: department.id,
+        name: department.name,
+        comment: department.comment,
+      },
+      user_id: response.data.user_id,
+    });
+
     console.log('Response:', response.data);
     await loadDepartments();
-    $q.notify({ type: 'positive', message: 'Отдел удален' }); // Успешное уведомление
+    $q.notify({
+      type: 'positive',
+      message: 'Отдел удален',
+    });
   } catch (error) {
     console.error('Error:', error);
     $q.notify({ type: 'negative', message: 'Ошибка при удалении отдела' }); // Ошибка

@@ -14,6 +14,7 @@
         option-value="value"
         label="Выберите сотрудника"
         filled
+        class="custom-select"
       />
 
       <q-btn type="submit" label="Добавить" color="primary" />
@@ -88,6 +89,7 @@
           label="Выберите сотрудника"
           filled
           required
+          class="select-wide"
         />
         <q-btn type="submit" label="Изменить" color="primary" />
         <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
@@ -352,5 +354,9 @@ const {
 }
 .table-container {
   margin-top: 1rem;
+}
+
+.custom-select {
+  width: 230px !important;
 }
 </style>

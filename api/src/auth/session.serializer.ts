@@ -9,19 +9,17 @@ export class SessionSerializer extends PassportSerializer {
   }
 
   serializeUser(user: any, done: (err: any, id?: any) => void): void {
-    console.log('Serializing user:', user); // Логируем сериализацию
-    done(null, user.id); // Сохраняем ID пользователя в сессии
+    done(null, user.id); // Сериализация только ID пользователя
   }
 
   async deserializeUser(
     id: number,
     done: (err: any, user?: any) => void,
   ): Promise<void> {
-    console.log('Deserializing user with ID:', id); // Логируем десериализацию
     const user = await this.userModel.findByPk(id);
     if (!user) {
       return done(null, null);
     }
-    done(null, user); // Восстанавливаем пользователя из базы данных
+    done(null, user); // Восстановление пользователя по ID
   }
 }

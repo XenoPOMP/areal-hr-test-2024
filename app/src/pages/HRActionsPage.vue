@@ -33,6 +33,7 @@
         option-value="value"
         label="Выберите сотрудника"
         filled
+        class="custom-select"
       />
       <q-select
         v-model="newAction.department_id"
@@ -41,6 +42,7 @@
         option-value="value"
         label="Выберите департамент"
         filled
+        class="custom-select"
       />
       <q-select
         v-model="newAction.position_id"
@@ -49,6 +51,7 @@
         option-value="value"
         label="Выберите должность"
         filled
+        class="custom-select"
       />
       <q-btn type="submit" label="Добавить" color="primary" />
     </form>
@@ -390,5 +393,8 @@ const deleteActionHandler = async (hrId: number) => {
 }
 .table-container {
   margin-top: 1rem;
+}
+.custom-select {
+  width: 230px !important;
 }
 </style>

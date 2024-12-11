@@ -1,55 +1,56 @@
-let isUserAuthenticated = false; // Глобальная переменная для состояния авторизации
-let redirectRoute = null; // Глобальная переменная для хранения маршрута для редиректа
+let isUserAuthenticated = false;
+let currentUser = null; // Глобальная переменная для данных пользователя
+let redirectRoute = null;
 
-// Функция для восстановления состояния авторизации
-export async function restoreAuthState() {
-  try {
-    const response = await fetch('http://localhost:3000/auth/session', {
-      credentials: 'include',
-    });
-
-    if (response.status === 401) {
-      console.log('No active session (401)');
-      isUserAuthenticated = false;
-      return false; // Нет активной сессии
-    }
-
-    const data = await response.json();
-    console.log('Session response:', data);
-
-    if (response.ok) {
-      if (data.message === 'Not authenticated') {
-        console.log('No active session');
-        isUserAuthenticated = false;
-        return false; // Нет активной сессии
-      }
-
-      console.log('Session restored:', data);
-      isUserAuthenticated = true;
-      return true; // Пользователь авторизован
-    } else {
-      console.log('Error: No active session');
-      isUserAuthenticated = false;
-      return false;
-    }
-  } catch (error) {
-    console.error('Error restoring session:', error);
-    isUserAuthenticated = false;
-    return false;
-  }
+// Получить текущего пользователя
+export function getCurrentUser() {
+  return currentUser;
 }
 
-// Функция для установки маршрута для редиректа
+// Проверить, авторизован ли пользователь
+export function isAuthenticated() {
+  return isUserAuthenticated;
+}
+
+// Сбросить состояние авторизации
+export function resetAuth() {
+  isUserAuthenticated = false;
+  currentUser = null;
+  redirectRoute = null;
+}
+
+// Установить маршрут для редиректа
 export function setRedirectRoute(route) {
   redirectRoute = route;
 }
 
-// Функция для получения маршрута редиректа
+// Получить маршрут для редиректа
 export function getRedirectRoute() {
   return redirectRoute;
 }
 
-// Функция для выполнения входа
+// Восстановить состояние сессии
+export async function restoreAuthState() {
+  try {
+    const data = await fetchAPI('http://localhost:3000/auth/session');
+    if (data.user) {
+      isUserAuthenticated = true;
+      currentUser = data.user;
+      console.log('Session restored:', data);
+      return true;
+    } else {
+      console.log('No active session');
+      resetAuth();
+      return false;
+    }
+  } catch (error) {
+    console.error('Error restoring session:', error);
+    resetAuth();
+    return false;
+  }
+}
+
+// Выполнить вход
 export async function login(login, password) {
   const response = await fetch('http://localhost:3000/auth/login', {
     method: 'POST',
@@ -57,41 +58,40 @@ export async function login(login, password) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ login, password }),
+    credentials: 'include',
   });
 
   if (!response.ok) {
     throw new Error(`Error: ${response.status}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  isUserAuthenticated = true;
+  currentUser = data.user;
+  return data;
 }
 
-// Функция для выполнения выхода
+// Выполнить выход
 export async function logout() {
   try {
-    const response = await fetch('/logout', {
+    const data = await fetchAPI('http://localhost:3000/auth/logout', {
       method: 'POST',
-      credentials: 'include', // Передача cookie для сессий
     });
-
-    if (response.ok) {
-      console.log('User logged out');
-      isUserAuthenticated = false; // Устанавливаем флаг авторизации в false
-    } else {
-      console.error('Error during logout');
-    }
+    resetAuth();
+    console.log('User logged out:', data);
   } catch (error) {
     console.error('Error during logout:', error);
   }
 }
 
-// Функция для сброса состояния авторизации
-export function resetAuth() {
-  isUserAuthenticated = false; // Сбрасываем состояние авторизации
-  redirectRoute = null; // Сбрасываем редирект
-}
-
-// Функция для проверки текущего состояния авторизации
-export function isAuthenticated() {
-  return isUserAuthenticated; // Возвращаем текущее состояние авторизации
+// Общая функция для запросов
+async function fetchAPI(url, options = {}) {
+  const response = await fetch(url, { ...options, credentials: 'include' });
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      resetAuth();
+    }
+    throw new Error(`Error: ${response.status}`);
+  }
+  return response.json();
 }

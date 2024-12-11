@@ -15,12 +15,25 @@ export class HistoryOfChangesService {
     private readonly historyOfChangeModel: typeof HistoryOfChanges,
   ) {}
 
+  async createHistoryEntry(
+    object: string,
+    field: any,
+    date: Date,
+    user_id: number,
+  ): Promise<void> {
+    await this.historyOfChangeModel.create({
+      object,
+      field,
+      date,
+      user_id,
+    });
+  }
+
   async findAll(): Promise<SimplifiedHistoryRecord[]> {
     const history = await this.historyOfChangeModel.findAll({
-      where: { deleted_at: null }, // Исключаем мягко удаленные записи
+      where: { deleted_at: null },
     });
 
-    // Преобразуем данные к SimplifiedHistoryRecord
     return history.map((entry) => ({
       object: entry.object,
       field: entry.field,

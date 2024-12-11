@@ -32,11 +32,12 @@ export class AuthController {
 
     const user = await this.authService.validateUser(login, password, session);
     if (!user) {
-      console.log('Unauthorized access attempt'); // Для отладки
+      console.log('Unauthorized access attempt');
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    console.log('User authenticated successfully:', user); // Для отладки
+    session.user = user;
+    console.log('User authenticated successfully:', session.user);
     return { message: 'Login successful', user };
   }
 
