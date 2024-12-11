@@ -17,6 +17,7 @@
     "paths": {
       "*": ["*", "src/*"],
       "@models/*": ["src/models/*"],
+      "@app/*": ["src/*"],
     },
     "incremental": true,
     "strictNullChecks": false,

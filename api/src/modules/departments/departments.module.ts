@@ -3,11 +3,15 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { DepartmentsController } from './departments.controller';
 import { DepartmentsService } from './departments.service';
 import { Department } from '@models/department.model';
+import { HistoryOfChanges } from 'src/models/history_of_change.model';
+import { HistoryOfChangesService } from 'src/modules/history_of_changes/history_of_changes.service';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Department])],
+  imports: [
+    SequelizeModule.forFeature([Department, HistoryOfChanges]), // Добавьте History в импорты
+  ],
   controllers: [DepartmentsController],
-  providers: [DepartmentsService],
+  providers: [DepartmentsService, HistoryOfChangesService],
   exports: [DepartmentsService],
 })
 export class DepartmentsModule {}
