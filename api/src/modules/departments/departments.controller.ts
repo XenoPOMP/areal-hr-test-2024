@@ -6,14 +6,13 @@ import {
   Patch,
   Param,
   Body,
-  Req,
+  Session,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { DepartmentsService } from './departments.service';
 import { Department } from '@models/department.model';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
-import { User } from 'src/models/user.model';
 
 @Controller('departments')
 export class DepartmentsController {
@@ -25,31 +24,47 @@ export class DepartmentsController {
   }
 
   @Post()
-  create(
+  async create(
     @Body() dto: CreateDepartmentDto,
-    @Req() req: Request & { user?: User },
+    @Session() session: any,
   ): Promise<Department> {
-    const userId = req.user?.id;
-    return this.departmentsService.create(dto, userId);
+    const user_id = session.user?.id;
+
+    if (!user_id) {
+      throw new UnauthorizedException('Пользователь не авторизован');
+    }
+
+    return this.departmentsService.create(dto, user_id);
   }
 
   @Put(':id')
-  update(
+  async updateDepartment(
     @Param('id') id: number,
     @Body() dto: UpdateDepartmentDto,
-    @Req() req: Request & { user?: User },
+    @Session() session: any,
   ): Promise<Department | null> {
-    const userId = req.user?.id;
-    return this.departmentsService.update(id, dto, userId);
+    const user_id = session.user?.id; // Извлекаем id из сессии
+    console.log('ID пользователя из сессии:', user_id);
+
+    if (!user_id) {
+      throw new UnauthorizedException('Пользователь не авторизован.');
+    }
+
+    return this.departmentsService.update(id, dto, user_id);
   }
 
   @Patch(':id/soft-delete')
   async softDeleteDepartment(
     @Param('id') id: number,
-    @Req() req: Request & { user?: User },
-  ) {
-    const userId = req.user?.id;
-    await this.departmentsService.softDeleteDepartment(id, userId);
-    return;
+    @Session() session: any,
+  ): Promise<void> {
+    const user_id = session.user?.id;
+    console.log('Удаление отдела. user_id:', user_id, 'departmentId:', id);
+
+    if (!user_id) {
+      throw new UnauthorizedException('Пользователь не авторизован');
+    }
+
+    await this.departmentsService.softDeleteDepartment(id, user_id);
   }
 }

@@ -11,7 +11,7 @@ export class AuthService {
       id: user.id,
       login: user.login,
     };
-    return { message: 'Login successful' };
+    return { message: 'Login successful', user_id: user.id };
   }
 
   async logout(req: any): Promise<any> {

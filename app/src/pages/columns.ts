@@ -132,6 +132,13 @@ export const history_of_changesColumns: QTableColumn[] = [
     required: true,
   },
   {
+    name: 'login',
+    label: 'Кто изменил',
+    align: 'left',
+    field: 'login',
+    required: true,
+  },
+  {
     name: 'field',
     label: 'Изменённые поля',
     align: 'left',

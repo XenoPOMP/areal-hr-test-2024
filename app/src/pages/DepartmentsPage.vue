@@ -70,6 +70,7 @@ import { QTableColumn, useQuasar } from 'quasar';
 import { departmentColumns } from './columns';
 import Joi from 'joi';
 import axios from 'axios';
+import { getCurrentUser } from 'src/router/auth';
 const $q = useQuasar();
 
 interface Department {
@@ -121,14 +122,17 @@ onMounted(() => {
   loadDepartments();
 });
 
-const userId = localStorage.getItem('user_id');
+const userId = getCurrentUser()?.id;
+if (!userId) {
+  console.error('Пользователь не авторизован');
+}
 
 const createDepartmentHandler = async () => {
   const departmentData = {
     name: newDepartment.value.name,
     comment: newDepartment.value.comment,
-    parent_id: null,
-    organisation_id: null,
+    parent_id: newDepartment.value.parent_id || null,
+    organisation_id: newDepartment.value.organisation_id || null,
   };
 
   const { error } = departmentSchema.validate(departmentData, {
@@ -143,15 +147,30 @@ const createDepartmentHandler = async () => {
   }
 
   try {
+    const { data: session } = await axios.get(
+      'http://localhost:3000/auth/session',
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (!session.user || !session.user.id) {
+      console.error('Сессия пользователя недействительна');
+      $q.notify({ type: 'negative', message: 'Сессия недействительна' });
+      return;
+    }
+
+    const userId = session.user.id; // Получаем ID пользователя из сессии
+
     const createdDepartment = await createDepartment(departmentData);
 
-    // Отправляем ID текущего пользователя
+    // Запись в историю изменений
     await axios.post(
       'http://localhost:3000/history-of-changes/log-change',
       {
         object: 'Department',
         field: createdDepartment,
-        user_id: userId, // Использование ID пользователя из локального хранилища
+        user_id: userId, // Передаем ID пользователя
       },
       {
         withCredentials: true,
@@ -195,22 +214,23 @@ const updateDepartmentHandler = async () => {
   }
 
   try {
-    const updatedDepartment = await updateDepartment(
-      editedDepartment.value.id,
-      departmentData
-    );
-
-    // Отправляем данные о действии
-    await axios.post(
-      'http://localhost:3000/history-of-changes/log-change',
-      {
-        object: 'Department',
-        field: updatedDepartment,
-        user_id: userId,
-      },
+    const { data: session } = await axios.get(
+      'http://localhost:3000/auth/session',
       {
         withCredentials: true,
       }
+    );
+
+    if (!session.user || !session.user.id) {
+      console.error('Сессия пользователя недействительна');
+      $q.notify({ type: 'negative', message: 'Сессия недействительна' });
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const updatedDepartment = await updateDepartment(
+      editedDepartment.value.id,
+      departmentData
     );
 
     await loadDepartments();
@@ -233,24 +253,26 @@ const cancelEdit = () => {
 };
 
 const deleteDepartmentHandler = async (departmentId: number) => {
-  const userId = localStorage.getItem('user_id'); // Или использование cookie
-
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const response = await axios.patch(
-      `http://localhost:3000/departments/${departmentId}/soft-delete`
+    const { data: session } = await axios.get(
+      'http://localhost:3000/auth/session',
+      { withCredentials: true }
     );
 
-    await axios.post(
-      'http://localhost:3000/history-of-changes/log-change',
-      {
-        object: 'Department',
-        field: { id: departmentId },
-        user_id: userId,
-      },
-      {
-        withCredentials: true,
-      }
+    if (!session.user || !session.user.id) {
+      console.error('Сессия пользователя недействительна');
+      $q.notify({ type: 'negative', message: 'Сессия недействительна' });
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const userId = session.user.id;
+
+    // Удаляем отдел
+    await axios.patch(
+      `http://localhost:3000/departments/${departmentId}/soft-delete`,
+      {},
+      { withCredentials: true }
     );
 
     await loadDepartments();

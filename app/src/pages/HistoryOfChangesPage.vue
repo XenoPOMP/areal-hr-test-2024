@@ -42,6 +42,8 @@ const $q = useQuasar();
 interface HistoryRecord {
   id: number;
   object: string;
+  login?: string; // Логин пользователя
+  user?: { login: string };
   field: Record<string, unknown>; // JSON как объект
   date: string;
 }
@@ -52,10 +54,11 @@ const columns = ref(history_of_changesColumns);
 
 const loadHistoryRecords = async () => {
   try {
-    const records = await getHistoryOfChanges();
+    const records = await getHistoryOfChanges(); // API должен возвращать данные с логином пользователя
     historyRecords.value = records.map((record: HistoryRecord) => ({
       ...record,
       date: new Date(record.date).toLocaleString(), // Форматируем дату
+      login: record.user?.login || 'Неизвестно', // Обработка логина пользователя
     }));
   } catch (error) {
     console.error('Ошибка загрузки истории изменений:', error);

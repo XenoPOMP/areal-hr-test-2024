@@ -21,28 +21,39 @@ export class DepartmentsService {
     });
   }
 
-  async create(dto: CreateDepartmentDto, userId: number): Promise<Department> {
+  async create(dto: CreateDepartmentDto, user_id: number): Promise<Department> {
     const department = await this.departmentModel.create({ ...dto });
-    await this.historyOfChangesService.logChange('department', dto, userId);
+    await this.historyOfChangesService.logChange('department', dto, user_id);
     return department;
   }
 
   async update(
     id: number,
     dto: UpdateDepartmentDto,
-    userId: number,
+    user_id: number,
   ): Promise<Department | null> {
+    console.log('Передано в update:', { id, dto, user_id });
+
+    if (!user_id) {
+      throw new Error('user_id отсутствует');
+    }
+
     const department = await this.departmentModel.findByPk(id);
     if (department) {
       const updated = await department.update({ ...dto });
-      await this.historyOfChangesService.logChange('department', dto, userId);
+      await this.historyOfChangesService.logChange(
+        'department'.toLowerCase(),
+        dto,
+        user_id,
+      ); // Записываем изменения
       return updated;
     }
+
     return null;
   }
 
-  async softDeleteDepartment(id: number, userId: number): Promise<void> {
-    const department = await Department.findByPk(id);
+  async softDeleteDepartment(id: number, user_id: number): Promise<void> {
+    const department = await this.departmentModel.findByPk(id);
 
     if (!department) {
       throw new Error('Department not found');
@@ -50,10 +61,11 @@ export class DepartmentsService {
 
     department.deleted_at = new Date();
     await department.save();
+
     await this.historyOfChangesService.logChange(
       'department',
       { id, deleted: true },
-      userId,
+      user_id,
     );
   }
 }

@@ -22,31 +22,30 @@ export class HistoryOfChangesController {
   async addChange(
     @Body() body: any,
     @Session() session: any,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Req() req: Request,
   ): Promise<void> {
-    console.log('Cookies:', req.cookies);
-    console.log('Session ID:', req.sessionID);
-    const userId = session.user?.id;
+    console.log('Session Data:', session); // Лог всей сессии
+    console.log('Session User ID:', session.user?.id); // Проверка наличия user_id
 
+    const userId = session.user?.id;
     if (!userId) {
-      throw new UnauthorizedException('Пользователь не аутентифицирован');
+      console.error('User ID отсутствует в сессии'); // Лог ошибки
+      throw new UnauthorizedException('user_id отсутствует');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { object, field, date } = body;
-
+    const { object, field } = body;
     if (!object || !field) {
       throw new NotFoundException('Объект или поле не указаны');
     }
 
-    // Замените createHistoryEntry на logChange
-    await this.historyService.logChange(object, field, userId);
-    console.log('Session user:', session.user);
+    console.log('Body:', body);
+    await this.historyService.logChange(body.object, body.field, userId);
   }
 
   @Get()
   async findAll(): Promise<HistoryOfChanges[]> {
-    return this.historyService.findAll();
+    return this.historyService.findAllWithUser();
   }
 
   @Get(':id')
