@@ -6,12 +6,20 @@ import { Employee } from '@models/employee.model';
 import { Position } from '@models/position.model';
 import { Address } from 'models/address.model';
 import { Passport } from 'models/passport.model';
+import { HistoryOfChanges } from 'src/models/history_of_change.model';
+import { HistoryOfChangesService } from 'modules/history_of_changes/history_of_changes.service';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Employee, Position, Address, Passport]),
+    SequelizeModule.forFeature([
+      Employee,
+      Position,
+      Address,
+      Passport,
+      HistoryOfChanges,
+    ]),
   ],
-  providers: [EmployeesService],
+  providers: [EmployeesService, HistoryOfChangesService],
   controllers: [EmployeesController],
   exports: [EmployeesService],
 })

@@ -7,9 +7,7 @@ import { HistoryOfChanges } from 'src/models/history_of_change.model';
 import { HistoryOfChangesService } from 'src/modules/history_of_changes/history_of_changes.service';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Department, HistoryOfChanges]), // Добавьте History в импорты
-  ],
+  imports: [SequelizeModule.forFeature([Department, HistoryOfChanges])],
   controllers: [DepartmentsController],
   providers: [DepartmentsService, HistoryOfChangesService],
   exports: [DepartmentsService],

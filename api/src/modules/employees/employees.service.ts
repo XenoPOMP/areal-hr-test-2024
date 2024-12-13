@@ -3,11 +3,10 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Employee } from '@models/employee.model';
 import { Address } from '@models/address.model';
 import { Passport } from '@models/passport.model';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { File } from '@models/file.model';
+import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
 
 @Injectable()
 export class EmployeesService {
@@ -16,6 +15,7 @@ export class EmployeesService {
     @InjectModel(Passport) private passportModel: typeof Passport,
     @InjectModel(Address) private addressModel: typeof Address,
     private sequelize: Sequelize,
+    private historyOfChangesService: HistoryOfChangesService,
   ) {}
 
   async findAll() {
@@ -47,14 +47,19 @@ export class EmployeesService {
       throw new NotFoundException(`Employee with ID ${employeeId} not found`);
     }
 
-    return employee.files; // Вернём только файлы
+    return employee.files;
   }
 
-  async createEmployee(employeeData: any, passportData: any, addressData: any) {
+  async createEmployee(
+    employeeData: any,
+    passportData: any,
+    addressData: any,
+    userId: number,
+  ) {
     const transaction = await this.sequelize.transaction();
 
     try {
-      // Создаем записи паспорта и адреса
+      // Создание паспорта и адреса
       const passport = passportData
         ? await Passport.create(passportData, { transaction })
         : null;
@@ -66,6 +71,7 @@ export class EmployeesService {
         throw new Error('Failed to create passport or address');
       }
 
+      // Создание сотрудника
       const employee = await Employee.create(
         {
           ...employeeData,
@@ -75,9 +81,15 @@ export class EmployeesService {
         { transaction },
       );
 
-      // Подтверждаем транзакцию
       await transaction.commit();
       console.log('Employee created with ID:', employee.id);
+
+      // Логирование изменений только здесь, с единообразным наименованием объекта
+      await this.historyOfChangesService.logChange(
+        'employee', // используем 'employee' с маленькой буквы
+        employee,
+        userId,
+      );
 
       return employee;
     } catch (error) {
@@ -91,7 +103,7 @@ export class EmployeesService {
     return this.employeeModel.findByPk(id, { include: { all: true } });
   }
 
-  async update(id: string, updateData: UpdateEmployeeDto) {
+  async update(id: string, updateData: UpdateEmployeeDto, userId: number) {
     const employee = await this.employeeModel.findOne({
       where: { id },
       include: [Passport, Address],
@@ -101,14 +113,17 @@ export class EmployeesService {
       throw new NotFoundException(`Employee with ID ${id} not found`);
     }
 
+    // Обновляем данные сотрудника
     Object.assign(employee, updateData);
 
+    // Обновляем паспорт, если передан
     if (updateData.passport && employee.passport) {
       await Passport.update(updateData.passport, {
         where: { id: employee.passport_id },
       });
     }
 
+    // Обновляем адрес, если передан
     if (updateData.address && employee.address) {
       await Address.update(updateData.address, {
         where: { id: employee.address_id },
@@ -116,10 +131,18 @@ export class EmployeesService {
     }
 
     await employee.save();
+
+    // Передаём только изменённые данные в логирование
+    await this.historyOfChangesService.logChange(
+      'employee'.toLowerCase(),
+      updateData, // Только изменения
+      userId,
+    );
+
     return employee;
   }
 
-  async softDeleteEmployee(id: number) {
+  async softDeleteEmployee(id: number, userId: number) {
     try {
       const employee = await this.employeeModel.findOne({ where: { id } });
 
@@ -139,6 +162,13 @@ export class EmployeesService {
         employee.address.deleted_at = new Date();
         await employee.address.save();
       }
+
+      // Логирование изменений
+      await this.historyOfChangesService.logChange(
+        'employee'.toLowerCase(),
+        employee,
+        userId,
+      );
 
       return employee;
     } catch (error) {

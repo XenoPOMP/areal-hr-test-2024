@@ -398,7 +398,31 @@ const validateEmployee = (employeeData: Record<string, unknown>): boolean => {
   return true;
 };
 
+const getSessionUserId = async (): Promise<number | null> => {
+  try {
+    const { data: session } = await axios.get(
+      'http://localhost:3000/auth/session',
+      {
+        withCredentials: true,
+      }
+    );
+    if (session.user && session.user.id) {
+      return session.user.id;
+    } else {
+      throw new Error('Недействительная сессия');
+    }
+  } catch (error) {
+    console.error('Ошибка при получении сессии:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка сессии' });
+    return null;
+  }
+};
+
 const createEmployeeHandler = async () => {
+  const userId = await getSessionUserId();
+  if (!userId) return;
+
+  // Формирование данных паспорта
   const passportData = {
     serial: passportInfo.value.serial,
     number: passportInfo.value.number,
@@ -407,6 +431,7 @@ const createEmployeeHandler = async () => {
     code: passportInfo.value.code || '',
   };
 
+  // Формирование данных адреса
   const addressData = {
     region: addressInfo.value.region,
     settlement: addressInfo.value.settlement,
@@ -416,6 +441,7 @@ const createEmployeeHandler = async () => {
     flat: addressInfo.value.flat || '',
   };
 
+  // Формирование данных сотрудника
   const employeePayload = {
     name: employeeBaseData.value.name,
     surname: employeeBaseData.value.surname,
@@ -426,7 +452,9 @@ const createEmployeeHandler = async () => {
     addressData: addressData,
   };
 
+  // Валидация данных сотрудника
   if (!validateEmployee(employeePayload)) return;
+
   console.log('Employee Payload:', JSON.stringify(employeePayload));
   $q.notify({
     type: 'info',
@@ -434,11 +462,11 @@ const createEmployeeHandler = async () => {
   });
 
   try {
-    console.log('Employee Payload:', employeePayload);
-
+    // Отправка данных сотрудника на сервер
     const response = await axios.post(
       'http://localhost:3000/employees',
-      employeePayload
+      employeePayload,
+      { withCredentials: true }
     );
 
     if (response.status === 200 || response.status === 201) {
@@ -446,6 +474,7 @@ const createEmployeeHandler = async () => {
         type: 'positive',
         message: 'Сотрудник успешно добавлен!',
       });
+
       clearForm();
     } else {
       console.error('Unexpected response:', response);
@@ -514,42 +543,31 @@ const startEditingEmployee = (employee: EmployeeBaseData) => {
 };
 
 const updateEmployeeHandler = async () => {
-  if (!editedEmployee.value) {
-    $q.notify({
-      type: 'negative',
-      message: 'Нет данных для обновления сотрудника',
-    });
-    return;
-  }
+  if (!editedEmployee.value) return;
 
   const payload = {
     ...editedEmployee.value,
-    passport: editedEmployee.value.passport,
-    address: editedEmployee.value.address,
   };
 
-  // Валидация перед отправкой
   if (!validateEmployee(payload)) return;
 
   try {
     const response = await axios.put(
       `http://localhost:3000/employees/${editedEmployee.value.id}`,
-      payload
+      payload,
+      { withCredentials: true } // Добавляем эту строку
     );
 
     if (response.status === 200) {
-      $q.notify({
-        type: 'positive',
-        message: 'Данные сотрудника обновлены!',
-      });
-      await getEmployees();
+      $q.notify({ type: 'positive', message: 'Данные сотрудника обновлены!' });
+      getEmployees();
       cancelEdit();
     }
   } catch (error) {
-    console.error(error);
+    console.error('Ошибка при обновлении сотрудника:', error);
     $q.notify({
       type: 'negative',
-      message: 'Ошибка при обновлении сотрудника. Попробуйте еще раз.',
+      message: 'Ошибка при обновлении сотрудника',
     });
   }
 };
@@ -560,15 +578,24 @@ const cancelEdit = () => {
 };
 
 const deleteEmployeeHandler = async (employeeId: number) => {
+  const userId = await getSessionUserId();
+  if (!userId) return;
+
   try {
     const response = await axios.patch(
-      `http://localhost:3000/employees/${employeeId}/soft-delete`
+      `http://localhost:3000/employees/${employeeId}/soft-delete`,
+      { user_id: userId },
+      { withCredentials: true } // Добавляем с этим параметром
     );
-    console.log('Response:', response.data);
-    await getEmployees();
-    $q.notify({ type: 'positive', message: 'Сотрудник удален' });
+
+    if (response.status === 200) {
+      $q.notify({ type: 'positive', message: 'Сотрудник успешно удален' });
+      getEmployees();
+    } else {
+      throw new Error('Не удалось удалить сотрудника');
+    }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Ошибка при удалении сотрудника:', error);
     $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });
   }
 };

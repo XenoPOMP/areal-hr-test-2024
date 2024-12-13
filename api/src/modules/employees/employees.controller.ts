@@ -8,14 +8,18 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Controller('employees')
 export class EmployeesController {
-  constructor(private readonly employeesService: EmployeesService) {}
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly historyOfChangesService: HistoryOfChangesService,
+  ) {}
 
   @Get()
   async findAll() {
@@ -38,47 +42,103 @@ export class EmployeesController {
   }
 
   @Post()
-  async createEmployee(@Body() employeeData: any) {
-    console.log('Received employee data:', employeeData);
+  async createEmployee(@Body() employeeData: any, @Req() req: any) {
+    console.log('Получены данные для создания сотрудника:', employeeData);
+
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      console.error('userId отсутствует:', req.session);
+      throw new HttpException('user_id отсутствует', HttpStatus.BAD_REQUEST);
+    }
 
     if (!employeeData.passportData || !employeeData.addressData) {
       throw new HttpException(
-        {
-          message: 'Passport or address data missing',
-        },
+        { message: 'Отсутствуют данные паспорта или адреса' },
         HttpStatus.BAD_REQUEST,
       );
     }
 
     const { passportData, addressData, ...employeeBaseData } = employeeData;
 
-    return this.employeesService.createEmployee(
-      employeeBaseData,
-      passportData,
-      addressData,
-    );
+    try {
+      // Создание сотрудника в сервисе
+      const createdEmployee = await this.employeesService.createEmployee(
+        employeeBaseData,
+        passportData,
+        addressData,
+        userId,
+      );
+
+      return createdEmployee;
+    } catch (error) {
+      console.error('Ошибка при создании сотрудника:', error);
+      throw new HttpException(
+        'Не удалось создать сотрудника',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Put(':id')
   async updateEmployee(
     @Param('id') id: string,
     @Body() updateData: UpdateEmployeeDto,
+    @Req() req: any,
   ) {
-    return await this.employeesService.update(id, updateData);
+    console.log('Получены данные для обновления:', updateData);
+    console.log('Сессия:', req.session);
+
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      console.error('userId отсутствует:', req.session);
+      throw new HttpException('user_id отсутствует', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const updatedEmployee = await this.employeesService.update(
+        id,
+        updateData,
+        userId,
+      );
+
+      return updatedEmployee;
+    } catch (error) {
+      console.error('Ошибка при обновлении сотрудника:', error);
+      throw new HttpException(
+        'Не удалось обновить сотрудника',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Patch(':id/soft-delete')
-  async softDeleteEmployee(@Param('id') id: number) {
-    console.log(
-      `Received PATCH request to soft-delete employee with ID: ${id}`,
-    );
+  async softDeleteEmployee(@Param('id') id: number, @Req() req: any) {
+    console.log(`Получен запрос на мягкое удаление сотрудника с ID: ${id}`);
+
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      console.error('userId отсутствует:', req.session);
+      throw new HttpException('user_id отсутствует', HttpStatus.BAD_REQUEST);
+    }
+
     try {
-      await this.employeesService.softDeleteEmployee(id);
+      const deletedEmployee = await this.employeesService.softDeleteEmployee(
+        id,
+        userId,
+      );
+
+      // Логирование изменений
+      await this.historyOfChangesService.logChange(
+        'employee'.toLowerCase(),
+        deletedEmployee,
+        userId,
+      );
+
       return {
-        message: 'Employee and related records soft-deleted successfully',
+        message: 'Сотрудник и связанные записи успешно удалены',
       };
     } catch (error) {
-      console.error('Error in softDeleteEmployee:', error);
+      console.error('Ошибка при мягком удалении сотрудника:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
