@@ -198,7 +198,9 @@ const cancelEdit = () => {
 const deleteOrganizationHandler = async (orgId: number) => {
   try {
     const response = await axios.patch(
-      `http://localhost:3000/organizations/${orgId}/soft-delete`
+      `http://localhost:3000/organizations/${orgId}/soft-delete`,
+      {},
+      { withCredentials: true }
     );
     console.log('Response:', response.data);
     await loadOrganizations();

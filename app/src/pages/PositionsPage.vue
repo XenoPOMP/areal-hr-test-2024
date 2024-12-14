@@ -122,8 +122,11 @@ const createPositionHandler = async () => {
 
   try {
     await createPosition(positionData);
+
     newPosition.value = { id: '', name: '' };
+
     await loadPositions();
+
     $q.notify({ type: 'positive', message: 'Должность успешно добавлена' });
   } catch (error) {
     console.error('Ошибка добавления должности:', error);
@@ -154,8 +157,11 @@ const updatePositionHandler = async () => {
 
   try {
     await updatePosition(editedPosition.value.id, positionData);
+
     await loadPositions();
+
     cancelEdit();
+
     $q.notify({ type: 'positive', message: 'Должность успешно обновлена' });
   } catch (error) {
     console.error('Ошибка обновления должности:', error);
@@ -179,10 +185,15 @@ const cancelEdit = () => {
 const deletePositionHandler = async (posId: number) => {
   try {
     const response = await axios.patch(
-      `http://localhost:3000/positions/${posId}/soft-delete`
+      `http://localhost:3000/positions/${posId}/soft-delete`,
+      {},
+      { withCredentials: true }
     );
+
     console.log('Response:', response.data);
+
     await loadPositions();
+
     $q.notify({ type: 'positive', message: 'Должность успешно удалена' });
   } catch (error) {
     console.error('Ошибка удаления должности:', error);

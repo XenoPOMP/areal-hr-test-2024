@@ -235,6 +235,7 @@ const createFileHandler = async () => {
   };
 
   try {
+    // Создание файла
     await createFile(fileData);
 
     newFile.value = { id: '', name: '', link: '', employee_id: null };
@@ -321,8 +322,11 @@ const cancelEdit = () => {
 const deleteFileHandler = async (fileId: number) => {
   try {
     const response = await axios.patch(
-      `http://localhost:3000/files/${fileId}/soft-delete`
+      `http://localhost:3000/files/${fileId}/soft-delete`,
+      {},
+      { withCredentials: true } // Убедитесь, что сессия отправляется с запросом
     );
+
     console.log('Response:', response.data);
     await loadFiles();
     $q.notify({ type: 'positive', message: 'Файл успешно удален' });

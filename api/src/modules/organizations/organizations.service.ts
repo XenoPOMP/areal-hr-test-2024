@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Organisation } from '@models/organization.model';
 import { CreateOrganisationDto } from './dto/create-organization.dto';
 import { UpdateOrganisationDto } from './dto/update-organization.dto';
+import { HistoryOfChangesService } from 'src/modules/history_of_changes/history_of_changes.service';
 
 @Injectable()
 export class OrganisationsService {
   constructor(
     @InjectModel(Organisation)
     private readonly organisationModel: typeof Organisation,
+    private readonly historyOfChangesService: HistoryOfChangesService,
   ) {}
 
   async findAll(): Promise<Organisation[]> {
@@ -19,11 +21,14 @@ export class OrganisationsService {
     });
   }
 
-  // Исправленная версия метода create
   async create(createDto: CreateOrganisationDto): Promise<Organisation> {
-    // Передаем данные напрямую без использования dto
     const { name, comment } = createDto;
-    return this.organisationModel.create({ name, comment });
+    const newOrganisation = await this.organisationModel.create({
+      name,
+      comment,
+    });
+
+    return newOrganisation;
   }
 
   async findOne(id: number): Promise<Organisation | null> {
@@ -33,22 +38,36 @@ export class OrganisationsService {
   async update(
     id: number,
     dto: UpdateOrganisationDto,
+    userId: number,
   ): Promise<Organisation | null> {
     const organisation = await this.organisationModel.findByPk(id);
+
     if (organisation) {
-      return organisation.update(dto);
+      const updatedOrganisation = await organisation.update(dto);
+
+      await this.historyOfChangesService.logChange(
+        'organisation',
+        {
+          id,
+          changes: JSON.stringify(dto),
+        },
+        userId,
+      );
+
+      return updatedOrganisation;
     }
+
     return null;
   }
 
   async softDeleteOrganization(id: number): Promise<void> {
-    const organization = await Organisation.findByPk(id);
+    const organisation = await Organisation.findByPk(id);
 
-    if (!organization) {
+    if (!organisation) {
       throw new Error('Organization not found');
     }
 
-    organization.deleted_at = new Date();
-    await organization.save();
+    organisation.deleted_at = new Date();
+    await organisation.save();
   }
 }

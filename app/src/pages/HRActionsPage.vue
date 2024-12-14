@@ -282,6 +282,11 @@ const createActionHandler = async () => {
 
     await createHrAction(actionData);
 
+    $q.notify({
+      type: 'positive',
+      message: 'Действие успешно добавлено!',
+    });
+
     newAction.value = {
       id: '',
       action_type: '',
@@ -294,7 +299,12 @@ const createActionHandler = async () => {
     await loadActions();
   } catch (error) {
     console.error('Ошибка добавления операции:', error);
-    throw error;
+
+    $q.notify({
+      type: 'negative',
+      message:
+        'Не удалось добавить действие. Проверьте данные и повторите попытку.',
+    });
   }
 };
 
@@ -372,7 +382,9 @@ const cancelEdit = () => {
 const deleteActionHandler = async (hrId: number) => {
   try {
     const response = await axios.patch(
-      `http://localhost:3000/hr_actions/${hrId}/soft-delete`
+      `http://localhost:3000/hr_actions/${hrId}/soft-delete`,
+      {},
+      { withCredentials: true }
     );
     console.log('Response:', response.data);
     await loadActions();

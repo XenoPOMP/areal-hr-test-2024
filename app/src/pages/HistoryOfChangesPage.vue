@@ -67,10 +67,13 @@ const loadHistoryRecords = async () => {
 };
 
 const formatField = (field: Record<string, unknown>): string => {
-  // Форматируем JSON-поле для отображения
-  return Object.entries(field)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(', ');
+  try {
+    // Преобразуем объект в читаемую строку
+    return JSON.stringify(field, null, 2);
+  } catch (error) {
+    console.error('Ошибка форматирования поля field:', error);
+    return 'Неверные данные';
+  }
 };
 
 const deleteRecordHandler = async (historyId: number) => {

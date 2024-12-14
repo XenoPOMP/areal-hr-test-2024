@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
 import { HrActionsService } from './hr_actions.service';
 import { CreateHrActionDto } from './dto/create-hr_action.dto';
@@ -14,6 +15,7 @@ import { HrAction } from '@models/hr_action.model';
 import { EmployeesService } from 'modules/employees/employees.service';
 import { DepartmentsService } from 'modules/departments/departments.service';
 import { PositionsService } from 'modules/positions/positions.service';
+import { Request } from 'express';
 
 @Controller('hr_actions')
 export class HrActionsController {
@@ -54,16 +56,32 @@ export class HrActionsController {
   }
 
   @Post()
-  async create(@Body() createDto: CreateHrActionDto): Promise<HrAction> {
-    return this.hrActionsService.create(createDto);
+  async create(
+    @Body() createDto: CreateHrActionDto,
+    @Req() req: Request, // Для логирования
+  ): Promise<HrAction> {
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    return this.hrActionsService.create(createDto, userId);
   }
 
   @Put(':id')
   async update(
     @Param('id') id: number,
     @Body() updateDto: CreateHrActionDto,
+    @Req() req: Request, // Для логирования
   ): Promise<HrAction> {
-    const updatedAction = await this.hrActionsService.update(id, updateDto);
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    const updatedAction = await this.hrActionsService.update(
+      id,
+      updateDto,
+      userId,
+    );
     if (!updatedAction) {
       throw new NotFoundException('HR action not found');
     }
@@ -71,8 +89,12 @@ export class HrActionsController {
   }
 
   @Patch(':id/soft-delete')
-  async softDeleteHrAction(@Param('id') id: number) {
-    await this.hrActionsService.softDeleteHrAction(id);
+  async softDeleteHrAction(@Param('id') id: number, @Req() req: Request) {
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    await this.hrActionsService.softDeleteHrAction(id, userId);
     return;
   }
 }
