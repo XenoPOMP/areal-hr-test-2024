@@ -1,38 +1,21 @@
 import { route } from 'quasar/wrappers';
 import {
   createRouter,
-  createWebHistory,
+  createWebHistory, // Используем history для чистых URL
   createWebHashHistory,
 } from 'vue-router';
 import routes from './routes';
-import { restoreAuthState, setRedirectRoute } from './auth';
 
 export default route(async function () {
   const createHistory =
     process.env.VUE_ROUTER_MODE === 'history'
-      ? createWebHistory()
-      : createWebHashHistory();
+      ? createWebHistory() // Режим history
+      : createWebHashHistory(); // Если необходимо, можно использовать hash-режим
 
   const Router = createRouter({
-    history: createHistory,
+    history: createHistory, // Используем правильный режим
     routes,
     scrollBehavior: () => ({ left: 0, top: 0 }),
-  });
-
-  Router.beforeEach(async (to, from, next) => {
-    console.log('Navigating to:', to.fullPath);
-    console.log('Authentication required:', !!to.meta.requiresAuth);
-
-    const isAuthenticated = await restoreAuthState(); // Проверяем сессию
-    console.log('User authenticated:', isAuthenticated);
-
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      console.log('User not authenticated, redirecting to login');
-      setRedirectRoute(to.fullPath);
-      next({ name: 'login' });
-    } else {
-      next(); // Разрешаем переход
-    }
   });
 
   return Router;

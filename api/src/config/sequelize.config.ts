@@ -16,7 +16,7 @@ config({ path: resolve(__dirname, '../../../.env') });
 
 export const SequelizeConfig: SequelizeModuleOptions = {
   dialect: 'postgres',
-  host: process.env.PGHOST,
+  host: process.env.PGHOST || 'db',
   port: parseInt(process.env.PGPORT || '5432', 10),
   username: process.env.PGUSER,
   password: process.env.PGPASSWORD,

@@ -8,8 +8,19 @@ import * as path from 'node:path';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  const allowedOrigins = ['http://localhost:9000', 'http://localhost'];
+
   app.enableCors({
-    origin: 'http://localhost:9000',
+    origin: (origin, callback) => {
+      // Разрешаем запросы без Origin (например, из Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, origin);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
     credentials: true,
