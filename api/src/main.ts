@@ -1,9 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@app/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Controller, Get, ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'node:path';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+
+@Controller('logs')
+export class LogsController {
+  @Get()
+  async getLogs(): Promise<string> {
+    const logPath = join(__dirname, '../logs/backend.log');
+    try {
+      const logs = await readFile(logPath, 'utf8');
+      return logs;
+    } catch (error) {
+      return `Error reading logs: ${error.message}`;
+    }
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -12,7 +28,6 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Разрешаем запросы без Origin (например, из Postman)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {

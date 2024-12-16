@@ -1,19 +1,10 @@
 import { RouteRecordRaw } from 'vue-router';
-import { isAuthenticated } from './auth';
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/login',
-    component: () => import('src/pages/LoginPage.vue'),
-    name: 'login',
-  },
-  {
     path: '/',
     component: () => import('src/layouts/MainLayout.vue'),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    redirect: (to) => {
-      return isAuthenticated() ? '/organizations' : '/login';
-    },
+    redirect: '/organizations', // По умолчанию перенаправляем на /organizations
     children: [
       {
         path: 'organizations',
@@ -58,6 +49,11 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true },
       },
     ],
+  },
+  {
+    path: '/login',
+    component: () => import('src/pages/LoginPage.vue'),
+    name: 'login',
   },
 ];
 

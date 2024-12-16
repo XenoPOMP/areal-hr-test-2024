@@ -265,9 +265,6 @@ const deleteDepartmentHandler = async (departmentId: number) => {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const userId = session.user.id;
-
     // Удаляем отдел
     await axios.patch(
       `http://localhost:3000/departments/${departmentId}/soft-delete`,

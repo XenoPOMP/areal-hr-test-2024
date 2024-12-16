@@ -18,19 +18,23 @@ export class AuthService {
     req.session.destroy();
     return { message: 'Logout successful' };
   }
+
   // Метод для проверки пользователя по логину и паролю
   async validateUser(login: string, password: string, session: any) {
     const db_user = await this.userService.findByLogin(login);
     if (!db_user) {
+      console.log(`Пользователь с логином ${login} не найден`);
       return null;
     }
 
     const isPasswordValid = await argon2.verify(db_user.password, password);
     if (!isPasswordValid) {
+      console.log(`Неверный пароль для пользователя ${login}`);
       return null;
     }
 
-    session.user = db_user; // Сохраняем пользователя в сессии
+    console.log(`Пользователь ${login} успешно прошел проверку`);
+    session.user = db_user;
 
     const { password: _, ...userWithoutPassword } = db_user.toJSON();
     return userWithoutPassword;
