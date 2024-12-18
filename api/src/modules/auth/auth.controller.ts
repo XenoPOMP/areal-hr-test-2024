@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { LoginDto } from 'auth/dto/login.dto';
+import { LoginDto } from 'src/modules/auth/dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,11 +18,7 @@ export class AuthController {
 
   @Get('session')
   getSession(@Session() session: any) {
-    if (session.user) {
-      return { user: session.user }; // Если сессия существует, возвращаем информацию о пользователе
-    } else {
-      return { message: 'No active session' }; // Если сессия не существует
-    }
+    return { user: session.user || null };
   }
 
   @Post('login')

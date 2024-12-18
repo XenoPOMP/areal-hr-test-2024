@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
+  //todo transact
   up: async (queryInterface, Sequelize) => {
     // Таблица address
     await queryInterface.createTable('address', {

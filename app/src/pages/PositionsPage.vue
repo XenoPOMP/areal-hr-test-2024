@@ -62,9 +62,13 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getPositions, createPosition, updatePosition } from 'src/api';
+import {
+  getPositions,
+  createPosition,
+  updatePosition,
+} from 'src/api/positions';
 import { useQuasar } from 'quasar';
-import { positionsColumns } from 'pages/columns';
+import { positionsColumns } from 'src/pages/columns';
 import axios from 'axios';
 import Joi from 'joi';
 

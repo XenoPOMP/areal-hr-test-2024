@@ -50,48 +50,8 @@ export async function restoreAuthState() {
   }
 }
 
-// Выполнить вход
-export async function login(login, password) {
-  const response = await fetch('http://localhost:3000/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ login, password }),
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status}`);
-  }
-
-  const data = await response.json();
+// Установить данные текущего пользователя
+export function setCurrentUser(user) {
   isUserAuthenticated = true;
-  currentUser = data.user;
-  return data;
-}
-
-// Выполнить выход
-export async function logout() {
-  try {
-    const data = await fetchAPI('http://localhost:3000/auth/logout', {
-      method: 'POST',
-    });
-    resetAuth();
-    console.log('User logged out:', data);
-  } catch (error) {
-    console.error('Error during logout:', error);
-  }
-}
-
-// Общая функция для запросов
-async function fetchAPI(url, options = {}) {
-  const response = await fetch(url, { ...options, credentials: 'include' });
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      resetAuth();
-    }
-    throw new Error(`Error: ${response.status}`);
-  }
-  return response.json();
+  currentUser = user;
 }

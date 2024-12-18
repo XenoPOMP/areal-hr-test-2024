@@ -21,10 +21,10 @@ interface Props {
   todos?: Todo[];
   meta: Meta;
   active: boolean;
-};
-
+}
+//todo delete
 const props = withDefaults(defineProps<Props>(), {
-  todos: () => []
+  todos: () => [],
 });
 
 const clickCount = ref(0);

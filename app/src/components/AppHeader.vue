@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { logout } from 'src/router/auth';
+import { logout } from 'src/auth';
 
 const router = useRouter();
 const route = useRoute();

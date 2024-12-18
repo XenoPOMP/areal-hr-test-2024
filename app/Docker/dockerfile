@@ -1,0 +1,29 @@
+# Стадия сборки фронтенда
+FROM node:20 AS build
+
+# Устанавливаем рабочую директорию
+WORKDIR /usr/src/app
+
+# Копируем package.json и package-lock.json для установки зависимостей
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm install
+
+# Копируем исходный код
+COPY . .
+
+# Собираем фронтенд
+RUN npm run build
+
+# Финальный образ на основе Nginx
+FROM nginx:alpine
+
+# Копируем собранные файлы из предыдущей стадии
+COPY --from=build /usr/src/app/dist/spa /usr/share/nginx/html
+
+# Открываем порт 80
+EXPOSE 80
+
+# Запускаем Nginx
+CMD ["nginx", "-g", "daemon off;"]

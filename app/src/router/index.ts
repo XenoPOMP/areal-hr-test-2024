@@ -4,17 +4,19 @@ import {
   createWebHistory,
   createWebHashHistory,
 } from 'vue-router';
+import { restoreAuthState } from 'src/session';
 import routes from './routes';
 import axios from 'axios';
 
 // Функция проверки авторизации
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function isAuthenticated() {
   try {
     const response = await axios.get('http://localhost:3000/auth/session', {
       withCredentials: true,
     });
-    console.log('Authenticated response:', response.data); // Добавьте лог для проверки
-    return !!response.data.user; // Убедитесь, что возвращается логическое значение
+    console.log('Authenticated response:', response.data); // Лог для проверки
+    return !!response.data.user;
   } catch (error) {
     console.error('Ошибка при проверке авторизации:', error);
     return false;
@@ -33,21 +35,16 @@ export default route(async function () {
     scrollBehavior: () => ({ left: 0, top: 0 }),
   });
 
-  // Глобальный перехватчик маршрутов
   Router.beforeEach(async (to, from, next) => {
-    console.log('Navigating to:', to.path); // Логируем маршрут
+    const isAuthenticated = await restoreAuthState();
 
-    if (to.meta.requiresAuth) {
-      const authenticated = await isAuthenticated();
-      console.log('Is authenticated:', authenticated);
-
-      if (!authenticated) {
-        console.log('Redirecting to login');
-        return next('/login');
-      }
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      next({ name: 'login' }); // Редирект, если нет авторизации
+    } else if (to.name === 'login' && isAuthenticated) {
+      next({ name: 'organizations' }); // Редирект на основную страницу, если уже авторизован
+    } else {
+      next(); // Разрешаем переход
     }
-
-    next(); // Переход разрешен
   });
 
   return Router;

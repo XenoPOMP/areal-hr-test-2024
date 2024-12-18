@@ -22,7 +22,7 @@ export class DepartmentsService {
   }
 
   async create(dto: CreateDepartmentDto, user_id: number): Promise<Department> {
-    const department = await this.departmentModel.create({ ...dto });
+    const department = await this.departmentModel.create({ ...dto }); //todo try catch transact
     await this.historyOfChangesService.logChange('department', dto, user_id);
     return department;
   }

@@ -16,7 +16,7 @@ export const departmentColumns: QTableColumn[] = [
     field: (row) => row.id,
   },
 ];
-
+//todo to other files
 export const employeeColumns = [
   { name: 'name', label: 'Имя', align: 'left' as const, field: 'name' },
   {

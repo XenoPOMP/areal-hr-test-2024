@@ -34,18 +34,15 @@ services:
       - PGPASSWORD=Spiridon_2017
     depends_on:
       - db
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    command: >
+      sh -c "npm run start"
 
   frontend:
     build:
       context: ./app
     container_name: areal-hr-test-2024-frontend
     ports:
-      - "9000:9000"
+      - "9000:80"
     volumes:
       - ./app:/usr/src/app
     environment:

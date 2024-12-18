@@ -2,10 +2,19 @@ import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/login',
+    component: () => import('src/pages/LoginPage.vue'),
+    name: 'login',
+  },
+  {
     path: '/',
     component: () => import('src/layouts/MainLayout.vue'),
-    redirect: '/organizations', // По умолчанию перенаправляем на /organizations
+    meta: { requiresAuth: true }, // Проверка авторизации для всех дочерних маршрутов
     children: [
+      {
+        path: '',
+        redirect: { name: 'organizations' }, // Редирект на организации
+      },
       {
         path: 'organizations',
         component: () => import('src/pages/OrganizationsPage.vue'),
@@ -51,9 +60,8 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/login',
-    component: () => import('src/pages/LoginPage.vue'),
-    name: 'login',
+    path: '/:catchAll(.*)', // Обработка несуществующих маршрутов
+    redirect: '/login',
   },
 ];
 

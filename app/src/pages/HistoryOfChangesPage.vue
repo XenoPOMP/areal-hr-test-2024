@@ -32,10 +32,10 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getHistoryOfChanges } from 'src/api';
+import { getHistoryOfChanges } from 'src/api/historyOfChanges';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
-import { history_of_changesColumns } from 'pages/columns';
+import { history_of_changesColumns } from 'src/pages/columns';
 
 const $q = useQuasar();
 

@@ -117,9 +117,13 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getHrActions, createHrAction, updateHrAction } from 'src/api';
+import {
+  getHrActions,
+  createHrAction,
+  updateHrAction,
+} from 'src/api/hrActions';
 import { useQuasar } from 'quasar';
-import { HRactionsColumns } from 'pages/columns';
+import { HRactionsColumns } from 'src/pages/columns';
 import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();

@@ -26,6 +26,7 @@ export class FilesService {
   }
 
   async create(dto: CreateFileDto, userId: number): Promise<File> {
+    //todo all file logic to employees
     const file = await this.fileModel.create({ ...dto });
 
     // Логирование изменения на стороне бэкенда

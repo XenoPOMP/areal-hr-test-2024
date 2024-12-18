@@ -65,12 +65,16 @@
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { getDepartments, createDepartment, updateDepartment } from 'src/api';
+import {
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+} from 'src/api/departments';
 import { QTableColumn, useQuasar } from 'quasar';
 import { departmentColumns } from './columns';
 import Joi from 'joi';
 import axios from 'axios';
-import { getCurrentUser } from 'src/router/auth';
+import { getCurrentUser } from 'src/session';
 const $q = useQuasar();
 
 interface Department {
@@ -155,7 +159,7 @@ const createDepartmentHandler = async () => {
     );
 
     if (!session.user || !session.user.id) {
-      console.error('Сессия пользователя недействительна');
+      console.error('Сессия пользователя недействительна'); //todo remove console.errors & .log (logger in api)
       $q.notify({ type: 'negative', message: 'Сессия недействительна' });
       return;
     }

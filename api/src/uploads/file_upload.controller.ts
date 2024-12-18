@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileUploadService } from './file_upload.service';
+import { FileUploadService } from './file_upload.service'; //todo remove controller (use other file upload logic inside employees)
 
 @Controller('uploads')
 export class FileUploadController {

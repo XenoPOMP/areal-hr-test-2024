@@ -29,3 +29,5 @@ export default boot(({ app }) => {
 });
 
 export { api };
+
+//important for axios work

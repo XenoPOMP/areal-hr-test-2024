@@ -31,59 +31,37 @@
   </div>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
+import { ref } from 'vue';
+import { login } from 'src/auth'; // Метод login из вашего auth.js
+import { getRedirectRoute, setCurrentUser } from 'src/session'; // Работа с сессией
+import { useRouter } from 'vue-router';
 
-export default {
-  data() {
-    return {
-      login: '', // Логин пользователя
-      password: '', // Пароль пользователя
-      isSubmitting: false, // Флаг для блокировки кнопки отправки при отправке формы
-      user: null, // Данные пользователя после успешной авторизации
-      error: null, // Сообщение об ошибке
-    };
-  },
-  methods: {
-    // Метод для отправки формы авторизации
-    handleLogin() {
-      this.isSubmitting = true;
-      this.error = null;
+const loginField = ref(''); // Логин пользователя
+const passwordField = ref(''); // Пароль пользователя
+const isSubmitting = ref(false); // Флаг для блокировки кнопки отправки
+const error = ref(null); // Сообщение об ошибке
 
-      axios
-        .post(
-          'http://localhost:3000/auth/login',
-          { login: this.login, password: this.password },
-          { withCredentials: true }
-        )
-        .then((response) => {
-          console.log('Login successful:', response.data); // Для отладки
-          this.user = response.data.user;
-          this.$router.push('/organizations'); // Редирект
-        })
-        .catch((error) => {
-          console.error('Login error:', error);
-          this.error = 'Неверный логин или пароль';
-        });
-    },
-    // Проверка сессии пользователя при загрузке страницы
-    checkSession() {
-      axios
-        .get('http://localhost:3000/auth/session', { withCredentials: true })
-        .then((response) => {
-          if (response.data.user) {
-            this.user = response.data.user; // Устанавливаем данные пользователя
-          }
-        })
-        .catch((error) => {
-          console.error('Ошибка при проверке сессии:', error);
-          this.error = 'Не удалось проверить сессию'; // В случае ошибки
-        });
-    },
-  },
-  created() {
-    this.checkSession(); // Проверяем сессию при загрузке компонента
-  },
+const router = useRouter(); // Для работы с маршрутами
+
+// Метод для отправки формы
+const handleLogin = async () => {
+  isSubmitting.value = true;
+  error.value = null;
+
+  try {
+    const user = await login(loginField.value, passwordField.value); // Вызов метода login
+    setCurrentUser(user); // Установка текущего пользователя
+
+    // Редирект на сохранённый маршрут или страницу организаций
+    const redirect = getRedirectRoute() || { name: 'organizations' };
+    router.push(redirect);
+  } catch (err) {
+    console.error('Ошибка авторизации:', err);
+    error.value = 'Неверный логин или пароль'; // Отображение ошибки
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 

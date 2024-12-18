@@ -14,7 +14,7 @@ import { Passport } from './passport.model';
 import { Address } from './address.model';
 import { File } from '@models/file.model';
 
-@Table({ tableName: 'employee', freezeTableName: true, timestamps: false })
+@Table({ tableName: 'employee', freezeTableName: true, timestamps: false }) //todo paranoid: true (soft delete method)
 export class Employee extends Model {
   @PrimaryKey
   @AutoIncrement

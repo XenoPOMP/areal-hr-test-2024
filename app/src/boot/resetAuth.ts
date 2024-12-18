@@ -1,4 +1,4 @@
-import { resetAuth } from 'src/router/auth';
+import { resetAuth } from 'src/session';
 
 export default () => {
   resetAuth(); // Сбрасываем авторизацию при загрузке

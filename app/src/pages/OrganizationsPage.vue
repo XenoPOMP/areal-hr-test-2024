@@ -70,12 +70,12 @@ import {
   getOrganizations,
   createOrganization,
   updateOrganization,
-} from 'src/api';
+} from 'src/api/organizations';
 import AppHeader from 'components/AppHeader.vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
 import Joi from 'joi';
-import { organizationsColumns } from 'pages/columns'; // Подключаем Joi для валидации
+import { organizationsColumns } from 'src/pages/columns'; // Подключаем Joi для валидации
 
 const $q = useQuasar();
 

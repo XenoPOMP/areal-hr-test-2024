@@ -64,7 +64,7 @@
         />
         <q-input v-model="passportInfo.code" label="Код подразделения" filled />
         <q-input v-model="passportInfo.issued_by" label="Кем выдан" filled />
-
+        <!--        todo passport scan-->
         <!-- Адресные данные -->
         <h4>Адрес</h4>
         <q-input v-model="addressInfo.region" label="Регион" filled />
@@ -117,6 +117,7 @@
               flat
               size="sm"
             />
+            <!--        todo quasar uploader для сканов + загрузка файлов + удаление-->
           </q-td>
         </q-tr>
       </template>
@@ -240,14 +241,14 @@ import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
 import { employeeColumns } from './columns';
-import { employeeSchema } from 'components/Employee.shemas';
+import { employeeSchema } from 'src/pages/shemas/Employee.shemas';
 import axios from 'axios';
 import {
   EmployeeBaseData,
   PassportInfo,
   AddressInfo,
   File as EmployeeFile,
-} from 'src/types/Employee';
+} from './types/Employee';
 
 const $q = useQuasar();
 reactive<EmployeeBaseData>({

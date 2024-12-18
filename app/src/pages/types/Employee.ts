@@ -34,3 +34,4 @@ export interface File {
   name: string;
   link: string;
 }
+//todo /types/ remove to employees folder
