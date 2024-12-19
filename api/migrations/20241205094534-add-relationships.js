@@ -1,7 +1,10 @@
 'use strict';
 
 module.exports = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   up: async (queryInterface, Sequelize) => {
+    const t = await queryInterface.sequelize.transaction(); // Начало транзакции
+
     const constraints = [
       {
         table: 'department',
@@ -125,23 +128,37 @@ module.exports = {
       },
     ];
 
-    for (const { table, constraintName, sql } of constraints) {
-      await queryInterface.sequelize.query(`
-        DO $$
-        BEGIN
-          IF NOT EXISTS (
-            SELECT 1
-            FROM pg_constraint
-            WHERE conname = '${constraintName}'
-          ) THEN
-            ${sql}
-          END IF;
-        END $$;
-      `);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for (const { table, constraintName, sql } of constraints) {
+        await queryInterface.sequelize.query(
+          `
+          DO $$
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1
+              FROM pg_constraint
+              WHERE conname = '${constraintName}'
+            ) THEN
+              ${sql}
+            END IF;
+          END $$;
+        `,
+          { transaction: t },
+        );
+      }
+
+      await t.commit(); // Коммит транзакции
+    } catch (error) {
+      await t.rollback(); // Откат транзакции в случае ошибки
+      throw error;
     }
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   down: async (queryInterface, Sequelize) => {
+    const t = await queryInterface.sequelize.transaction(); // Начало транзакции
+
     const constraints = [
       { table: 'hr_action', constraintName: 'hr_pos_fk' },
       { table: 'hr_action', constraintName: 'hr_emp_fk' },
@@ -155,8 +172,17 @@ module.exports = {
       { table: 'department', constraintName: 'dep_org_fk' },
     ];
 
-    for (const { table, constraintName } of constraints) {
-      await queryInterface.removeConstraint(table, constraintName);
+    try {
+      for (const { table, constraintName } of constraints) {
+        await queryInterface.removeConstraint(table, constraintName, {
+          transaction: t,
+        });
+      }
+
+      await t.commit(); // Коммит транзакции
+    } catch (error) {
+      await t.rollback(); // Откат транзакции в случае ошибки
+      throw error;
     }
   },
 };

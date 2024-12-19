@@ -41,6 +41,7 @@ const loginField = ref('');
 const passwordField = ref('');
 const isSubmitting = ref(false);
 const error = ref(null);
+const user = ref(null);
 
 const router = useRouter();
 
