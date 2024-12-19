@@ -5,7 +5,7 @@
       <q-tabs
         v-model="currentTab"
         active-color="white"
-        indicator-color="accent"
+        indicator-color="white"
         dense
         transition-prev="scale"
         transition-next="scale"
