@@ -71,7 +71,7 @@ import {
   updateDepartment,
 } from 'src/api/departments';
 import { QTableColumn, useQuasar } from 'quasar';
-import { departmentColumns } from './columns';
+import { departmentColumns } from 'src/pages/columns/departmentsColumns';
 import Joi from 'joi';
 import axios from 'axios';
 import { getCurrentUser } from 'src/session';
@@ -269,7 +269,6 @@ const deleteDepartmentHandler = async (departmentId: number) => {
       return;
     }
 
-    // Удаляем отдел
     await axios.patch(
       `http://localhost:3000/departments/${departmentId}/soft-delete`,
       {},
@@ -279,7 +278,7 @@ const deleteDepartmentHandler = async (departmentId: number) => {
     await loadDepartments();
     $q.notify({
       type: 'positive',
-      message: 'Отдел удален',
+      message: 'Отдел успешно удален',
     });
   } catch (error) {
     console.error('Ошибка при удалении отдела:', error);

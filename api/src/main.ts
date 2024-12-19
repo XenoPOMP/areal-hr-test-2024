@@ -4,11 +4,14 @@ import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'node:path';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const allowedOrigins = ['http://localhost:9000', 'http://localhost']; //todo .env
+  const allowedOrigins = (process.env.FRONTEND_URL || '').split(',');
+  const sessionSecret = process.env.SESSION_SECRET;
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -27,8 +30,7 @@ async function bootstrap() {
 
   app.use(
     session({
-      secret:
-        'c8f23775e445ce1fb719237a4a13ea6bbe3ebefe3eed54c3b6b03130197329f3', //todo .env
+      secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -40,7 +42,7 @@ async function bootstrap() {
     }),
   );
 
-  const filePath = path.join('E:/areal-hr-test-2024/files'); //todo redo
+  const filePath = path.join(process.cwd(), process.env.FILES_DIR || 'files');
   app.useStaticAssets(filePath, { prefix: '/files' });
 
   app.useGlobalPipes(new ValidationPipe());

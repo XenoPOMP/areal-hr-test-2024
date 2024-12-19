@@ -7,7 +7,15 @@ import {
   DataType,
 } from 'sequelize-typescript';
 
-@Table({ tableName: 'position', freezeTableName: true, timestamps: false })
+@Table({
+  tableName: 'position',
+  freezeTableName: true,
+  timestamps: true,
+  paranoid: true,
+  createdAt: false,
+  updatedAt: false,
+  deletedAt: 'deleted_at',
+})
 export class Position extends Model {
   @PrimaryKey
   @AutoIncrement

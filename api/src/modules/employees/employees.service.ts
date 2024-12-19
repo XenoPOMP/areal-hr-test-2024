@@ -142,36 +142,53 @@ export class EmployeesService {
     return employee;
   }
 
-  async softDeleteEmployee(id: number, userId: number) {
+  async softDeleteEmployee(id: number, userId: number): Promise<Employee> {
+    const transaction = await this.sequelize.transaction();
     try {
-      const employee = await this.employeeModel.findOne({ where: { id } });
+      const employee = await this.employeeModel.findOne({
+        where: { id },
+        include: [
+          { model: Passport, required: false },
+          { model: Address, required: false },
+        ],
+        transaction,
+      });
 
       if (!employee) {
         throw new Error('Employee not found');
       }
 
-      employee.deleted_at = new Date();
-      await employee.save();
-
       if (employee.passport) {
-        employee.passport.deleted_at = new Date();
-        await employee.passport.save();
+        await employee.passport.update(
+          { deleted_at: new Date() },
+          { transaction },
+        );
       }
 
       if (employee.address) {
-        employee.address.deleted_at = new Date();
-        await employee.address.save();
+        await employee.address.update(
+          { deleted_at: new Date() },
+          { transaction },
+        );
       }
 
-      // Логирование изменений
+      await employee.destroy({ transaction });
+
       await this.historyOfChangesService.logChange(
-        'employee'.toLowerCase(),
-        employee,
+        'employee',
+        {
+          id: employee.id,
+          passport_id: employee.passport_id,
+          address_id: employee.address_id,
+          deleted_at: new Date(),
+        },
         userId,
       );
 
+      await transaction.commit();
       return employee;
     } catch (error) {
+      await transaction.rollback();
       throw new Error(`Error soft-deleting employee: ${error.message}`);
     }
   }

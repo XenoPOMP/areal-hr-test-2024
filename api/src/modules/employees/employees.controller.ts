@@ -122,20 +122,14 @@ export class EmployeesController {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const deletedEmployee = await this.employeesService.softDeleteEmployee(
         id,
         userId,
       );
 
-      // Логирование изменений
-      await this.historyOfChangesService.logChange(
-        'employee'.toLowerCase(),
-        deletedEmployee,
-        userId,
-      );
-
       return {
-        message: 'Сотрудник и связанные записи успешно удалены',
+        message: 'Сотрудник, паспорт и адрес успешно удалены',
       };
     } catch (error) {
       console.error('Ошибка при мягком удалении сотрудника:', error);

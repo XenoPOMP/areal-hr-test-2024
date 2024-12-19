@@ -240,7 +240,7 @@
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted, reactive } from 'vue';
 import { useQuasar } from 'quasar';
-import { employeeColumns } from './columns';
+import { employeeColumns } from 'src/pages/columns/employeesColumns';
 import { employeeSchema } from 'src/pages/shemas/Employee.shemas';
 import axios from 'axios';
 import {
@@ -585,8 +585,8 @@ const deleteEmployeeHandler = async (employeeId: number) => {
   try {
     const response = await axios.patch(
       `http://localhost:3000/employees/${employeeId}/soft-delete`,
-      { user_id: userId },
-      { withCredentials: true } // Добавляем с этим параметром
+      { userId },
+      { withCredentials: true }
     );
 
     if (response.status === 200) {

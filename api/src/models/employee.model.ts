@@ -14,7 +14,15 @@ import { Passport } from './passport.model';
 import { Address } from './address.model';
 import { File } from '@models/file.model';
 
-@Table({ tableName: 'employee', freezeTableName: true, timestamps: false }) //todo paranoid: true (soft delete method)
+@Table({
+  tableName: 'employee',
+  freezeTableName: true,
+  timestamps: true,
+  paranoid: true,
+  createdAt: false,
+  updatedAt: false,
+  deletedAt: 'deleted_at',
+})
 export class Employee extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -94,10 +102,6 @@ export class Employee extends Model {
   ) {
     const transaction = await this.sequelize.transaction();
 
-    console.log('Passport Data:', passportData);
-    console.log('Address Data:', addressData);
-    console.log('Employee Data:', employeeData);
-
     try {
       const passport = await Passport.create(
         { ...passportData },
@@ -117,33 +121,6 @@ export class Employee extends Model {
 
       await transaction.commit();
       return employee;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
-  static async softDeleteEmployee(id: number): Promise<void> {
-    const transaction = await this.sequelize.transaction();
-    try {
-      const employee = await this.findByPk(id, { transaction });
-      if (!employee) {
-        throw new Error('Employee not found');
-      }
-
-      employee.deleted_at = new Date();
-      await employee.save({ transaction });
-
-      if (employee.passport) {
-        employee.passport.deleted_at = new Date();
-        await employee.passport.save({ transaction });
-      }
-
-      if (employee.address) {
-        employee.address.deleted_at = new Date();
-        await employee.address.save({ transaction });
-      }
-
-      await transaction.commit();
     } catch (error) {
       await transaction.rollback();
       throw error;

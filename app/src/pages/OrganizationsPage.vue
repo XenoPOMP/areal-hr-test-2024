@@ -75,7 +75,7 @@ import AppHeader from 'components/AppHeader.vue';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
 import Joi from 'joi';
-import { organizationsColumns } from 'src/pages/columns'; // Подключаем Joi для валидации
+import { organizationsColumns } from 'src/pages/columns/organizationsColumns'; // Подключаем Joi для валидации
 
 const $q = useQuasar();
 

@@ -59,8 +59,7 @@ export class DepartmentsService {
       throw new Error('Department not found');
     }
 
-    department.deleted_at = new Date();
-    await department.save();
+    await department.destroy();
 
     await this.historyOfChangesService.logChange(
       'department',

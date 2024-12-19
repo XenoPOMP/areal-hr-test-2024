@@ -12,7 +12,15 @@ import { Employee } from './employee.model';
 import { Department } from './department.model';
 import { Position } from './position.model';
 
-@Table({ tableName: 'hr_action', freezeTableName: true, timestamps: false })
+@Table({
+  tableName: 'hr_action',
+  freezeTableName: true,
+  timestamps: true,
+  paranoid: true,
+  createdAt: false,
+  updatedAt: false,
+  deletedAt: 'deleted_at',
+})
 export class HrAction extends Model {
   @PrimaryKey
   @AutoIncrement

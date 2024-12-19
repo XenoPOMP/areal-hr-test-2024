@@ -75,8 +75,7 @@ export class PositionsService {
       throw new Error('Position not found');
     }
 
-    position.deleted_at = new Date();
-    await position.save();
+    await position.destroy();
 
     await this.historyService.logChange(
       'position',

@@ -66,14 +66,13 @@ export class HrActionsService {
   }
 
   async softDeleteHrAction(id: number, userId: number): Promise<void> {
-    const action = await HrAction.findByPk(id);
+    const action = await this.hrActionModel.findByPk(id);
 
     if (!action) {
       throw new Error('HR action not found');
     }
 
-    action.deleted_at = new Date();
-    await action.save();
+    await action.destroy();
 
     // Логирование удаления
     await this.historyOfChangesService.logChange(

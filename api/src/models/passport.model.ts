@@ -9,7 +9,15 @@ import {
 } from 'sequelize-typescript';
 import { Employee } from './employee.model';
 
-@Table({ tableName: 'passport', freezeTableName: true, timestamps: false })
+@Table({
+  tableName: 'passport',
+  freezeTableName: true,
+  timestamps: true,
+  paranoid: true,
+  createdAt: false,
+  updatedAt: false,
+  deletedAt: 'deleted_at',
+})
 export class Passport extends Model {
   @PrimaryKey
   @AutoIncrement

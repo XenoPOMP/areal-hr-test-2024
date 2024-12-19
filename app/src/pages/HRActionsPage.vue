@@ -123,7 +123,7 @@ import {
   updateHrAction,
 } from 'src/api/hrActions';
 import { useQuasar } from 'quasar';
-import { HRactionsColumns } from 'src/pages/columns';
+import { HRactionsColumns } from 'src/pages/columns/hrActionsColumns';
 import Joi from 'joi';
 import axios from 'axios';
 const $q = useQuasar();

@@ -35,7 +35,7 @@ import { ref, onMounted } from 'vue';
 import { getHistoryOfChanges } from 'src/api/historyOfChanges';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
-import { history_of_changesColumns } from 'src/pages/columns';
+import { history_of_changesColumns } from 'src/pages/columns/historyOfChangesColumns';
 
 const $q = useQuasar();
 

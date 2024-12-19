@@ -68,7 +68,7 @@ import {
   updatePosition,
 } from 'src/api/positions';
 import { useQuasar } from 'quasar';
-import { positionsColumns } from 'src/pages/columns';
+import { positionsColumns } from 'src/pages/columns/positionsColumns';
 import axios from 'axios';
 import Joi from 'joi';
 

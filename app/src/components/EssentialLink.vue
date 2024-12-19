@@ -15,7 +15,6 @@
 defineOptions({
   name: 'EssentialLink',
 });
-//todo delete
 export interface EssentialLinkProps {
   title: string;
   caption?: string;

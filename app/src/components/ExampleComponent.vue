@@ -22,7 +22,6 @@ interface Props {
   meta: Meta;
   active: boolean;
 }
-//todo delete
 const props = withDefaults(defineProps<Props>(), {
   todos: () => [],
 });
