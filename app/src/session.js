@@ -32,7 +32,14 @@ export function getRedirectRoute() {
 // Восстановить состояние сессии
 export async function restoreAuthState() {
   try {
-    const data = await fetchAPI('http://localhost:3000/auth/session');
+    const response = await fetch('http://localhost:3000/auth/session', {
+      method: 'GET',
+      credentials: 'include', // если требуется отправка куки
+    });
+    if (!response.ok) {
+      throw new Error('Failed to restore session');
+    }
+    const data = await response.json();
     if (data.user) {
       isUserAuthenticated = true;
       currentUser = data.user;

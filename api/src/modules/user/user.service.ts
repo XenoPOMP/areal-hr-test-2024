@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/user.model';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -17,7 +18,11 @@ export class UserService {
 
   // Метод для создания нового пользователя
   async createUser(login: string, password: string) {
-    const newUser = await this.userModel.create({ login, password });
+    const hashedPassword = await argon2.hash(password); // Хэшируем пароль
+    const newUser = await this.userModel.create({
+      login,
+      password: hashedPassword,
+    });
     return newUser;
   }
 
@@ -28,10 +33,14 @@ export class UserService {
       throw new Error('User not found');
     }
 
+    if (updateData.password) {
+      updateData.password = await argon2.hash(updateData.password); // Хэшируем новый пароль
+    }
+
     return user.update(updateData);
   }
 
-  // Метод для деактивации пользователя (например, через удаление или установку флага)
+  // Метод для деактивации пользователя
   async deactivateUser(id: number) {
     const user = await this.userModel.findByPk(id);
     if (!user) {

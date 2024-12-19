@@ -7,7 +7,7 @@
         <input
           type="text"
           id="login"
-          v-model="login"
+          v-model="loginField"
           placeholder="Введите логин"
           required
         />
@@ -18,7 +18,7 @@
         <input
           type="password"
           id="password"
-          v-model="password"
+          v-model="passwordField"
           placeholder="Введите пароль"
           required
         />
@@ -33,32 +33,30 @@
 
 <script setup>
 import { ref } from 'vue';
-import { login } from 'src/auth'; // Метод login из вашего auth.js
-import { getRedirectRoute, setCurrentUser } from 'src/session'; // Работа с сессией
+import { login } from 'src/auth';
+import { getRedirectRoute, setCurrentUser } from 'src/session';
 import { useRouter } from 'vue-router';
 
-const loginField = ref(''); // Логин пользователя
-const passwordField = ref(''); // Пароль пользователя
-const isSubmitting = ref(false); // Флаг для блокировки кнопки отправки
-const error = ref(null); // Сообщение об ошибке
+const loginField = ref('');
+const passwordField = ref('');
+const isSubmitting = ref(false);
+const error = ref(null);
 
-const router = useRouter(); // Для работы с маршрутами
+const router = useRouter();
 
-// Метод для отправки формы
 const handleLogin = async () => {
   isSubmitting.value = true;
   error.value = null;
 
   try {
-    const user = await login(loginField.value, passwordField.value); // Вызов метода login
-    setCurrentUser(user); // Установка текущего пользователя
+    const user = await login(loginField.value, passwordField.value);
+    setCurrentUser(user);
 
-    // Редирект на сохранённый маршрут или страницу организаций
     const redirect = getRedirectRoute() || { name: 'organizations' };
     router.push(redirect);
   } catch (err) {
     console.error('Ошибка авторизации:', err);
-    error.value = 'Неверный логин или пароль'; // Отображение ошибки
+    error.value = 'Неверный логин или пароль';
   } finally {
     isSubmitting.value = false;
   }

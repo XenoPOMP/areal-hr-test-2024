@@ -1,50 +1,35 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  Res,
-  Get,
-  Session,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
-import { LoginDto } from 'src/modules/auth/dto/login.dto';
+import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express'; // Импортируем Request из express
+import { LocalAuthGuard } from 'src/guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Get('session')
-  getSession(@Session() session: any) {
-    return { user: session.user || null };
-  }
-
+  @UseGuards(LocalAuthGuard) // Используем Guard для маршрута
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Session() session: any) {
-    console.log('Login request received:', loginDto); // Для отладки
-    const { login, password } = loginDto;
-
-    const user = await this.authService.validateUser(login, password, session);
-    if (!user) {
-      console.log('Unauthorized access attempt');
-      throw new UnauthorizedException('Invalid credentials');
+  async login(@Request() req: ExpressRequest): Promise<any> {
+    if (!req.user || !req.user.id || !req.user.login) {
+      throw new Error('Invalid user data');
     }
 
-    session.user = user;
-    console.log('User authenticated successfully:', session.user);
-    return { message: 'Login successful', user };
+    req.session.user = req.user; // Сохраняем пользователя в сессии
+    return { message: 'Login successful', user: req.user };
   }
 
   @Post('logout')
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Request() req: ExpressRequest): Promise<any> {
     req.session.destroy((err) => {
       if (err) {
-        return res.status(500).json({ message: 'Ошибка при выходе' });
+        throw new Error('Failed to destroy session');
       }
-      res.clearCookie('connect.sid'); // Очищаем куку сессии
-      res.json({ message: 'Выход успешен' });
     });
+    return { message: 'Logout successful' };
+  }
+
+  @Get('session') // Используем GET вместо POST
+  async getSession(@Request() req: ExpressRequest): Promise<any> {
+    if (req.session.user) {
+      return { user: req.session.user };
+    }
+    return { message: 'No active session' };
   }
 }

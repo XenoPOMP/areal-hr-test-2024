@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from 'src/modules/auth/auth.controller'; // Путь к контроллеру
-import { AuthService } from 'src/modules/auth/auth.service'; // Путь к сервису
-import { UserModule } from 'src/modules/user/user.module'; // Путь к модулю пользователей
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { LocalStrategy } from './local.strategy';
+import { UserModule } from 'src/modules/user/user.module'; // Импортируем UserModule
 
 @Module({
-  imports: [UserModule], // Добавляем UserModule сюда
+  imports: [PassportModule, UserModule],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, LocalStrategy],
 })
 export class AuthModule {}

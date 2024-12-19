@@ -13,3 +13,16 @@ declare module 'express-session' {
     user?: { id: number; login: string };
   }
 }
+
+declare global {
+  namespace Express {
+    interface User {
+      id: number;
+      login: string;
+    }
+
+    interface Request {
+      user?: User; // req.user будет соответствовать структуре User
+    }
+  }
+}

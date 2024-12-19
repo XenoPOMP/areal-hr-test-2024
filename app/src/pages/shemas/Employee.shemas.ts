@@ -1,4 +1,4 @@
-import Joi from 'joi'; //todo to .shemas folder
+import Joi from 'joi';
 
 export { passportSchema, addressSchema, employeeSchema };
 // Схема для паспорта
