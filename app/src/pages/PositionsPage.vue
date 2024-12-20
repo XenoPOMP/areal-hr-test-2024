@@ -70,7 +70,7 @@ import {
 import { useQuasar } from 'quasar';
 import { positionsColumns } from 'src/pages/columns/positionsColumns';
 import axios from 'axios';
-import Joi from 'joi';
+import { positionSchema } from 'src/pages/shemas/Position.shemas';
 
 const $q = useQuasar();
 
@@ -85,16 +85,6 @@ const editMode = ref(false);
 const editedPosition = ref<Position | null>(null);
 
 const columns = ref(positionsColumns);
-
-const positionSchema = Joi.object({
-  name: Joi.string().min(2).max(255).required().messages({
-    'string.min': 'Название должности должно содержать хотя бы 2 символа',
-    'string.max': 'Название должности не должно превышать 255 символов',
-    'string.empty': 'Название должности обязательно',
-  }),
-  id: Joi.forbidden(),
-  deleted_at: Joi.forbidden(),
-});
 
 const loadPositions = async () => {
   try {
