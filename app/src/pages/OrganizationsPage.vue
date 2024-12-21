@@ -4,16 +4,12 @@
 
     <h1>Организации</h1>
 
-    <form @submit.prevent="createOrganizationHandler" class="form-container">
-      <q-input
-        v-model="newOrganization.name"
-        label="Название организации"
-        filled
-        required
-      />
-      <q-input v-model="newOrganization.comment" label="Комментарий" filled />
-      <q-btn type="submit" label="Добавить" color="primary" />
-    </form>
+    <!-- Кнопка открытия модального окна добавления -->
+    <q-btn
+      label="Добавить организацию"
+      color="primary"
+      @click="showAddModal = true"
+    />
 
     <!-- Таблица организаций -->
     <q-table
@@ -28,10 +24,11 @@
         <q-btn
           color="primary"
           label="Изменить"
-          @click="startEditingOrganization(props.row)"
+          @click="startEditingWithModal(props.row)"
           flat
           size="sm"
         />
+
         <q-btn
           color="negative"
           label="Удалить"
@@ -42,55 +39,84 @@
       </template>
     </q-table>
 
-    <!-- Форма редактирования организации -->
-    <div v-if="editMode && editedOrganization" class="edit-form">
-      <h3>Изменить организацию</h3>
-      <form @submit.prevent="updateOrganizationHandler">
-        <q-input
-          v-model="editedOrganization.name"
-          label="Название организации"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedOrganization.comment"
-          label="Комментарий организации"
-          filled
-        />
-        <q-btn type="submit" label="Изменить" color="primary" />
-        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
-      </form>
-    </div>
+    <!-- Модальное окно для добавления организации -->
+    <q-dialog v-model="showAddModal">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Добавить организацию</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="newOrganization.name"
+            label="Название организации"
+            filled
+            required
+          />
+          <q-input
+            v-model="newOrganization.comment"
+            label="Комментарий"
+            filled
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Отмена"
+            color="negative"
+            @click="showAddModal = false"
+          />
+          <q-btn flat label="Добавить" color="primary" @click="handleCreate" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Модальное окно для редактирования организации -->
+    <q-dialog v-model="showEditModal">
+      <q-card v-if="editedOrganization">
+        <q-card-section>
+          <div class="text-h6">Изменить организацию</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="editedOrganization.name"
+            label="Название организации"
+            filled
+            required
+          />
+          <q-input
+            v-model="editedOrganization.comment"
+            label="Комментарий"
+            filled
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Отмена" color="negative" @click="cancelEdit" />
+          <q-btn flat label="Сохранить" color="primary" @click="handleUpdate" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import {
-  getOrganizations,
-  createOrganization,
-  updateOrganization,
-} from 'src/api/organizations';
 import AppHeader from 'components/AppHeader.vue';
-import { useQuasar } from 'quasar';
-import axios from 'axios';
-import { organizationSchema } from 'src/pages/shemas/Organization.shemas';
-import { organizationsColumns } from 'src/pages/columns/organizationsColumns'; // Подключаем Joi для валидации
+import { organizationsColumns } from 'src/pages/columns/organizationsColumns';
+import { getOrganizations } from 'src/api/organizations';
 
-const $q = useQuasar();
+import { useCreateOrganization } from 'src/pages/composables/organizations/useCreateOrganization';
+import { useUpdateOrganization } from 'src/pages/composables/organizations/useUpdateOrganization';
+import { useDeleteOrganization } from 'src/pages/composables/organizations/useDeleteOrganization';
 
-const columns = ref(organizationsColumns);
+const columns = organizationsColumns;
 
-interface Organization {
-  id: string;
-  name: string;
-  comment: string;
-}
-
-const organizations = ref<Organization[]>([]);
-const newOrganization = ref<Organization>({ id: '', name: '', comment: '' });
-const editMode = ref(false);
-const editedOrganization = ref<Organization | null>(null);
+const organizations = ref([]);
+const showAddModal = ref(false);
+const showEditModal = ref(false);
 
 const loadOrganizations = async () => {
   try {
@@ -100,113 +126,44 @@ const loadOrganizations = async () => {
   }
 };
 
-onMounted(() => {
-  loadOrganizations();
-});
+onMounted(loadOrganizations);
 
-const createOrganizationHandler = async () => {
-  const organizationData = {
-    name: newOrganization.value.name,
-    comment: newOrganization.value.comment,
-  };
+const { newOrganization, createOrganizationHandler } =
+  useCreateOrganization(loadOrganizations);
+const {
+  editedOrganization,
+  startEditingOrganization,
+  cancelEdit,
+  updateOrganizationHandler,
+} = useUpdateOrganization(loadOrganizations);
+const { deleteOrganizationHandler } = useDeleteOrganization(loadOrganizations);
 
-  const { error } = organizationSchema.validate(organizationData, {
-    abortEarly: false,
-  });
-
-  if (error) {
-    error.details.forEach((err) =>
-      $q.notify({ type: 'negative', message: err.message })
-    );
-    return;
-  }
-
-  try {
-    await createOrganization(organizationData);
-    newOrganization.value = {
-      id: '',
-      name: '',
-      comment: '',
-    };
-    await loadOrganizations();
-    $q.notify({ type: 'positive', message: 'Организация успешно добавлена' });
-  } catch (error) {
-    console.error('Ошибка добавления организации:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Ошибка при добавлении организации',
-    });
-  }
+const handleCreate = async () => {
+  await createOrganizationHandler();
+  showAddModal.value = false;
 };
 
-const updateOrganizationHandler = async () => {
-  if (!editedOrganization.value) return;
-
-  const organizationData = {
-    name: editedOrganization.value.name,
-    comment: editedOrganization.value.comment,
-  };
-
-  const { error } = organizationSchema.validate(organizationData, {
-    abortEarly: false,
-  });
-
-  if (error) {
-    error.details.forEach((err) =>
-      $q.notify({ type: 'negative', message: err.message })
-    );
-    return;
-  }
-
-  try {
-    await updateOrganization(editedOrganization.value.id, organizationData);
-    await loadOrganizations();
-    cancelEdit();
-    $q.notify({ type: 'positive', message: 'Организация успешно обновлена' });
-  } catch (error) {
-    console.error('Ошибка обновления организации:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Ошибка при обновлении организации',
-    });
-  }
+const handleUpdate = async () => {
+  await updateOrganizationHandler();
+  showEditModal.value = false;
 };
 
-const startEditingOrganization = (organization: Organization) => {
-  editedOrganization.value = { ...organization };
-  editMode.value = true;
-};
-
-const cancelEdit = () => {
-  editMode.value = false;
-  editedOrganization.value = null;
-};
-
-const deleteOrganizationHandler = async (orgId: number) => {
-  try {
-    const response = await axios.patch(
-      `http://localhost:3000/organizations/${orgId}/soft-delete`,
-      {},
-      { withCredentials: true }
-    );
-    console.log('Response:', response.data);
-    await loadOrganizations();
-    $q.notify({ type: 'positive', message: 'Организация успешно удалена' });
-  } catch (error) {
-    console.error('Ошибка удаления организации:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении организации' });
-  }
+const startEditingWithModal = (organization: {
+  id: string;
+  name: string;
+  comment: string;
+}) => {
+  startEditingOrganization(organization);
+  showEditModal.value = true;
 };
 </script>
 
 <style scoped>
-.form-container,
-.edit-form {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
 .table-container {
   margin-top: 1rem;
+}
+
+.q-dialog {
+  min-width: 400px;
 }
 </style>

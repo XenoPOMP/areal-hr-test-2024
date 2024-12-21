@@ -4,80 +4,106 @@
 
     <h1>Сотрудники</h1>
 
-    <div class="add-form">
-      <h4>Добавить нового сотрудника</h4>
-      <form @submit.prevent="createEmployeeHandler">
-        <!-- Основные данные сотрудника -->
-        <q-input v-model="employeeBaseData.name" label="Имя" filled required />
-        <q-input
-          v-model="employeeBaseData.surname"
-          label="Фамилия"
-          filled
-          required
-        />
-        <q-input
-          v-model="employeeBaseData.second_name"
-          label="Отчество"
-          filled
-        />
-        <q-input
-          v-model="employeeBaseData.date_birth"
-          label="Дата рождения"
-          type="date"
-          filled
-          required
-        />
-        <q-select
-          v-model="employeeBaseData.position_id"
-          :options="
-            positions.map((p) => ({
-              label: p.name,
-              value: p.id,
-            }))
-          "
-          option-label="label"
-          option-value="value"
-          emit-value
-          label="Выберите должность"
-        />
+    <!-- Кнопка для открытия модального окна добавления сотрудника -->
+    <q-btn
+      label="Добавить нового сотрудника"
+      color="primary"
+      @click="openAddModal"
+    />
 
-        <!-- Паспортные данные -->
-        <h4>Паспортные данные</h4>
-        <q-input
-          v-model="passportInfo.serial"
-          label="Серия паспорта"
-          filled
-          required
-        />
-        <q-input
-          v-model="passportInfo.number"
-          label="Номер паспорта"
-          filled
-          required
-        />
-        <q-input
-          v-model="passportInfo.date_issue"
-          label="Дата выдачи"
-          type="date"
-          filled
-          required
-        />
-        <q-input v-model="passportInfo.code" label="Код подразделения" filled />
-        <q-input v-model="passportInfo.issued_by" label="Кем выдан" filled />
-        <!--        todo passport scan-->
-        <!-- Адресные данные -->
-        <h4>Адрес</h4>
-        <q-input v-model="addressInfo.region" label="Регион" filled />
-        <q-input v-model="addressInfo.settlement" label="Город" filled />
-        <q-input v-model="addressInfo.street" label="Улица" filled />
-        <q-input v-model="addressInfo.house" label="Дом" filled />
-        <q-input v-model="addressInfo.housing" label="Корпус" filled />
-        <q-input v-model="addressInfo.flat" label="Квартира" filled />
+    <!-- Модальное окно для добавления сотрудника -->
+    <q-dialog v-model="isAddModalOpen">
+      <q-card>
+        <q-card-section>
+          <h4>Добавить нового сотрудника</h4>
+          <form @submit.prevent="createEmployeeHandler">
+            <!-- Основные данные сотрудника -->
+            <q-input
+              v-model="employeeBaseData.name"
+              label="Имя"
+              filled
+              required
+            />
+            <q-input
+              v-model="employeeBaseData.surname"
+              label="Фамилия"
+              filled
+              required
+            />
+            <q-input
+              v-model="employeeBaseData.second_name"
+              label="Отчество"
+              filled
+            />
+            <q-input
+              v-model="employeeBaseData.date_birth"
+              label="Дата рождения"
+              type="date"
+              filled
+              required
+            />
+            <q-select
+              v-model="employeeBaseData.position_id"
+              :options="positions.map((p) => ({ label: p.name, value: p.id }))"
+              option-label="label"
+              option-value="value"
+              emit-value
+              label="Выберите должность"
+            />
 
-        <!-- Кнопка для добавления -->
-        <q-btn type="submit" label="Добавить сотрудника" color="primary" />
-      </form>
-    </div>
+            <!-- Паспортные данные -->
+            <h4>Паспортные данные</h4>
+            <q-input
+              v-model="passportInfo.serial"
+              label="Серия паспорта"
+              filled
+              required
+            />
+            <q-input
+              v-model="passportInfo.number"
+              label="Номер паспорта"
+              filled
+              required
+            />
+            <q-input
+              v-model="passportInfo.date_issue"
+              label="Дата выдачи"
+              type="date"
+              filled
+              required
+            />
+            <q-input
+              v-model="passportInfo.code"
+              label="Код подразделения"
+              filled
+            />
+            <q-input
+              v-model="passportInfo.issued_by"
+              label="Кем выдан"
+              filled
+            />
+
+            <!-- Адресные данные -->
+            <h4>Адрес</h4>
+            <q-input v-model="addressInfo.region" label="Регион" filled />
+            <q-input v-model="addressInfo.settlement" label="Город" filled />
+            <q-input v-model="addressInfo.street" label="Улица" filled />
+            <q-input v-model="addressInfo.house" label="Дом" filled />
+            <q-input v-model="addressInfo.housing" label="Корпус" filled />
+            <q-input v-model="addressInfo.flat" label="Квартира" filled />
+
+            <!-- Кнопки для добавления -->
+            <q-btn type="submit" label="Добавить сотрудника" color="primary" />
+            <q-btn
+              label="Отмена"
+              color="secondary"
+              flat
+              @click="closeAddModal"
+            />
+          </form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
 
     <!-- Таблица сотрудников -->
     <q-table
@@ -117,122 +143,128 @@
               flat
               size="sm"
             />
-            <!--        todo quasar uploader для сканов + загрузка файлов + удаление-->
           </q-td>
         </q-tr>
       </template>
     </q-table>
-    <q-dialog v-model="isModalOpen">
+
+    <!-- Модальное окно для редактирования сотрудника -->
+    <q-dialog v-model="isEditModalOpen">
       <q-card>
         <q-card-section>
-          <h4>Сканы паспорта</h4>
-          <div v-if="selectedEmployeeFiles.length">
-            <q-img
-              v-for="file in selectedEmployeeFiles"
-              :key="file.id"
-              :src="`http://localhost:3000${file.link}`"
-              :alt="file.name"
-              style="width: 100%; margin-bottom: 16px"
+          <h4>Редактировать данные сотрудника</h4>
+          <form @submit.prevent="updateEmployeeHandler">
+            <!-- Основные данные сотрудника -->
+            <q-input
+              v-model="editedEmployee.name"
+              label="Имя"
+              filled
+              required
             />
-          </div>
-          <div v-else>
-            <p>Сканы отсутствуют.</p>
-          </div>
+            <q-input
+              v-model="editedEmployee.surname"
+              label="Фамилия"
+              filled
+              required
+            />
+            <q-input
+              v-model="editedEmployee.second_name"
+              label="Отчество"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.date_birth"
+              label="Дата рождения"
+              type="date"
+              filled
+              required
+            />
+            <q-select
+              v-model="editedEmployee.position_id"
+              :options="positions.map((p) => ({ label: p.name, value: p.id }))"
+              option-label="label"
+              option-value="value"
+              emit-value
+              label="Выберите должность"
+            />
+
+            <!-- Паспортные данные -->
+            <h4>Паспортные данные</h4>
+            <q-input
+              v-model="editedEmployee.passport.serial"
+              label="Серия паспорта"
+              filled
+              required
+            />
+            <q-input
+              v-model="editedEmployee.passport.number"
+              label="Номер паспорта"
+              filled
+              required
+            />
+            <q-input
+              v-model="editedEmployee.passport.date_issue"
+              label="Дата выдачи"
+              type="date"
+              filled
+              required
+            />
+            <q-input
+              v-model="editedEmployee.passport.issued_by"
+              label="Кем выдан"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.passport.code"
+              label="Код подразделения"
+              filled
+            />
+
+            <!-- Адресные данные -->
+            <h4>Адрес</h4>
+            <q-input
+              v-model="editedEmployee.address.region"
+              label="Регион"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.address.settlement"
+              label="Город"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.address.street"
+              label="Улица"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.address.house"
+              label="Дом"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.address.housing"
+              label="Корпус"
+              filled
+            />
+            <q-input
+              v-model="editedEmployee.address.flat"
+              label="Квартира"
+              filled
+            />
+
+            <!-- Кнопки управления -->
+            <q-btn type="submit" label="Сохранить изменения" color="primary" />
+            <q-btn
+              label="Отмена"
+              color="secondary"
+              flat
+              @click="closeEditModal"
+            />
+          </form>
         </q-card-section>
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="Закрыть"
-            color="primary"
-            @click="isModalOpen = false"
-          />
-        </q-card-actions>
       </q-card>
     </q-dialog>
-
-    <!-- Форма редактирования данных сотрудника -->
-    <div v-if="editMode && editedEmployee" class="edit-form">
-      <h3>Изменить данные сотрудника</h3>
-      <form @submit.prevent="updateEmployeeHandler">
-        <!-- Основные данные сотрудника -->
-        <q-input v-model="editedEmployee.name" label="Имя" filled required />
-        <q-input
-          v-model="editedEmployee.surname"
-          label="Фамилия"
-          filled
-          required
-        />
-        <q-input v-model="editedEmployee.second_name" label="Отчество" filled />
-        <q-input
-          v-model="editedEmployee.date_birth"
-          label="Дата рождения"
-          type="date"
-          filled
-          required
-        />
-
-        <!-- Паспортные данные -->
-        <h4>Паспортные данные</h4>
-        <q-input
-          v-model="editedEmployee.passport.serial"
-          label="Серия паспорта"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedEmployee.passport.number"
-          label="Номер паспорта"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedEmployee.passport.date_issue"
-          label="Дата выдачи"
-          type="date"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedEmployee.passport.issued_by"
-          label="Кем выдан"
-          filled
-        />
-        <q-input
-          v-model="editedEmployee.passport.code"
-          label="Код подразделения"
-          filled
-        />
-
-        <!-- Адресные данные -->
-        <h4>Адрес</h4>
-        <q-input
-          v-model="editedEmployee.address.region"
-          label="Регион"
-          filled
-        />
-        <q-input
-          v-model="editedEmployee.address.settlement"
-          label="Город"
-          filled
-        />
-        <q-input v-model="editedEmployee.address.street" label="Улица" filled />
-        <q-input v-model="editedEmployee.address.house" label="Дом" filled />
-        <q-input
-          v-model="editedEmployee.address.housing"
-          label="Корпус"
-          filled
-        />
-        <q-input
-          v-model="editedEmployee.address.flat"
-          label="Квартира"
-          filled
-        />
-
-        <!-- Кнопки управления -->
-        <q-btn type="submit" label="Сохранить изменения" color="primary" />
-        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
-      </form>
-    </div>
   </div>
 </template>
 
@@ -241,7 +273,6 @@ import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { EmployeeColumns } from 'src/pages/columns/employeesColumns';
-import { employeeSchema } from 'src/pages/shemas/Employee.shemas';
 import axios from 'axios';
 import {
   EmployeeBaseData,
@@ -250,7 +281,10 @@ import {
   File as EmployeeFile,
 } from './types/Employee';
 import useCreateEmployee from 'src/pages/composables/employees/useCreateEmployee';
-import { getSessionUserId } from 'src/useSession';
+import { useUpdateEmployee } from 'src/pages/composables/employees/useUpdateEmployee';
+import { useDeleteEmployee } from 'src/pages/composables/employees/useDeleteEmployee';
+const isAddModalOpen = ref(false);
+const isEditModalOpen = ref(false);
 
 const employeeBaseData = ref<EmployeeBaseData>({
   id: 0,
@@ -334,28 +368,6 @@ const getEmployees = async () => {
 
 const columns = ref(EmployeeColumns);
 
-const validateEmployee = (employeeData: Record<string, unknown>): boolean => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, passport_id, address_id, deleted_at, ...validData } =
-    employeeData;
-
-  const { error } = employeeSchema.validate(validData, {
-    abortEarly: false,
-  });
-
-  if (error) {
-    error.details.forEach((err) =>
-      $q.notify({
-        type: 'negative',
-        message: err.message,
-      })
-    );
-    return false;
-  }
-
-  return true;
-};
-
 const { createEmployee } = useCreateEmployee();
 const $q = useQuasar();
 
@@ -406,70 +418,45 @@ const getNestedField = (
     }, row);
 };
 
-const editMode = ref(false);
-const editedEmployee = ref<EmployeeBaseData | null>(null);
+const openAddModal = () => {
+  isAddModalOpen.value = true;
+};
+
+const closeAddModal = () => {
+  isAddModalOpen.value = false;
+};
+
+const closeEditModal = () => {
+  isEditModalOpen.value = false;
+};
+
+const editedEmployee = ref<EmployeeBaseData>({ ...employeeBaseData.value });
 
 const startEditingEmployee = (employee: EmployeeBaseData) => {
-  editedEmployee.value = { ...employee };
-  editMode.value = true;
+  editedEmployee.value = { ...employee }; // Копируем данные сотрудника
+  isEditModalOpen.value = true;
 };
+
+const cancelEdit = () => {
+  if (editedEmployee.value) {
+    editedEmployee.value = { ...employeeBaseData.value }; // Восстанавливаем начальные данные
+  }
+};
+
+const { updateEmployee } = useUpdateEmployee(getEmployees);
 
 const updateEmployeeHandler = async () => {
   if (!editedEmployee.value) return;
 
-  const payload = {
-    ...editedEmployee.value,
-  };
+  await updateEmployee(editedEmployee.value);
 
-  if (!validateEmployee(payload)) return;
-
-  try {
-    const response = await axios.put(
-      `http://localhost:3000/employees/${editedEmployee.value.id}`,
-      payload,
-      { withCredentials: true } // Добавляем эту строку
-    );
-
-    if (response.status === 200) {
-      $q.notify({ type: 'positive', message: 'Данные сотрудника обновлены!' });
-      getEmployees();
-      cancelEdit();
-    }
-  } catch (error) {
-    console.error('Ошибка при обновлении сотрудника:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Ошибка при обновлении сотрудника',
-    });
-  }
+  cancelEdit();
 };
 
-const cancelEdit = () => {
-  editMode.value = false;
-  editedEmployee.value = null;
-};
+const { deleteEmployee } = useDeleteEmployee(getEmployees);
 
 const deleteEmployeeHandler = async (employeeId: number) => {
-  const userId = await getSessionUserId();
-  if (!userId) return;
-
-  try {
-    const response = await axios.patch(
-      `http://localhost:3000/employees/${employeeId}/soft-delete`,
-      { userId },
-      { withCredentials: true }
-    );
-
-    if (response.status === 200) {
-      $q.notify({ type: 'positive', message: 'Сотрудник успешно удален' });
-      getEmployees();
-    } else {
-      throw new Error('Не удалось удалить сотрудника');
-    }
-  } catch (error) {
-    console.error('Ошибка при удалении сотрудника:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });
-  }
+  await deleteEmployee(employeeId);
 };
 
 const isModalOpen = ref(false);

@@ -1,60 +1,122 @@
 <template>
   <div>
     <AppHeader />
-
     <h1>Кадровые операции</h1>
 
-    <!-- Форма для добавления новой кадровой операции -->
-    <form @submit.prevent="createActionHandler" class="form-container">
-      <q-input
-        v-model="newAction.action_type"
-        label="Тип операции"
-        filled
-        required
-      />
-      <q-input
-        v-model="newAction.date"
-        label="Дата"
-        type="date"
-        filled
-        required
-      />
-      <q-input
-        v-model="newAction.salary"
-        label="Зарплата"
-        type="number"
-        filled
-        required
-      />
-      <q-select
-        v-model="newAction.employee_id"
-        :options="employees"
-        option-label="label"
-        option-value="value"
-        label="Выберите сотрудника"
-        filled
-        class="custom-select"
-      />
-      <q-select
-        v-model="newAction.department_id"
-        :options="departments"
-        option-label="label"
-        option-value="value"
-        label="Выберите департамент"
-        filled
-        class="custom-select"
-      />
-      <q-select
-        v-model="newAction.position_id"
-        :options="positions"
-        option-label="label"
-        option-value="value"
-        label="Выберите должность"
-        filled
-        class="custom-select"
-      />
-      <q-btn type="submit" label="Добавить" color="primary" />
-    </form>
+    <!-- Модальное окно для добавления новой кадровой операции -->
+    <q-btn label="Добавить операцию" color="primary" @click="openCreateModal" />
+    <q-dialog v-model="createModalVisible">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Добавить новую кадровую операцию</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="newAction.action_type"
+            label="Тип операции"
+            filled
+            required
+          />
+          <q-input
+            v-model="newAction.date"
+            label="Дата"
+            type="date"
+            filled
+            required
+          />
+          <q-input
+            v-model="newAction.salary"
+            label="Зарплата"
+            type="number"
+            filled
+            required
+          />
+          <q-select
+            v-model="newAction.employee_id"
+            :options="employees"
+            option-label="label"
+            option-value="value"
+            label="Выберите сотрудника"
+            filled
+            class="custom-select"
+          />
+          <q-select
+            v-model="newAction.department_id"
+            :options="departments"
+            option-label="label"
+            option-value="value"
+            label="Выберите департамент"
+            filled
+            class="custom-select"
+          />
+          <q-select
+            v-model="newAction.position_id"
+            :options="positions"
+            option-label="label"
+            option-value="value"
+            label="Выберите должность"
+            filled
+            class="custom-select"
+          />
+        </q-card-section>
+
+        <q-card-actions>
+          <q-btn
+            label="Добавить"
+            color="primary"
+            @click="createActionHandler"
+          />
+          <q-btn
+            label="Отмена"
+            color="secondary"
+            flat
+            @click="closeCreateModal"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Модальное окно для редактирования кадровой операции -->
+    <q-dialog v-model="editMode">
+      <q-card v-if="editedAction">
+        <q-card-section>
+          <div class="text-h6">Изменить данные операции</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="editedAction.action_type"
+            label="Тип операции"
+            filled
+            required
+          />
+          <q-input
+            v-model="editedAction.date"
+            label="Дата"
+            type="date"
+            filled
+            required
+          />
+          <q-input
+            v-model="editedAction.salary"
+            label="Зарплата"
+            type="number"
+            filled
+            required
+          />
+        </q-card-section>
+
+        <q-card-actions>
+          <q-btn
+            label="Изменить"
+            color="primary"
+            @click="updateActionHandler"
+          />
+          <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Таблица кадровых операций -->
     <q-table
@@ -82,76 +144,45 @@
         />
       </template>
     </q-table>
-
-    <!-- Форма редактирования кадровой операции -->
-    <div v-if="editMode && editedAction" class="edit-form">
-      <h3>Изменить данные операции</h3>
-      <form @submit.prevent="updateActionHandler">
-        <q-input
-          v-model="editedAction.action_type"
-          label="Тип операции"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedAction.date"
-          label="Дата"
-          type="date"
-          filled
-          required
-        />
-        <q-input
-          v-model="editedAction.salary"
-          label="Зарплата"
-          type="number"
-          filled
-          required
-        />
-        <q-btn type="submit" label="Изменить" color="primary" />
-        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
-      </form>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import {
-  getHrActions,
-  createHrAction,
-  updateHrAction,
-} from 'src/api/hrActions';
-import { useQuasar } from 'quasar';
+import { useCreatehrActions } from 'src/pages/composables/hrActions/useCreatehrAction';
+import { useUpdatehrActions } from 'src/pages/composables/hrActions/useUpdatehrAction';
+import { useDeletehrActions } from 'src/pages/composables/hrActions/useDeletehrAction';
+import { getHrActions } from 'src/api/hrActions';
 import { HRactionsColumns } from 'src/pages/columns/hrActionsColumns';
-import { actionSchema } from 'src/pages/shemas/hrAction.shemas';
 import axios from 'axios';
-const $q = useQuasar();
 
-type SelectableValue = number | { label: string; value: number } | null;
-interface HrActions {
-  id: string;
-  action_type: string;
-  date: string | null;
-  salary: number;
-  employee_id: SelectableValue;
-  department_id: SelectableValue;
-  position_id: SelectableValue;
-}
+const createModalVisible = ref(false);
+const { newAction, createActionHandler } = useCreatehrActions();
+const { editMode, editedAction, updateActionHandler } = useUpdatehrActions();
+const { deleteActionHandler } = useDeletehrActions();
 
-const actions = ref<HrActions[]>([]);
-const newAction = ref<HrActions>({
-  id: '',
-  action_type: '',
-  date: new Date().toLocaleDateString('en-CA'),
-  salary: 0,
-  employee_id: null,
-  department_id: null,
-  position_id: null,
-});
+const actions = ref([]);
+const employees = ref([]);
+const departments = ref([]);
+const positions = ref([]);
+const columns = ref(HRactionsColumns);
 
-const editMode = ref(false);
-const editedAction = ref<HrActions | null>(null);
+const openCreateModal = () => {
+  createModalVisible.value = true;
+};
+
+const closeCreateModal = () => {
+  createModalVisible.value = false;
+};
+
+const loadActions = async () => {
+  try {
+    actions.value = await getHrActions();
+  } catch (error) {
+    console.error('Ошибка загрузки операций:', error);
+  }
+};
 
 interface Employee {
   id: number;
@@ -169,20 +200,6 @@ interface Position {
   name: string;
 }
 
-const employees = ref<Employee[]>([]);
-const departments = ref<Department[]>([]);
-const positions = ref<Position[]>([]);
-
-const columns = ref(HRactionsColumns);
-
-const loadActions = async () => {
-  try {
-    actions.value = await getHrActions();
-  } catch (error) {
-    console.error('Ошибка загрузки операций:', error);
-  }
-};
-
 const loadSelectData = async () => {
   try {
     const employeesResponse = await axios.get(
@@ -199,10 +216,12 @@ const loadSelectData = async () => {
       label: `${emp.name} ${emp.surname}`,
       value: emp.id,
     }));
+
     departments.value = departmentsResponse.data.map((dep: Department) => ({
       label: dep.name,
       value: dep.id,
     }));
+
     positions.value = positionsResponse.data.map((pos: Position) => ({
       label: pos.name,
       value: pos.id,
@@ -212,142 +231,7 @@ const loadSelectData = async () => {
   }
 };
 
-onMounted(() => {
-  loadActions();
-  loadSelectData();
-});
-
-const createActionHandler = async () => {
-  const employeeId =
-    typeof newAction.value.employee_id === 'object'
-      ? newAction.value.employee_id!.value
-      : newAction.value.employee_id!;
-
-  const departmentId =
-    typeof newAction.value.department_id === 'object'
-      ? newAction.value.department_id!.value
-      : newAction.value.department_id!;
-
-  const positionId =
-    typeof newAction.value.position_id === 'object'
-      ? newAction.value.position_id!.value
-      : newAction.value.position_id!;
-
-  const { error } = actionSchema.validate({
-    action_type: newAction.value.action_type,
-    date: newAction.value.date,
-    salary: newAction.value.salary,
-    employee_id: employeeId,
-    department_id: departmentId,
-    position_id: positionId,
-  });
-
-  if (error) {
-    $q.notify({
-      type: 'negative',
-      message: error.details[0].message,
-    });
-    return;
-  }
-
-  try {
-    const actionData = {
-      action_type: newAction.value.action_type.slice(0, 50),
-      date: newAction.value.date || new Date().toISOString().split('T')[0],
-      salary: newAction.value.salary,
-      employee_id: employeeId,
-      department_id: departmentId,
-      position_id: positionId,
-    };
-
-    await createHrAction(actionData);
-
-    $q.notify({
-      type: 'positive',
-      message: 'Действие успешно добавлено!',
-    });
-
-    newAction.value = {
-      id: '',
-      action_type: '',
-      date: new Date().toISOString().split('T')[0],
-      salary: 0,
-      employee_id: null,
-      department_id: null,
-      position_id: null,
-    };
-    await loadActions();
-  } catch (error) {
-    console.error('Ошибка добавления операции:', error);
-
-    $q.notify({
-      type: 'negative',
-      message:
-        'Не удалось добавить действие. Проверьте данные и повторите попытку.',
-    });
-  }
-};
-
-const updateActionHandler = async () => {
-  if (editedAction.value) {
-    const employeeId =
-      typeof editedAction.value.employee_id === 'object'
-        ? editedAction.value.employee_id!.value
-        : editedAction.value.employee_id!;
-
-    const departmentId =
-      typeof editedAction.value.department_id === 'object'
-        ? editedAction.value.department_id!.value
-        : editedAction.value.department_id!;
-
-    const positionId =
-      typeof editedAction.value.position_id === 'object'
-        ? editedAction.value.position_id!.value
-        : editedAction.value.position_id!;
-
-    const { error } = actionSchema.validate({
-      action_type: editedAction.value.action_type,
-      date: editedAction.value.date,
-      salary: editedAction.value.salary,
-      employee_id: employeeId,
-      department_id: departmentId,
-      position_id: positionId,
-    });
-
-    if (error) {
-      $q.notify({
-        type: 'negative',
-        message: error.details[0].message,
-      });
-      return;
-    }
-
-    try {
-      await updateHrAction(editedAction.value.id, {
-        action_type: editedAction.value.action_type,
-        date: new Date().toISOString().split('T')[0],
-        salary: editedAction.value.salary,
-        employee_id: employeeId,
-        department_id: departmentId,
-        position_id: positionId,
-      });
-      await loadActions();
-      cancelEdit();
-
-      $q.notify({
-        type: 'positive',
-        message: 'Операция успешно обновлена',
-      });
-    } catch (error) {
-      console.error('Ошибка обновления операции:', error);
-
-      $q.notify({
-        type: 'negative',
-        message: 'Не удалось обновить операцию',
-      });
-    }
-  }
-};
+import { HrActions } from 'src/pages/composables/hrActions/useUpdatehrAction';
 
 const startEditingAction = (action: HrActions) => {
   editedAction.value = { ...action };
@@ -355,25 +239,14 @@ const startEditingAction = (action: HrActions) => {
 };
 
 const cancelEdit = () => {
-  editMode.value = false;
-  editedAction.value = null;
+  editMode.value = false; // Выключаем режим редактирования
+  editedAction.value = null; // Очищаем данные редактируемой операции
 };
 
-const deleteActionHandler = async (hrId: number) => {
-  try {
-    const response = await axios.patch(
-      `http://localhost:3000/hr_actions/${hrId}/soft-delete`,
-      {},
-      { withCredentials: true }
-    );
-    console.log('Response:', response.data);
-    await loadActions();
-    $q.notify({ type: 'positive', message: 'Действие успешно удалено' });
-  } catch (error) {
-    console.error('Ошибка удаления действия:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка при удалении действия' });
-  }
-};
+onMounted(() => {
+  loadActions();
+  loadSelectData();
+});
 </script>
 
 <style scoped>
