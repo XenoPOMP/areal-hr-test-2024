@@ -13,12 +13,12 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.14",
+    "@quasar/extras": "^1.16.15",
     "@vue/compiler-sfc": "^3.5.13",
     "axios": "^1.2.1",
     "joi": "^17.13.3",
     "pinia": "^2.0.11",
-    "quasar": "^2.16.0",
+    "quasar": "^2.17.5",
     "vue": "^3.5.13",
     "vue-router": "^4.0.12"
   },

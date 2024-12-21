@@ -1,13 +1,9 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from 'src/api/axiosInstance';
 
 export const getSessionUserId = async (): Promise<number | null> => {
   try {
-    const { data: session } = await axios.get(`${API_URL}auth/session`, {
-      withCredentials: true,
-    });
-
+    const { data: session } = await axiosInstance.get('auth/session');
+    console.log('Session data:', session);
     if (session.user && session.user.id) {
       return session.user.id;
     } else {

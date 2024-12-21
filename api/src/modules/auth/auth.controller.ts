@@ -25,7 +25,7 @@ export class AuthController {
     return { message: 'Logout successful' };
   }
 
-  @Get('session') // Используем GET вместо POST
+  @Get('session')
   async getSession(@Request() req: ExpressRequest): Promise<any> {
     if (req.session.user) {
       return { user: req.session.user };

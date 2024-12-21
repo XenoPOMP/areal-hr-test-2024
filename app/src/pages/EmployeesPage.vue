@@ -1,9 +1,85 @@
 <template>
   <div>
     <AppHeader />
-    <h1>Сотрудники</h1>
-    <q-btn label="Добавить сотрудника" color="primary" @click="openAddModal" />
 
+    <h1>Сотрудники</h1>
+
+    <div class="add-form">
+      <h4>Добавить нового сотрудника</h4>
+      <form @submit.prevent="createEmployeeHandler">
+        <!-- Основные данные сотрудника -->
+        <q-input v-model="employeeBaseData.name" label="Имя" filled required />
+        <q-input
+          v-model="employeeBaseData.surname"
+          label="Фамилия"
+          filled
+          required
+        />
+        <q-input
+          v-model="employeeBaseData.second_name"
+          label="Отчество"
+          filled
+        />
+        <q-input
+          v-model="employeeBaseData.date_birth"
+          label="Дата рождения"
+          type="date"
+          filled
+          required
+        />
+        <q-select
+          v-model="employeeBaseData.position_id"
+          :options="
+            positions.map((p) => ({
+              label: p.name,
+              value: p.id,
+            }))
+          "
+          option-label="label"
+          option-value="value"
+          emit-value
+          label="Выберите должность"
+        />
+
+        <!-- Паспортные данные -->
+        <h4>Паспортные данные</h4>
+        <q-input
+          v-model="passportInfo.serial"
+          label="Серия паспорта"
+          filled
+          required
+        />
+        <q-input
+          v-model="passportInfo.number"
+          label="Номер паспорта"
+          filled
+          required
+        />
+        <q-input
+          v-model="passportInfo.date_issue"
+          label="Дата выдачи"
+          type="date"
+          filled
+          required
+        />
+        <q-input v-model="passportInfo.code" label="Код подразделения" filled />
+        <q-input v-model="passportInfo.issued_by" label="Кем выдан" filled />
+        <!--        todo passport scan-->
+        <!-- Адресные данные -->
+        <h4>Адрес</h4>
+        <q-input v-model="addressInfo.region" label="Регион" filled />
+        <q-input v-model="addressInfo.settlement" label="Город" filled />
+        <q-input v-model="addressInfo.street" label="Улица" filled />
+        <q-input v-model="addressInfo.house" label="Дом" filled />
+        <q-input v-model="addressInfo.housing" label="Корпус" filled />
+        <q-input v-model="addressInfo.flat" label="Квартира" filled />
+
+        <!-- Кнопка для добавления -->
+        <q-btn type="submit" label="Добавить сотрудника" color="primary" />
+      </form>
+    </div>
+
+    <!-- Таблица сотрудников -->
     <q-table
       :rows="employees"
       :columns="columns"
@@ -12,260 +88,171 @@
       bordered
       class="table-container"
     >
-      <template v-slot:body-cell-passport_serial="props">
-        <q-td :props="props">{{ props.row.passport?.serial }}</q-td>
-      </template>
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+            {{ getNestedField(props.row, col.field) }}
+          </q-td>
 
-      <template v-slot:body-cell-passport_number="props">
-        <q-td :props="props">{{ props.row.passport?.number }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-passport_date_issue="props">
-        <q-td :props="props">{{ props.row.passport?.date_issue }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-passport_code="props">
-        <q-td :props="props">{{ props.row.passport?.code }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-passport_issued_by="props">
-        <q-td :props="props">{{ props.row.passport?.issued_by }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_region="props">
-        <q-td :props="props">{{ props.row.address?.region }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_settlement="props">
-        <q-td :props="props">{{ props.row.address?.settlement }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_street="props">
-        <q-td :props="props">{{ props.row.address?.street }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_house="props">
-        <q-td :props="props">{{ props.row.address?.house }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_housing="props">
-        <q-td :props="props">{{ props.row.address?.housing }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-address_flat="props">
-        <q-td :props="props">{{ props.row.address?.flat }}</q-td>
-      </template>
-
-      <template v-slot:body-cell-actions="props">
-        <q-btn
-          color="primary"
-          label="Изменить"
-          @click="startEditingEmployee(props.row)"
-          flat
-          size="sm"
-        />
-        <q-btn
-          color="negative"
-          label="Удалить"
-          @click="deleteEmployee(props.row.id)"
-          flat
-          size="sm"
-        />
-        <q-btn
-          flat
-          icon="visibility"
-          label="Сканы"
-          color="primary"
-          @click="showScansHandler(props.row.id)"
-        />
+          <!-- Кнопки для каждого сотрудника -->
+          <q-td>
+            <q-btn
+              color="primary"
+              label="Изменить"
+              @click="startEditingEmployee(props.row)"
+              flat
+              size="sm"
+            />
+            <q-btn
+              color="negative"
+              label="Удалить"
+              @click="deleteEmployeeHandler(props.row.id)"
+              flat
+              size="sm"
+            />
+            <q-btn
+              color="primary"
+              label="Показать сканы"
+              @click="showScansHandler(props.row.id)"
+              flat
+              size="sm"
+            />
+            <!--        todo quasar uploader для сканов + загрузка файлов + удаление-->
+          </q-td>
+        </q-tr>
       </template>
     </q-table>
-
-    <!-- Модальное окно для добавления -->
-    <q-dialog v-model="isAddModalOpen">
+    <q-dialog v-model="isModalOpen">
       <q-card>
         <q-card-section>
-          <h3>Добавить сотрудника</h3>
+          <h4>Сканы паспорта</h4>
+          <div v-if="selectedEmployeeFiles.length">
+            <q-img
+              v-for="file in selectedEmployeeFiles"
+              :key="file.id"
+              :src="`http://localhost:3000${file.link}`"
+              :alt="file.name"
+              style="width: 100%; margin-bottom: 16px"
+            />
+          </div>
+          <div v-else>
+            <p>Сканы отсутствуют.</p>
+          </div>
         </q-card-section>
-
-        <q-card-section>
-          <form @submit.prevent="addNewEmployee">
-            <q-input v-model="newEmployee.name" label="Имя" filled required />
-            <q-input
-              v-model="newEmployee.surname"
-              label="Фамилия"
-              filled
-              required
-            />
-            <q-input
-              v-model="newEmployee.second_name"
-              label="Отчество"
-              filled
-            />
-            <q-input
-              v-model="newEmployee.date_birth"
-              type="date"
-              label="Дата рождения"
-              filled
-              required
-            />
-            <q-input
-              v-model="newEmployee.position_id"
-              type="number"
-              label="ID должности"
-              filled
-              required
-            />
-            <!-- Паспорт -->
-            <q-input
-              v-model="passport.serial"
-              label="Серия паспорта"
-              filled
-              required
-            />
-            <q-input
-              v-model="passport.number"
-              label="Номер паспорта"
-              filled
-              required
-            />
-            <q-input
-              v-model="passport.date_issue"
-              type="date"
-              label="Дата выдачи"
-              filled
-              required
-            />
-            <q-input
-              v-model="passport.code"
-              label="Код подразделения"
-              filled
-              required
-            />
-            <q-input
-              v-model="passport.issued_by"
-              label="Кем выдан"
-              filled
-              required
-            />
-            <!-- Адрес -->
-            <q-input v-model="address.region" label="Регион" filled required />
-            <q-input
-              v-model="address.settlement"
-              label="Населённый пункт"
-              filled
-              required
-            />
-            <q-input v-model="address.street" label="Улица" filled required />
-            <q-input v-model="address.house" label="Дом" filled required />
-            <q-input v-model="address.housing" label="Корпус" filled />
-            <q-input v-model="address.flat" label="Квартира" filled />
-
-            <q-btn type="submit" label="Добавить" color="primary" />
-            <q-btn
-              label="Отмена"
-              color="secondary"
-              flat
-              @click="closeAddModal"
-            />
-          </form>
-        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Закрыть"
+            color="primary"
+            @click="isModalOpen = false"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <!-- Модальное окно для изменения -->
-    <q-dialog v-model="isEditModalOpen">
-      <q-card>
-        <q-card-section>
-          <h3>Изменить сотрудника</h3>
-        </q-card-section>
+    <!-- Форма редактирования данных сотрудника -->
+    <div v-if="editMode && editedEmployee" class="edit-form">
+      <h3>Изменить данные сотрудника</h3>
+      <form @submit.prevent="updateEmployeeHandler">
+        <!-- Основные данные сотрудника -->
+        <q-input v-model="editedEmployee.name" label="Имя" filled required />
+        <q-input
+          v-model="editedEmployee.surname"
+          label="Фамилия"
+          filled
+          required
+        />
+        <q-input v-model="editedEmployee.second_name" label="Отчество" filled />
+        <q-input
+          v-model="editedEmployee.date_birth"
+          label="Дата рождения"
+          type="date"
+          filled
+          required
+        />
 
-        <q-card-section>
-          <form @submit.prevent="saveEditedEmployee">
-            <!-- Поля для редактирования сотрудника -->
-            <q-input
-              v-model="editedEmployee.name"
-              label="Имя"
-              filled
-              required
-            />
-            <q-input
-              v-model="editedEmployee.surname"
-              label="Фамилия"
-              filled
-              required
-            />
-            <q-input
-              v-model="editedEmployee.second_name"
-              label="Отчество"
-              filled
-            />
-            <q-input
-              v-model="editedEmployee.date_birth"
-              type="date"
-              label="Дата рождения"
-              filled
-              required
-            />
-            <q-input
-              v-model="editedEmployee.position_id"
-              type="number"
-              label="ID должности"
-              filled
-              required
-            />
-            <q-btn type="submit" label="Сохранить" color="primary" />
-            <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
-          </form>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+        <!-- Паспортные данные -->
+        <h4>Паспортные данные</h4>
+        <q-input
+          v-model="editedEmployee.passport.serial"
+          label="Серия паспорта"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedEmployee.passport.number"
+          label="Номер паспорта"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedEmployee.passport.date_issue"
+          label="Дата выдачи"
+          type="date"
+          filled
+          required
+        />
+        <q-input
+          v-model="editedEmployee.passport.issued_by"
+          label="Кем выдан"
+          filled
+        />
+        <q-input
+          v-model="editedEmployee.passport.code"
+          label="Код подразделения"
+          filled
+        />
+
+        <!-- Адресные данные -->
+        <h4>Адрес</h4>
+        <q-input
+          v-model="editedEmployee.address.region"
+          label="Регион"
+          filled
+        />
+        <q-input
+          v-model="editedEmployee.address.settlement"
+          label="Город"
+          filled
+        />
+        <q-input v-model="editedEmployee.address.street" label="Улица" filled />
+        <q-input v-model="editedEmployee.address.house" label="Дом" filled />
+        <q-input
+          v-model="editedEmployee.address.housing"
+          label="Корпус"
+          filled
+        />
+        <q-input
+          v-model="editedEmployee.address.flat"
+          label="Квартира"
+          filled
+        />
+
+        <!-- Кнопки управления -->
+        <q-btn type="submit" label="Сохранить изменения" color="primary" />
+        <q-btn label="Отмена" color="secondary" flat @click="cancelEdit" />
+      </form>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
 import { ref, onMounted } from 'vue';
-import { date, QTableColumn } from 'quasar';
+import { useQuasar } from 'quasar';
 import { EmployeeColumns } from 'src/pages/columns/employeesColumns';
-import { useGetEmployee } from 'src/pages/composables/employees/useGetEmployee';
-import { useCreateEmployee } from 'src/pages/composables/employees/useCreateEmployee';
-import { useUpdateEmployee } from 'src/pages/composables/employees/useUpdateEmployee';
-import { useDeleteEmployee } from 'src/pages/composables/employees/useDeleteEmployee';
+import { employeeSchema } from 'src/pages/shemas/Employee.shemas';
+import axios from 'axios';
+import {
+  EmployeeBaseData,
+  PassportInfo,
+  AddressInfo,
+  File as EmployeeFile,
+} from './types/Employee';
+import useCreateEmployee from 'src/pages/composables/employees/useCreateEmployee';
+import { getSessionUserId } from 'src/useSession';
 
-const columns: QTableColumn[] = EmployeeColumns;
-const { employees, loadEmployees } = useGetEmployee();
-const cancelEdit = () => {
-  isEditModalOpen.value = false;
-};
-const { createEmployeeHandler } = useCreateEmployee();
-const { updateEmployee } = useUpdateEmployee(loadEmployees, cancelEdit);
-const { deleteEmployee } = useDeleteEmployee(loadEmployees);
-
-const newEmployee = ref({
-  name: '',
-  surname: '',
-  second_name: '',
-  date_birth: '',
-  position_id: null,
-  passport: {
-    serial: '',
-    number: '',
-    date_issue: '',
-    code: '',
-    issued_by: '',
-  },
-  address: {
-    region: '',
-    settlement: '',
-    street: '',
-    house: '',
-    housing: '',
-    flat: '',
-  },
-});
-
-const editedEmployee = ref({
+const employeeBaseData = ref<EmployeeBaseData>({
   id: 0,
   name: '',
   surname: '',
@@ -276,8 +263,8 @@ const editedEmployee = ref({
     serial: '',
     number: '',
     date_issue: '',
-    code: '',
     issued_by: '',
+    code: '',
   },
   address: {
     region: '',
@@ -289,14 +276,16 @@ const editedEmployee = ref({
   },
   files: [],
 });
-const passport = ref({
+
+const passportInfo = ref<PassportInfo>({
   serial: '',
   number: '',
   date_issue: '',
-  code: '',
   issued_by: '',
+  code: '',
 });
-const address = ref({
+
+const addressInfo = ref<AddressInfo>({
   region: '',
   settlement: '',
   street: '',
@@ -305,17 +294,9 @@ const address = ref({
   flat: '',
 });
 
-const isAddModalOpen = ref(false);
-const isEditModalOpen = ref(false);
-
-const openAddModal = () => {
-  isAddModalOpen.value = true;
-};
-
-const closeAddModal = () => {
-  isAddModalOpen.value = false;
-  // Очищаем форму нового сотрудника.
-  Object.assign(newEmployee.value, {
+const clearForm = () => {
+  employeeBaseData.value = {
+    id: 0,
     name: '',
     surname: '',
     second_name: '',
@@ -325,8 +306,8 @@ const closeAddModal = () => {
       serial: '',
       number: '',
       date_issue: '',
-      code: '',
       issued_by: '',
+      code: '',
     },
     address: {
       region: '',
@@ -336,151 +317,211 @@ const closeAddModal = () => {
       housing: '',
       flat: '',
     },
-  });
-};
-
-const startEditingEmployee = (employee: typeof editedEmployee.value) => {
-  editedEmployee.value = JSON.parse(JSON.stringify(employee));
-  isEditModalOpen.value = true;
-};
-
-const saveEditedEmployee = async () => {
-  if (!editedEmployee.value) {
-    $q.value.notify({
-      type: 'negative',
-      message: 'Нет данных для обновления сотрудника.',
-    });
-    return;
-  }
-
-  const payload = {
-    ...editedEmployee.value,
-    files: editedEmployee.value.files || [],
+    files: [],
   };
+};
 
+const employees = ref<EmployeeBaseData[]>([]);
+
+const getEmployees = async () => {
   try {
-    await updateEmployee(payload);
-
-    $q.value.notify({
-      type: 'positive',
-      message: 'Данные сотрудника успешно обновлены.',
-    });
+    const response = await axios.get('http://localhost:3000/employees');
+    employees.value = response.data;
   } catch (error) {
-    console.error('Ошибка при сохранении сотрудника:', error);
-    $q.value.notify({
-      type: 'negative',
-      message: 'Не удалось сохранить данные сотрудника.',
-    });
+    console.error('Ошибка при загрузке сотрудников', error);
   }
 };
 
-import { getSessionUserId } from 'src/useSession';
-import formatDate = date.formatDate;
+const columns = ref(EmployeeColumns);
 
-const addNewEmployee = async () => {
-  const userId = await getSessionUserId();
-  if (!userId) {
-    $q.value.notify({
-      type: 'negative',
-      message: 'Не удалось определить текущего пользователя',
-    });
-    return;
+const validateEmployee = (employeeData: Record<string, unknown>): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id, passport_id, address_id, deleted_at, ...validData } =
+    employeeData;
+
+  const { error } = employeeSchema.validate(validData, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    error.details.forEach((err) =>
+      $q.notify({
+        type: 'negative',
+        message: err.message,
+      })
+    );
+    return false;
   }
 
-  const payload = {
-    name: newEmployee.value.name,
-    surname: newEmployee.value.surname,
-    second_name: newEmployee.value.second_name || '',
-    date_birth: formatDate(newEmployee.value.date_birth),
-    position_id: newEmployee.value.position_id,
-  };
-
-  await createEmployeeHandler(payload); // Передаем данные без userId, он добавится в createEmployeeHandler
-  closeAddModal();
+  return true;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const removeEmployee = async (id: number) => {
-  await deleteEmployee(id);
+const { createEmployee } = useCreateEmployee();
+const $q = useQuasar();
+
+const createEmployeeHandler = async () => {
+  const success = await createEmployee(
+    employeeBaseData.value,
+    passportInfo.value,
+    addressInfo.value,
+    $q
+  );
+
+  if (success) clearForm();
 };
 
 onMounted(() => {
-  loadEmployees();
+  getEmployees();
+  loadPositions();
 });
 
-// Список файлов сотрудника
-const selectedEmployeeFiles = ref([]);
-const isModalOpen = ref(false);
-const currentEmployeeId = ref<number | null>(null);
-const $q = ref();
+const positions = ref<{ id: number; name: string }[]>([]);
+const positionOptions = ref<{ label: string; value: number }[]>([]);
 
-// Открыть модальное окно для просмотра файлов
-const showScansHandler = async (employee_id: number) => {
-  currentEmployeeId.value = employee_id;
+const loadPositions = async () => {
   try {
+    const response = await axios.get('http://localhost:3000/positions');
+    positions.value = response.data;
+
+    positionOptions.value = positions.value.map((pos) => ({
+      label: pos.name,
+      value: pos.id,
+    }));
+  } catch (error) {
+    console.error('Ошибка при загрузке должностей:', error);
+  }
+};
+
+const getNestedField = (
+  row: Record<string, unknown>,
+  field: string
+): unknown => {
+  return field
+    .split('.')
+    .reduce<Record<string, unknown> | undefined>((acc, part) => {
+      if (acc && typeof acc === 'object' && part in acc) {
+        return acc[part] as Record<string, unknown>;
+      }
+      return undefined;
+    }, row);
+};
+
+const editMode = ref(false);
+const editedEmployee = ref<EmployeeBaseData | null>(null);
+
+const startEditingEmployee = (employee: EmployeeBaseData) => {
+  editedEmployee.value = { ...employee };
+  editMode.value = true;
+};
+
+const updateEmployeeHandler = async () => {
+  if (!editedEmployee.value) return;
+
+  const payload = {
+    ...editedEmployee.value,
+  };
+
+  if (!validateEmployee(payload)) return;
+
+  try {
+    const response = await axios.put(
+      `http://localhost:3000/employees/${editedEmployee.value.id}`,
+      payload,
+      { withCredentials: true } // Добавляем эту строку
+    );
+
+    if (response.status === 200) {
+      $q.notify({ type: 'positive', message: 'Данные сотрудника обновлены!' });
+      getEmployees();
+      cancelEdit();
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении сотрудника:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Ошибка при обновлении сотрудника',
+    });
+  }
+};
+
+const cancelEdit = () => {
+  editMode.value = false;
+  editedEmployee.value = null;
+};
+
+const deleteEmployeeHandler = async (employeeId: number) => {
+  const userId = await getSessionUserId();
+  if (!userId) return;
+
+  try {
+    const response = await axios.patch(
+      `http://localhost:3000/employees/${employeeId}/soft-delete`,
+      { userId },
+      { withCredentials: true }
+    );
+
+    if (response.status === 200) {
+      $q.notify({ type: 'positive', message: 'Сотрудник успешно удален' });
+      getEmployees();
+    } else {
+      throw new Error('Не удалось удалить сотрудника');
+    }
+  } catch (error) {
+    console.error('Ошибка при удалении сотрудника:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка при удалении сотрудника' });
+  }
+};
+
+const isModalOpen = ref(false);
+const selectedEmployeeFiles = ref<EmployeeFile[]>([]);
+
+const showScansHandler = async (employee_id: number) => {
+  try {
+    console.log('Идентификатор сотрудника:', employee_id);
+
+    // Попробуем получить файлы с сервера
     const response = await fetch(
       `http://localhost:3000/employees/${employee_id}/files`
     );
     const files = await response.json();
 
+    console.log('Полученные файлы:', files);
+
     if (files && files.length > 0) {
       selectedEmployeeFiles.value = files; // Сохраняем файлы
       isModalOpen.value = true; // Открываем модальное окно
     } else {
-      $q.value.notify({
+      $q.notify({
         type: 'warning',
         message: 'У сотрудника нет прикрепленных сканов.',
       });
     }
   } catch (error) {
     console.error('Ошибка при загрузке данных сотрудника:', error);
-    $q.value.notify({
+    $q.notify({
       type: 'negative',
       message: 'Не удалось загрузить сканы.',
-    });
-  }
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const uploadFilesHandler = async (event: Event) => {
-  if (!currentEmployeeId.value) return;
-
-  const files = (event.target as HTMLInputElement).files;
-  if (!files || files.length === 0) return;
-
-  const formData = new FormData();
-  Array.from(files).forEach((file) => formData.append('files[]', file));
-
-  try {
-    const response = await fetch(
-      `http://localhost:3000/employees/${currentEmployeeId.value}/files`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
-
-    if (response.ok) {
-      $q.value.notify({
-        type: 'positive',
-        message: 'Файлы успешно загружены.',
-      });
-      showScansHandler(currentEmployeeId.value); // Перезагрузить список файлов
-    } else {
-      throw new Error('Ошибка при загрузке файлов');
-    }
-  } catch (error) {
-    console.error('Ошибка при загрузке файлов:', error);
-    $q.value.notify({
-      type: 'negative',
-      message: 'Не удалось загрузить файлы.',
     });
   }
 };
 </script>
 
 <style scoped>
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 500px;
+}
+
 .table-container {
-  margin-top: 1rem;
+  margin-top: 20px;
+}
+
+q-img {
+  max-width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
 }
 </style>
