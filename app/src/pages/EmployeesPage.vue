@@ -143,10 +143,38 @@
               flat
               size="sm"
             />
+            <q-btn
+              color="primary"
+              label="Добавить скан"
+              @click="openFileUploadModal(props.row.id)"
+              flat
+              size="sm"
+            />
           </q-td>
         </q-tr>
       </template>
     </q-table>
+    <q-dialog v-model="isFileUploadModalOpen">
+      <q-card>
+        <q-card-section>
+          <h4>Загрузить скан документа</h4>
+          <q-uploader
+            :model-value="uploadedFiles"
+            @update:model-value="uploadedFiles = $event"
+            label="Перетащите файл или выберите его"
+            accept=".jpg,.jpeg,.png,.pdf"
+            max-files="1"
+            flat
+            :url="'http://localhost:3000/files/upload'"
+            name="file"
+          />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn label="Загрузить" color="primary" @click="uploadFileHandler" />
+          <q-btn label="Отмена" flat @click="closeFileUploadModal" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Модальное окно для редактирования сотрудника -->
     <q-dialog v-model="isEditModalOpen">
@@ -280,6 +308,7 @@ import {
   AddressInfo,
   File as EmployeeFile,
 } from './types/Employee';
+import useFileUpload from 'src/pages/composables/employees/useFileUpload';
 import useCreateEmployee from 'src/pages/composables/employees/useCreateEmployee';
 import { useUpdateEmployee } from 'src/pages/composables/employees/useUpdateEmployee';
 import { useDeleteEmployee } from 'src/pages/composables/employees/useDeleteEmployee';
@@ -491,6 +520,14 @@ const showScansHandler = async (employee_id: number) => {
     });
   }
 };
+
+const {
+  isFileUploadModalOpen,
+  uploadedFiles,
+  openFileUploadModal,
+  closeFileUploadModal,
+  uploadFileHandler,
+} = useFileUpload(getEmployees);
 </script>
 
 <style scoped>
