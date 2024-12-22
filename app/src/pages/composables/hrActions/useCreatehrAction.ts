@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { actionSchema } from 'src/pages/shemas/hrAction.shemas';
 import { createHrAction } from 'src/api/hrActions';
+import axios from 'axios'; // Для отправки запросов
 
 type SelectableValue = { label: string; value: number };
 
@@ -51,6 +52,21 @@ export const useCreatehrActions = () => {
     }
 
     try {
+      // Проверяем, есть ли уже запись для этого сотрудника
+      const response = await axios.get(
+        `http://localhost:3000/hr_actions?employee_id=${employeeId}`
+      );
+
+      if (response.data.length > 0) {
+        // Если такая запись уже существует
+        $q.notify({
+          type: 'negative',
+          message: 'Запись для этого сотрудника уже существует.',
+        });
+        return;
+      }
+
+      // Если запись не найдена, создаем новую
       const actionData = {
         action_type: newAction.value.action_type.slice(0, 50),
         date: newAction.value.date || new Date().toISOString().split('T')[0],
@@ -67,6 +83,7 @@ export const useCreatehrActions = () => {
         message: 'Действие успешно добавлено!',
       });
 
+      // Очистка формы после успешного добавления
       newAction.value = {
         action_type: '',
         date: new Date().toISOString().split('T')[0],

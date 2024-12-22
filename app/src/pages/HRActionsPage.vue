@@ -46,7 +46,7 @@
             :options="departments"
             option-label="label"
             option-value="value"
-            label="Выберите департамент"
+            label="Выберите отдел"
             filled
             class="custom-select"
           />
@@ -105,6 +105,16 @@
             filled
             required
           />
+          <q-select
+            v-model="editedAction.department_id"
+            :options="departments"
+            option-label="label"
+            option-value="value"
+            label="Выберите отдел"
+            filled
+            class="custom-select"
+            required
+          />
         </q-card-section>
 
         <q-card-actions>
@@ -153,8 +163,7 @@ import { ref, onMounted } from 'vue';
 import { useCreatehrActions } from 'src/pages/composables/hrActions/useCreatehrAction';
 import { useUpdatehrActions } from 'src/pages/composables/hrActions/useUpdatehrAction';
 import { useDeletehrActions } from 'src/pages/composables/hrActions/useDeletehrAction';
-import { getHrActions } from 'src/api/hrActions';
-import { HRactionsColumns } from 'src/pages/columns/hrActionsColumns';
+import { HRActionsColumns } from 'src/pages/columns/hrActionsColumns';
 import axios from 'axios';
 
 const createModalVisible = ref(false);
@@ -162,11 +171,11 @@ const { newAction, createActionHandler } = useCreatehrActions();
 const { editMode, editedAction, updateActionHandler } = useUpdatehrActions();
 const { deleteActionHandler } = useDeletehrActions();
 
-const actions = ref([]);
+const actions = ref<Action[]>([]);
 const employees = ref([]);
 const departments = ref([]);
 const positions = ref([]);
-const columns = ref(HRactionsColumns);
+const columns = ref(HRActionsColumns);
 
 const openCreateModal = () => {
   createModalVisible.value = true;
@@ -178,9 +187,41 @@ const closeCreateModal = () => {
 
 const loadActions = async () => {
   try {
-    actions.value = await getHrActions();
+    const [
+      actionsResponse,
+      employeesResponse,
+      departmentsResponse,
+      positionsResponse,
+    ] = await Promise.all([
+      axios.get<Action[]>('http://localhost:3000/hr_actions'),
+      axios.get<Employee[]>('http://localhost:3000/employees?deleted_at=null'),
+      axios.get<Department[]>(
+        'http://localhost:3000/departments?deleted_at=null'
+      ),
+      axios.get<Position[]>('http://localhost:3000/positions?deleted_at=null'),
+    ]);
+
+    const employeesMap = Object.fromEntries(
+      employeesResponse.data.map((emp: Employee) => [
+        emp.id,
+        `${emp.surname} ${emp.name} ${emp.second_name || ''}`.trim(),
+      ])
+    );
+    const departmentsMap = Object.fromEntries(
+      departmentsResponse.data.map((dep: Department) => [dep.id, dep.name])
+    );
+    const positionsMap = Object.fromEntries(
+      positionsResponse.data.map((pos: Position) => [pos.id, pos.name])
+    );
+
+    actions.value = actionsResponse.data.map((action: Action) => ({
+      ...action,
+      employee_name: employeesMap[action.employee_id],
+      department_name: departmentsMap[action.department_id],
+      position_name: positionsMap[action.position_id],
+    }));
   } catch (error) {
-    console.error('Ошибка загрузки операций:', error);
+    console.error('Ошибка загрузки данных:', error);
   }
 };
 
@@ -188,6 +229,7 @@ interface Employee {
   id: number;
   name: string;
   surname: string;
+  second_name: string;
 }
 
 interface Department {
@@ -198,6 +240,19 @@ interface Department {
 interface Position {
   id: number;
   name: string;
+}
+
+interface Action {
+  id: number;
+  action_type: string;
+  date: string;
+  employee_id: number;
+  department_id: number;
+  position_id: number;
+  salary: number;
+  employee_name?: string;
+  department_name?: string;
+  position_name?: string;
 }
 
 const loadSelectData = async () => {
