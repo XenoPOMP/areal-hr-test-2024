@@ -560,22 +560,47 @@ const uploadFile = async () => {
     return;
   }
 
-  console.log('selectedEmployeeId:', selectedEmployeeId.value); // Проверяем значение
+  console.log('selectedEmployeeId:', selectedEmployeeId.value);
 
   const formData = new FormData();
   formData.append('file', selectedFile.value);
 
-  const uploadUrl = `/employees/${selectedEmployeeId.value}/upload-scan`;
+  const uploadUrl = `http://localhost:3000/employees/${selectedEmployeeId.value}/upload-scan`;
 
   try {
-    await axios.post(uploadUrl, formData, {
+    const response = await axios.post(uploadUrl, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+
+    console.log('Ответ сервера:', response.data);
     $q.notify({ type: 'positive', message: 'Файл успешно загружен!' });
     closeModal();
   } catch (error) {
-    console.error('Ошибка загрузки файла:', error);
-    $q.notify({ type: 'negative', message: 'Ошибка загрузки файла!' });
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Ошибка загрузки файла:',
+        error.response?.data || error.message
+      );
+
+      $q.notify({
+        type: 'negative',
+        message: error.response?.data?.message || 'Ошибка загрузки файла!',
+      });
+    } else if (error instanceof Error) {
+      console.error('Произошла ошибка:', error.message);
+
+      $q.notify({
+        type: 'negative',
+        message: `Ошибка: ${error.message}`,
+      });
+    } else {
+      console.error('Непредвиденная ошибка:', error);
+
+      $q.notify({
+        type: 'negative',
+        message: 'Произошла непредвиденная ошибка. Попробуйте снова.',
+      });
+    }
   }
 };
 </script>

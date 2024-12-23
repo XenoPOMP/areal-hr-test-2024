@@ -11,11 +11,15 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  NotFoundException,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 @Controller('employees')
 export class EmployeesController {
@@ -140,14 +144,48 @@ export class EmployeesController {
     }
   }
   @Post(':id/upload-scan')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadScan(
-    @Param('id') id: number,
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const employeeId = req.params.id;
+          const uploadPath = path.join(
+            process.cwd(),
+            '..',
+            'files',
+            employeeId,
+          );
+
+          if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+            console.log('Создана директория:', uploadPath);
+          }
+
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const ext = path.extname(file.originalname);
+          const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
+          console.log('Сгенерировано имя файла:', filename);
+          cb(null, filename);
+        },
+      }),
+    }),
+  )
+  async uploadFile(
+    @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    @Req() req: any,
   ) {
-    console.log(`Request received to upload scan for employee ID: ${id}`);
-    return this.employeesService.uploadEmployeeScan(id, file);
+    console.log('Поступил запрос на загрузку файла:', { id, file });
+
+    if (!file) {
+      throw new NotFoundException('Файл не был загружен');
+    }
+
+    return {
+      message: 'Файл успешно загружен',
+      filePath: `/files/${id}/${file.filename}`,
+    };
   }
 }

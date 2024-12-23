@@ -33,8 +33,8 @@ import { LocalStrategy } from 'src/modules/auth/local.strategy';
     UserModule,
     PassportModule,
     ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '../../../files'), // Указываем путь, откуда сервер будет обслуживать файлы
-      serveRoot: '/files', // URL-путь, по которому файлы будут доступны
+      rootPath: path.join(process.cwd(), process.env.FILES_DIR || 'files'),
+      serveRoot: '/files',
     }),
   ],
   providers: [AuthService, LocalStrategy],

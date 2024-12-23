@@ -9,7 +9,6 @@ import { Passport } from 'models/passport.model';
 import { File } from '@models/file.model';
 import { HistoryOfChanges } from 'src/models/history_of_change.model';
 import { HistoryOfChangesService } from 'modules/history_of_changes/history_of_changes.service';
-import { UploadController } from 'src/modules/employees/utils/upload.controller';
 
 @Module({
   imports: [
@@ -20,11 +19,10 @@ import { UploadController } from 'src/modules/employees/utils/upload.controller'
       Passport,
       HistoryOfChanges,
       File,
-      UploadController,
     ]),
   ],
   providers: [EmployeesService, HistoryOfChangesService],
-  controllers: [EmployeesController, UploadController],
+  controllers: [EmployeesController],
   exports: [EmployeesService],
 })
 export class EmployeesModule {}
