@@ -144,9 +144,9 @@
               size="sm"
             />
             <q-btn
-              color="primary"
               label="Добавить скан"
-              @click="openFileUploadModal(props.row.id)"
+              color="primary"
+              @click="openModal(props.row.id)"
               flat
               size="sm"
             />
@@ -154,28 +154,21 @@
         </q-tr>
       </template>
     </q-table>
-    <q-dialog v-model="isFileUploadModalOpen">
+    <!-- Модальное окно для загрузки скана -->
+    <q-dialog v-model="isModalOpen">
       <q-card>
         <q-card-section>
-          <h4>Загрузить скан документа</h4>
-          <q-uploader
-            :model-value="uploadedFiles"
-            @update:model-value="uploadedFiles = $event"
-            label="Перетащите файл или выберите его"
-            accept=".jpg,.jpeg,.png,.pdf"
-            max-files="1"
-            flat
-            :url="'http://localhost:3000/files/upload'"
-            name="file"
-          />
+          <div class="text-h6">Загрузить скан</div>
+        </q-card-section>
+        <q-card-section>
+          <input type="file" accept="image/*" @change="handleFileSelection" />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn label="Загрузить" color="primary" @click="uploadFileHandler" />
-          <q-btn label="Отмена" flat @click="closeFileUploadModal" />
+          <q-btn label="Отмена" color="secondary" @click="closeModal" />
+          <q-btn label="Загрузить скан" @click="uploadFile" />
         </q-card-actions>
       </q-card>
     </q-dialog>
-
     <!-- Модальное окно для редактирования сотрудника -->
     <q-dialog v-model="isEditModalOpen">
       <q-card>
@@ -308,7 +301,6 @@ import {
   AddressInfo,
   File as EmployeeFile,
 } from './types/Employee';
-import useFileUpload from 'src/pages/composables/employees/useFileUpload';
 import useCreateEmployee from 'src/pages/composables/employees/useCreateEmployee';
 import { useUpdateEmployee } from 'src/pages/composables/employees/useUpdateEmployee';
 import { useDeleteEmployee } from 'src/pages/composables/employees/useDeleteEmployee';
@@ -488,46 +480,104 @@ const deleteEmployeeHandler = async (employeeId: number) => {
   await deleteEmployee(employeeId);
 };
 
-const isModalOpen = ref(false);
 const selectedEmployeeFiles = ref<EmployeeFile[]>([]);
+const isScanModalOpen = ref(false);
 
-const showScansHandler = async (employee_id: number) => {
+const showScansHandler = async (employeeId: number) => {
   try {
-    console.log('Идентификатор сотрудника:', employee_id);
-
-    // Попробуем получить файлы с сервера
-    const response = await fetch(
-      `http://localhost:3000/employees/${employee_id}/files`
+    const response = await axios.get(
+      `http://localhost:3000/employees/${employeeId}/files`
     );
-    const files = await response.json();
 
-    console.log('Полученные файлы:', files);
-
+    const files = response.data;
     if (files && files.length > 0) {
-      selectedEmployeeFiles.value = files; // Сохраняем файлы
-      isModalOpen.value = true; // Открываем модальное окно
+      selectedEmployeeFiles.value = files;
+      isScanModalOpen.value = true;
     } else {
       $q.notify({
         type: 'warning',
         message: 'У сотрудника нет прикрепленных сканов.',
       });
     }
-  } catch (error) {
-    console.error('Ошибка при загрузке данных сотрудника:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Не удалось загрузить сканы.',
-    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Ошибка при загрузке данных сотрудника:',
+        error.response?.data || error.message
+      );
+
+      $q.notify({
+        type: 'negative',
+        message: error.response?.data?.message || 'Не удалось загрузить сканы.',
+      });
+    } else if (error instanceof Error) {
+      console.error('Произошла ошибка:', error.message);
+
+      $q.notify({
+        type: 'negative',
+        message: `Ошибка: ${error.message}`,
+      });
+    } else {
+      console.error('Непредвиденная ошибка:', error);
+
+      $q.notify({
+        type: 'negative',
+        message:
+          'Произошла непредвиденная ошибка. Пожалуйста, попробуйте снова.',
+      });
+    }
   }
 };
 
-const {
-  isFileUploadModalOpen,
-  uploadedFiles,
-  openFileUploadModal,
-  closeFileUploadModal,
-  uploadFileHandler,
-} = useFileUpload(getEmployees);
+const isModalOpen = ref(false);
+const selectedEmployeeId = ref<number | null>(null);
+const selectedFile = ref<File | null>(null);
+
+const openModal = (employeeId: number) => {
+  selectedEmployeeId.value = employeeId;
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  selectedEmployeeId.value = null;
+  selectedFile.value = null;
+};
+
+const handleFileSelection = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFile.value = target.files[0];
+  }
+};
+
+const uploadFile = async () => {
+  if (!selectedFile.value || !selectedEmployeeId.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'Выберите файл и сотрудника перед загрузкой!',
+    });
+    return;
+  }
+
+  console.log('selectedEmployeeId:', selectedEmployeeId.value); // Проверяем значение
+
+  const formData = new FormData();
+  formData.append('file', selectedFile.value);
+
+  const uploadUrl = `/employees/${selectedEmployeeId.value}/upload-scan`;
+
+  try {
+    await axios.post(uploadUrl, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    $q.notify({ type: 'positive', message: 'Файл успешно загружен!' });
+    closeModal();
+  } catch (error) {
+    console.error('Ошибка загрузки файла:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка загрузки файла!' });
+  }
+};
 </script>
 
 <style scoped>

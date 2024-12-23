@@ -9,10 +9,13 @@ import {
   HttpException,
   HttpStatus,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('employees')
 export class EmployeesController {
@@ -135,5 +138,16 @@ export class EmployeesController {
       console.error('Ошибка при мягком удалении сотрудника:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  @Post(':id/upload-scan')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadScan(
+    @Param('id') id: number,
+    @UploadedFile() file: Express.Multer.File,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Req() req: any,
+  ) {
+    console.log(`Request received to upload scan for employee ID: ${id}`);
+    return this.employeesService.uploadEmployeeScan(id, file);
   }
 }

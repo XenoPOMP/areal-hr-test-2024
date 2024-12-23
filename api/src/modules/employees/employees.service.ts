@@ -14,6 +14,7 @@ export class EmployeesService {
     @InjectModel(Employee) private employeeModel: typeof Employee,
     @InjectModel(Passport) private passportModel: typeof Passport,
     @InjectModel(Address) private addressModel: typeof Address,
+    @InjectModel(File) private fileModel: typeof File,
     private sequelize: Sequelize,
     private historyOfChangesService: HistoryOfChangesService,
   ) {}
@@ -190,6 +191,38 @@ export class EmployeesService {
     } catch (error) {
       await transaction.rollback();
       throw new Error(`Error soft-deleting employee: ${error.message}`);
+    }
+  }
+  async uploadEmployeeScan(id: number, file: Express.Multer.File) {
+    const transaction = await this.sequelize.transaction();
+    try {
+      // Ищем сотрудника по ID
+      const employee = await this.employeeModel.findOne({
+        where: { id },
+      });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with ID ${id} not found`);
+      }
+
+      // Создаем запись о файле в базе данных
+      const newFile = await this.fileModel.create(
+        {
+          employee_id: id,
+          filename: file.originalname,
+          path: file.path, // Путь к файлу на сервере
+        },
+        { transaction },
+      );
+
+      // Завершаем транзакцию
+      await transaction.commit();
+
+      // Возвращаем информацию о загруженном файле
+      return newFile;
+    } catch (error) {
+      await transaction.rollback();
+      throw new Error(`Error uploading file: ${error.message}`);
     }
   }
 }
