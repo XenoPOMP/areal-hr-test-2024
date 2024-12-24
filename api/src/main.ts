@@ -42,7 +42,11 @@ async function bootstrap() {
     }),
   );
 
-  const filePath = path.join(process.cwd(), process.env.FILES_DIR || 'files');
+  const filePath = path.join(
+    process.cwd(),
+    '..',
+    process.env.FILES_DIR || 'files',
+  );
   app.useStaticAssets(filePath, { prefix: '/files' });
 
   app.useGlobalPipes(new ValidationPipe());

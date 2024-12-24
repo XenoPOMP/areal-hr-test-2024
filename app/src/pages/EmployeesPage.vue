@@ -164,11 +164,56 @@
           <input type="file" accept="image/*" @change="handleFileSelection" />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn label="Отмена" color="secondary" @click="closeModal" />
-          <q-btn label="Загрузить скан" @click="uploadFile" />
+          <q-btn flat label="Отмена" color="primary" @click="closeModal" />
+          <q-btn flat label="Загрузить" color="primary" @click="uploadFile" />
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Модальное окно просмотра сканов -->
+    <q-dialog v-model="isScanModalOpen">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Сканы сотрудника</div>
+        </q-card-section>
+        <q-card-section>
+          <div v-if="selectedEmployeeFiles.length > 0" class="scans-container">
+            <div
+              v-for="file in selectedEmployeeFiles"
+              :key="file.id"
+              class="scan-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <q-btn
+                label="Удалить"
+                color="negative"
+                flat
+                dense
+                @click="deleteScan(file.id)"
+                class="delete-button"
+              />
+              <img
+                :src="`http://localhost:3000${file.link}`"
+                alt="Скан документа"
+                class="scan-image"
+              />
+            </div>
+          </div>
+          <div v-else>
+            <p>У сотрудника отсутствуют сканы.</p>
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Закрыть"
+            color="primary"
+            @click="isScanModalOpen = false"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- Модальное окно для редактирования сотрудника -->
     <q-dialog v-model="isEditModalOpen">
       <q-card>
@@ -300,10 +345,11 @@ import {
   PassportInfo,
   AddressInfo,
   File as EmployeeFile,
-} from './types/Employee';
+} from 'src/pages/types/Employee';
 import useCreateEmployee from 'src/pages/composables/employees/useCreateEmployee';
 import { useUpdateEmployee } from 'src/pages/composables/employees/useUpdateEmployee';
 import { useDeleteEmployee } from 'src/pages/composables/employees/useDeleteEmployee';
+import { api } from 'src/boot/axios';
 const isAddModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 
@@ -485,12 +531,11 @@ const isScanModalOpen = ref(false);
 
 const showScansHandler = async (employeeId: number) => {
   try {
-    const response = await axios.get(
+    const { data: files } = await axios.get(
       `http://localhost:3000/employees/${employeeId}/files`
     );
 
-    const files = response.data;
-    if (files && files.length > 0) {
+    if (Array.isArray(files) && files.length > 0) {
       selectedEmployeeFiles.value = files;
       isScanModalOpen.value = true;
     } else {
@@ -501,25 +546,19 @@ const showScansHandler = async (employeeId: number) => {
     }
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error(
-        'Ошибка при загрузке данных сотрудника:',
-        error.response?.data || error.message
-      );
-
+      console.error('Ошибка:', error.response?.data || error.message);
       $q.notify({
         type: 'negative',
         message: error.response?.data?.message || 'Не удалось загрузить сканы.',
       });
     } else if (error instanceof Error) {
-      console.error('Произошла ошибка:', error.message);
-
+      console.error('Ошибка:', error.message);
       $q.notify({
         type: 'negative',
         message: `Ошибка: ${error.message}`,
       });
     } else {
       console.error('Непредвиденная ошибка:', error);
-
       $q.notify({
         type: 'negative',
         message:
@@ -603,24 +642,46 @@ const uploadFile = async () => {
     }
   }
 };
+
+async function deleteScan(fileId: number) {
+  try {
+    const response = await api.patch(`/employees/files/${fileId}`);
+    console.log(response.data.message);
+  } catch (error) {
+    console.error('Ошибка удаления файла:', error);
+  }
+}
 </script>
 
 <style scoped>
-.edit-form {
+.scans-container {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 500px;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
 }
 
-.table-container {
-  margin-top: 20px;
+.scan-item {
+  width: 300px;
+  text-align: center;
 }
 
-q-img {
-  max-width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 5px;
+.file-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.delete-button {
+  margin-bottom: 8px;
+}
+
+.scan-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

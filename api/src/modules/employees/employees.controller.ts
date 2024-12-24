@@ -11,7 +11,6 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
-  NotFoundException,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
@@ -158,7 +157,6 @@ export class EmployeesController {
 
           if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
-            console.log('Создана директория:', uploadPath);
           }
 
           cb(null, uploadPath);
@@ -167,25 +165,72 @@ export class EmployeesController {
           const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           const ext = path.extname(file.originalname);
           const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
-          console.log('Сгенерировано имя файла:', filename);
           cb(null, filename);
         },
       }),
     }),
   )
   async uploadFile(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('Поступил запрос на загрузку файла:', { id, file });
+    try {
+      const fileRecord = await this.employeesService.uploadEmployeeScan(
+        id,
+        file,
+      );
 
-    if (!file) {
-      throw new NotFoundException('Файл не был загружен');
+      return {
+        message: 'Файл успешно загружен',
+        file: fileRecord,
+      };
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
+      throw new HttpException(
+        'Не удалось загрузить файл',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    return {
-      message: 'Файл успешно загружен',
-      filePath: `/files/${id}/${file.filename}`,
-    };
+  @Patch(':fileId')
+  async softDeleteEmployeeFile(@Param('fileId') fileId: number) {
+    try {
+      const fileRecord = await this.employeesService.findEmployeeFile(fileId);
+
+      if (!fileRecord) {
+        throw new HttpException('Файл не найден', HttpStatus.NOT_FOUND);
+      }
+
+      if (fileRecord.deleted_at) {
+        throw new HttpException('Файл уже был удалён', HttpStatus.NOT_FOUND);
+      }
+
+      const filePath = path.join(
+        process.cwd(),
+        '..',
+        'files',
+        String(fileRecord.employee_id),
+        path.basename(fileRecord.link),
+      );
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      } else {
+        console.warn(`Файл ${filePath} не найден в файловой системе.`);
+      }
+
+      await this.employeesService.softDeleteFile(fileId);
+
+      return {
+        message: 'Файл успешно удалён',
+      };
+    } catch (error) {
+      console.error('Ошибка при удалении файла:', error);
+      throw new HttpException(
+        'Не удалось удалить файл',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

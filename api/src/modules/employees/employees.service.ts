@@ -60,7 +60,6 @@ export class EmployeesService {
     const transaction = await this.sequelize.transaction();
 
     try {
-      // Создание паспорта и адреса
       const passport = passportData
         ? await Passport.create(passportData, { transaction })
         : null;
@@ -72,7 +71,6 @@ export class EmployeesService {
         throw new Error('Failed to create passport or address');
       }
 
-      // Создание сотрудника
       const employee = await Employee.create(
         {
           ...employeeData,
@@ -85,9 +83,8 @@ export class EmployeesService {
       await transaction.commit();
       console.log('Employee created with ID:', employee.id);
 
-      // Логирование изменений только здесь, с единообразным наименованием объекта
       await this.historyOfChangesService.logChange(
-        'employee', // используем 'employee' с маленькой буквы
+        'employee',
         employee,
         userId,
       );
@@ -114,17 +111,14 @@ export class EmployeesService {
       throw new NotFoundException(`Employee with ID ${id} not found`);
     }
 
-    // Обновляем данные сотрудника
     Object.assign(employee, updateData);
 
-    // Обновляем паспорт, если передан
     if (updateData.passport && employee.passport) {
       await Passport.update(updateData.passport, {
         where: { id: employee.passport_id },
       });
     }
 
-    // Обновляем адрес, если передан
     if (updateData.address && employee.address) {
       await Address.update(updateData.address, {
         where: { id: employee.address_id },
@@ -133,10 +127,9 @@ export class EmployeesService {
 
     await employee.save();
 
-    // Передаём только изменённые данные в логирование
     await this.historyOfChangesService.logChange(
       'employee'.toLowerCase(),
-      updateData, // Только изменения
+      updateData,
       userId,
     );
 
@@ -196,7 +189,6 @@ export class EmployeesService {
   async uploadEmployeeScan(id: number, file: Express.Multer.File) {
     const transaction = await this.sequelize.transaction();
     try {
-      // Ищем сотрудника по ID
       const employee = await this.employeeModel.findOne({
         where: { id },
       });
@@ -205,24 +197,37 @@ export class EmployeesService {
         throw new NotFoundException(`Employee with ID ${id} not found`);
       }
 
-      // Создаем запись о файле в базе данных
+      const relativePath = `/files/${id}/${file.filename}`;
+
       const newFile = await this.fileModel.create(
         {
           employee_id: id,
-          filename: file.originalname,
-          path: file.path, // Путь к файлу на сервере
+          name: file.filename,
+          link: relativePath,
         },
         { transaction },
       );
 
-      // Завершаем транзакцию
       await transaction.commit();
 
-      // Возвращаем информацию о загруженном файле
       return newFile;
     } catch (error) {
       await transaction.rollback();
+      console.error('Error uploading file:', error);
       throw new Error(`Error uploading file: ${error.message}`);
+    }
+  }
+  async findEmployeeFile(fileId: number) {
+    return this.fileModel.findOne({
+      where: { id: fileId },
+    });
+  }
+
+  async softDeleteFile(fileId: number) {
+    const file = await this.findEmployeeFile(fileId);
+    if (file) {
+      file.deleted_at = new Date();
+      await file.save();
     }
   }
 }
