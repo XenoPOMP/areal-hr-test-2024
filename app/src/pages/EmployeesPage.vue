@@ -177,13 +177,17 @@
           <div class="text-h6">Сканы сотрудника</div>
         </q-card-section>
         <q-card-section>
-          <div v-if="selectedEmployeeFiles.length > 0" class="scans-container">
-            <div
-              v-for="file in selectedEmployeeFiles"
-              :key="file.id"
-              class="scan-item"
-            >
+          <div v-if="filteredFiles.length > 0" class="scans-container">
+            <div v-for="file in filteredFiles" :key="file.id" class="scan-item">
               <div class="file-name">{{ file.name }}</div>
+              <q-btn
+                label="Скачать"
+                color="primary"
+                flat
+                dense
+                @click="downloadScan(file.id)"
+                class="download-button"
+              />
               <q-btn
                 label="Удалить"
                 color="negative"
@@ -336,7 +340,7 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/components/AppHeader.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { EmployeeColumns } from 'src/pages/columns/employeesColumns';
 import axios from 'axios';
@@ -609,6 +613,7 @@ const uploadFile = async () => {
   try {
     const response = await axios.post(uploadUrl, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
     });
 
     console.log('Ответ сервера:', response.data);
@@ -643,14 +648,64 @@ const uploadFile = async () => {
   }
 };
 
+const filteredFiles = computed(() => {
+  return selectedEmployeeFiles.value.filter((file) => !file.deleted_at);
+});
+
 async function deleteScan(fileId: number) {
   try {
-    const response = await api.patch(`/employees/files/${fileId}`);
+    const response = await api.patch(`/employees/files/${fileId}`, null, {
+      withCredentials: true,
+    });
+
     console.log(response.data.message);
+    selectedEmployeeFiles.value = selectedEmployeeFiles.value.filter(
+      (file) => file.id !== fileId
+    );
+    $q.notify({ type: 'positive', message: 'Файл успешно удалён!' });
   } catch (error) {
     console.error('Ошибка удаления файла:', error);
+    $q.notify({ type: 'negative', message: 'Ошибка удаления файла' });
   }
 }
+
+const downloadScan = async (fileId: number) => {
+  if (!fileId) {
+    console.error('Не выбран файл для скачивания.');
+    $q.notify({
+      type: 'negative',
+      message: 'Не выбран файл для скачивания.',
+    });
+    return;
+  }
+
+  try {
+    console.log('Запрашиваем файл с ID:', fileId); // Логируем fileId
+    const response = await axios.get(
+      `http://localhost:3000/employees/files/${fileId}`,
+      { responseType: 'blob', withCredentials: true }
+    );
+
+    const url = window.URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+
+    const filename = response.headers['content-disposition']
+      ? response.headers['content-disposition'].match(/filename="(.+)"/)?.[1]
+      : fileId;
+
+    link.download = filename;
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Ошибка при скачивании файла:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Ошибка при скачивании файла. Попробуйте снова.',
+    });
+  }
+};
 </script>
 
 <style scoped>

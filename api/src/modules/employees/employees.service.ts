@@ -186,7 +186,12 @@ export class EmployeesService {
       throw new Error(`Error soft-deleting employee: ${error.message}`);
     }
   }
-  async uploadEmployeeScan(id: number, file: Express.Multer.File) {
+
+  async uploadEmployeeScan(
+    id: number,
+    file: Express.Multer.File,
+    userId: number,
+  ) {
     const transaction = await this.sequelize.transaction();
     try {
       const employee = await this.employeeModel.findOne({
@@ -208,6 +213,12 @@ export class EmployeesService {
         { transaction },
       );
 
+      await this.historyOfChangesService.logChange(
+        'file',
+        { employee_id: id, file: newFile },
+        userId,
+      );
+
       await transaction.commit();
 
       return newFile;
@@ -217,15 +228,22 @@ export class EmployeesService {
       throw new Error(`Error uploading file: ${error.message}`);
     }
   }
+
   async findEmployeeFile(fileId: number) {
     return this.fileModel.findOne({
       where: { id: fileId },
     });
   }
 
-  async softDeleteFile(fileId: number) {
+  async softDeleteFile(fileId: number, userId: number) {
     const file = await this.findEmployeeFile(fileId);
     if (file) {
+      await this.historyOfChangesService.logChange(
+        'file',
+        { id: file.id, deleted_at: new Date() },
+        userId,
+      );
+
       file.deleted_at = new Date();
       await file.save();
     }

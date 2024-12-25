@@ -34,4 +34,5 @@ export interface File {
   id: number;
   name: string;
   link: string;
+  deleted_at: Date;
 }

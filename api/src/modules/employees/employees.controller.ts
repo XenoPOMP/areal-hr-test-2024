@@ -11,6 +11,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  Res,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { HistoryOfChangesService } from '../history_of_changes/history_of_changes.service';
@@ -19,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import { Response } from 'express';
 
 @Controller('employees')
 export class EmployeesController {
@@ -173,11 +175,25 @@ export class EmployeesController {
   async uploadFile(
     @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
   ) {
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      console.error('userId отсутствует:', req.session);
+      throw new HttpException('user_id отсутствует', HttpStatus.BAD_REQUEST);
+    }
+
     try {
       const fileRecord = await this.employeesService.uploadEmployeeScan(
         id,
         file,
+        userId,
+      );
+
+      await this.historyOfChangesService.logChange(
+        'scan',
+        { action: 'upload', employee_id: id, file: fileRecord },
+        userId,
       );
 
       return {
@@ -193,8 +209,17 @@ export class EmployeesController {
     }
   }
 
-  @Patch(':fileId')
-  async softDeleteEmployeeFile(@Param('fileId') fileId: number) {
+  @Patch('files/:fileId')
+  async softDeleteEmployeeFile(
+    @Param('fileId') fileId: number,
+    @Req() req: any,
+  ) {
+    const userId = req.session?.user?.id;
+    if (!userId) {
+      console.error('userId отсутствует:', req.session);
+      throw new HttpException('user_id отсутствует', HttpStatus.BAD_REQUEST);
+    }
+
     try {
       const fileRecord = await this.employeesService.findEmployeeFile(fileId);
 
@@ -220,7 +245,13 @@ export class EmployeesController {
         console.warn(`Файл ${filePath} не найден в файловой системе.`);
       }
 
-      await this.employeesService.softDeleteFile(fileId);
+      await this.employeesService.softDeleteFile(fileId, userId);
+
+      await this.historyOfChangesService.logChange(
+        'scan',
+        { action: 'delete', file_id: fileId },
+        userId,
+      );
 
       return {
         message: 'Файл успешно удалён',
@@ -232,5 +263,36 @@ export class EmployeesController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Get('files/:fileId')
+  async downloadFile(@Param('fileId') fileId: number, @Res() res: Response) {
+    const file = await this.employeesService.findEmployeeFile(fileId);
+
+    if (!file) {
+      throw new HttpException('Файл не найден', HttpStatus.NOT_FOUND);
+    }
+
+    const filePath = path.join(
+      process.cwd(),
+      '..',
+      'files',
+      String(file.employee_id),
+      path.basename(file.link),
+    );
+
+    if (!fs.existsSync(filePath)) {
+      throw new HttpException('Файл не найден в системе', HttpStatus.NOT_FOUND);
+    }
+
+    res.download(filePath, file.name, (err: Error | null) => {
+      if (err) {
+        console.error('Ошибка скачивания файла:', err);
+        throw new HttpException(
+          'Ошибка скачивания файла',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    });
   }
 }
