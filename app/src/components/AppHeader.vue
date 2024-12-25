@@ -26,7 +26,6 @@
           label="Сотрудники"
           @click="goTo('/employees')"
         />
-        <q-tab name="/files" label="Файлы" @click="goTo('/files')" />
         <q-tab
           name="/hr_actions"
           label="Кадровые операции"

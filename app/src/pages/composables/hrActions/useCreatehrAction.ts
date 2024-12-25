@@ -9,6 +9,17 @@ type SelectableValue = { label: string; value: number };
 export const useCreatehrActions = () => {
   const $q = useQuasar();
 
+  interface HrAction {
+    id: number;
+    action_type: string;
+    date: string;
+    salary: number;
+    employee_id: number;
+    department_id: number;
+    position_id: number;
+    deleted_at: Date | null;
+  }
+
   const newAction = ref({
     action_type: '',
     date: new Date().toLocaleDateString('en-CA'),
@@ -52,13 +63,16 @@ export const useCreatehrActions = () => {
     }
 
     try {
-      // Проверяем, есть ли уже запись для этого сотрудника
-      const response = await axios.get(
+      const response = await axios.get<HrAction[]>(
         `http://localhost:3000/hr_actions?employee_id=${employeeId}`
       );
 
-      if (response.data.length > 0) {
-        // Если такая запись уже существует
+      const existingActions = response.data.filter(
+        (action) =>
+          action.employee_id === employeeId && (!action.deleted_at || false)
+      );
+
+      if (existingActions.length > 0) {
         $q.notify({
           type: 'negative',
           message: 'Запись для этого сотрудника уже существует.',
@@ -66,7 +80,6 @@ export const useCreatehrActions = () => {
         return;
       }
 
-      // Если запись не найдена, создаем новую
       const actionData = {
         action_type: newAction.value.action_type.slice(0, 50),
         date: newAction.value.date || new Date().toISOString().split('T')[0],
@@ -83,7 +96,6 @@ export const useCreatehrActions = () => {
         message: 'Действие успешно добавлено!',
       });
 
-      // Очистка формы после успешного добавления
       newAction.value = {
         action_type: '',
         date: new Date().toISOString().split('T')[0],

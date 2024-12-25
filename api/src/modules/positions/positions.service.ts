@@ -4,6 +4,7 @@ import { Position } from '@models/position.model';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
 import { HistoryOfChangesService } from 'src/modules/history_of_changes/history_of_changes.service';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class PositionsService {
@@ -11,6 +12,7 @@ export class PositionsService {
     @InjectModel(Position)
     private readonly positionModel: typeof Position,
     private readonly historyService: HistoryOfChangesService,
+    private readonly sequelize: Sequelize,
   ) {}
 
   async findAll() {
@@ -25,16 +27,30 @@ export class PositionsService {
     createDto: CreatePositionDto,
     userId: number,
   ): Promise<Position> {
-    const { name } = createDto;
-    const newPosition = await this.positionModel.create({ name });
+    const transaction = await this.sequelize.transaction();
 
-    await this.historyService.logChange(
-      'position',
-      { id: newPosition.id, changes: { name } },
-      userId,
-    );
+    try {
+      const { name } = createDto;
+      const newPosition = await this.positionModel.create(
+        { name },
+        { transaction },
+      );
 
-    return newPosition;
+      await this.historyService.logChange(
+        'position',
+        { id: newPosition.id, changes: { name } },
+        userId,
+        transaction,
+      );
+
+      await transaction.commit();
+
+      return newPosition;
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error creating position:', error);
+      throw new Error(`Error creating position: ${error.message}`);
+    }
   }
 
   async findOne(id: number): Promise<Position | null> {
@@ -46,41 +62,63 @@ export class PositionsService {
     dto: UpdatePositionDto,
     userId: number,
   ): Promise<Position | null> {
-    const position = await this.positionModel.findByPk(id);
-    if (position) {
-      const changes: any = {};
-      if (dto.name && dto.name !== position.name) {
-        changes.name = dto.name;
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const position = await this.positionModel.findByPk(id);
+      if (position) {
+        const changes: any = {};
+        if (dto.name && dto.name !== position.name) {
+          changes.name = dto.name;
+        }
+
+        const updatedPosition = await position.update(dto, { transaction });
+
+        if (Object.keys(changes).length > 0) {
+          await this.historyService.logChange(
+            'position',
+            { id, changes },
+            userId,
+            transaction,
+          );
+        }
+
+        await transaction.commit();
+
+        return updatedPosition;
       }
 
-      const updatedPosition = await position.update(dto);
-
-      if (Object.keys(changes).length > 0) {
-        await this.historyService.logChange(
-          'position',
-          { id, changes },
-          userId,
-        );
-      }
-
-      return updatedPosition;
+      return null;
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error updating position:', error);
+      throw new Error(`Error updating position: ${error.message}`);
     }
-    return null;
   }
 
   async softDeletePosition(id: number, userId: number): Promise<void> {
-    const position = await this.positionModel.findByPk(id);
+    const transaction = await this.sequelize.transaction();
 
-    if (!position) {
-      throw new Error('Position not found');
+    try {
+      const position = await this.positionModel.findByPk(id);
+      if (!position) {
+        throw new Error('Position not found');
+      }
+
+      await position.destroy({ transaction });
+
+      await this.historyService.logChange(
+        'position',
+        { id, changes: { deleted_at: position.deleted_at } },
+        userId,
+        transaction,
+      );
+
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error soft deleting position:', error);
+      throw new Error(`Error soft deleting position: ${error.message}`);
     }
-
-    await position.destroy();
-
-    await this.historyService.logChange(
-      'position',
-      { id, changes: { deleted_at: position.deleted_at } },
-      userId,
-    );
   }
 }

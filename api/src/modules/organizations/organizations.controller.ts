@@ -40,18 +40,15 @@ export class OrganizationsController {
   @Post()
   async create(
     @Body() createDto: CreateOrganisationDto,
-    @Req() req: Request, // Для логирования
+    @Req() req: Request,
   ): Promise<Organisation> {
     const userId = req.session?.user?.id;
     if (!userId) {
       throw new Error('User not authenticated');
     }
 
-    const newOrganisation = await this.organizationsService.create(createDto);
-
-    await this.historyOfChangesService.logChange(
-      'organisation',
-      newOrganisation,
+    const newOrganisation = await this.organizationsService.create(
+      createDto,
       userId,
     );
 
@@ -89,7 +86,7 @@ export class OrganizationsController {
       throw new Error('User not authenticated');
     }
 
-    await this.organizationsService.softDeleteOrganization(id);
+    await this.organizationsService.softDeleteOrganization(id, userId);
 
     await this.historyOfChangesService.logChange(
       'organisation',

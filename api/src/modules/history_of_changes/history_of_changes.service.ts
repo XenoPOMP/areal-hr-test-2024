@@ -10,7 +10,12 @@ export class HistoryOfChangesService {
     private readonly historyModel: typeof HistoryOfChanges, // Модель HistoryOfChanges
   ) {}
 
-  async logChange(object: string, field: any, user_id: number): Promise<void> {
+  async logChange(
+    object: string,
+    field: any,
+    user_id: number,
+    transaction?: any,
+  ): Promise<void> {
     console.log('Логируем изменения:', { object, field, user_id });
 
     if (!user_id) {
@@ -18,7 +23,10 @@ export class HistoryOfChangesService {
     }
 
     const date = new Date(); // Получаем текущую дату и время
-    await this.historyModel.create({ object, field, date, user_id });
+    await this.historyModel.create(
+      { object, field, date, user_id },
+      { transaction },
+    );
   }
 
   async findAllWithUser(): Promise<HistoryOfChanges[]> {

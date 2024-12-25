@@ -80,14 +80,15 @@ export class EmployeesService {
         { transaction },
       );
 
-      await transaction.commit();
-      console.log('Employee created with ID:', employee.id);
-
       await this.historyOfChangesService.logChange(
         'employee',
         employee,
         userId,
+        transaction,
       );
+
+      await transaction.commit();
+      console.log('Employee created with ID:', employee.id);
 
       return employee;
     } catch (error) {
@@ -102,38 +103,49 @@ export class EmployeesService {
   }
 
   async update(id: string, updateData: UpdateEmployeeDto, userId: number) {
-    const employee = await this.employeeModel.findOne({
-      where: { id },
-      include: [Passport, Address],
-    });
-
-    if (!employee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
-    }
-
-    Object.assign(employee, updateData);
-
-    if (updateData.passport && employee.passport) {
-      await Passport.update(updateData.passport, {
-        where: { id: employee.passport_id },
+    const transaction = await this.sequelize.transaction();
+    try {
+      const employee = await this.employeeModel.findOne({
+        where: { id },
+        include: [Passport, Address],
+        transaction,
       });
+
+      if (!employee) {
+        throw new NotFoundException(`Employee with ID ${id} not found`);
+      }
+
+      Object.assign(employee, updateData);
+
+      if (updateData.passport && employee.passport) {
+        await Passport.update(updateData.passport, {
+          where: { id: employee.passport_id },
+          transaction,
+        });
+      }
+
+      if (updateData.address && employee.address) {
+        await Address.update(updateData.address, {
+          where: { id: employee.address_id },
+          transaction,
+        });
+      }
+
+      await employee.save({ transaction });
+
+      await this.historyOfChangesService.logChange(
+        'employee',
+        updateData,
+        userId,
+        transaction,
+      );
+
+      await transaction.commit();
+      return employee;
+    } catch (error) {
+      await transaction.rollback();
+      throw new Error(`Error during employee update: ${error.message}`);
     }
-
-    if (updateData.address && employee.address) {
-      await Address.update(updateData.address, {
-        where: { id: employee.address_id },
-      });
-    }
-
-    await employee.save();
-
-    await this.historyOfChangesService.logChange(
-      'employee'.toLowerCase(),
-      updateData,
-      userId,
-    );
-
-    return employee;
   }
 
   async softDeleteEmployee(id: number, userId: number): Promise<Employee> {
@@ -177,6 +189,7 @@ export class EmployeesService {
           deleted_at: new Date(),
         },
         userId,
+        transaction,
       );
 
       await transaction.commit();
@@ -196,6 +209,7 @@ export class EmployeesService {
     try {
       const employee = await this.employeeModel.findOne({
         where: { id },
+        transaction,
       });
 
       if (!employee) {
@@ -217,6 +231,7 @@ export class EmployeesService {
         'file',
         { employee_id: id, file: newFile },
         userId,
+        transaction,
       );
 
       await transaction.commit();
