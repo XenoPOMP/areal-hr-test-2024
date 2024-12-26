@@ -169,7 +169,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
     <!-- Модальное окно просмотра сканов -->
     <q-dialog v-model="isScanModalOpen">
       <q-card>
@@ -180,22 +179,24 @@
           <div v-if="filteredFiles.length > 0" class="scans-container">
             <div v-for="file in filteredFiles" :key="file.id" class="scan-item">
               <div class="file-name">{{ file.name }}</div>
-              <q-btn
-                label="Скачать"
-                color="primary"
-                flat
-                dense
-                @click="downloadScan(file.id)"
-                class="download-button"
-              />
-              <q-btn
-                label="Удалить"
-                color="negative"
-                flat
-                dense
-                @click="deleteScan(file.id)"
-                class="delete-button"
-              />
+              <div class="buttons-container">
+                <q-btn
+                  label="Скачать"
+                  color="primary"
+                  flat
+                  dense
+                  @click="downloadScan(file.id)"
+                  class="download-button"
+                />
+                <q-btn
+                  label="Удалить"
+                  color="negative"
+                  flat
+                  dense
+                  @click="deleteScan(file.id)"
+                  class="delete-button"
+                />
+              </div>
               <img
                 :src="`http://localhost:3000${file.link}`"
                 alt="Скан документа"
@@ -738,5 +739,16 @@ const downloadScan = async (fileId: number) => {
   max-height: 400px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.buttons-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.download-button,
+.delete-button {
+  margin: 0;
 }
 </style>

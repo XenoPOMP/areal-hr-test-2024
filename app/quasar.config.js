@@ -84,7 +84,7 @@ module.exports = configure(function (/* ctx */) {
       port: 9000,
       proxy: {
         '/api': {
-          target: 'http://localhost:9000',
+          target: 'http://localhost:3000',
           changeOrigin: true,
           pathRewrite: { '^/api': '' },
         },

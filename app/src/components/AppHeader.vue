@@ -36,6 +36,7 @@
           label="История изменений"
           @click="goTo('/history_of_changes')"
         />
+        <q-tab name="/users" label="Пользователи" @click="goTo('/users')" />
       </q-tabs>
       <!-- Кнопка "Выйти" -->
       <q-btn

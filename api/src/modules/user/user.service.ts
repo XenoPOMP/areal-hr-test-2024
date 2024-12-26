@@ -1,52 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/user.model';
 import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User) private readonly userModel: typeof User, // Инжектим модель User
-  ) {}
+  constructor(@InjectModel(User) private readonly userModel: typeof User) {}
 
-  // Метод для поиска пользователя по логину
+  async findAll(): Promise<User[]> {
+    return this.userModel.findAll();
+  }
+
   async findByLogin(login: string) {
     return this.userModel.findOne({
       where: { login },
     });
   }
 
-  // Метод для создания нового пользователя
   async createUser(login: string, password: string) {
-    const hashedPassword = await argon2.hash(password); // Хэшируем пароль
+    const existingUser = await this.findByLogin(login);
+    if (existingUser) {
+      throw new BadRequestException(
+        'Пользователь с таким логином уже существует',
+      );
+    }
+
+    const hashedPassword = await argon2.hash(password);
+
     const newUser = await this.userModel.create({
       login,
       password: hashedPassword,
     });
+
     return newUser;
   }
 
-  // Метод для обновления данных пользователя
   async updateUser(id: number, updateData: Partial<User>) {
     const user = await this.userModel.findByPk(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException(`Пользователь с id ${id} не найден`);
     }
 
     if (updateData.password) {
-      updateData.password = await argon2.hash(updateData.password); // Хэшируем новый пароль
+      updateData.password = await argon2.hash(updateData.password);
     }
 
-    return user.update(updateData);
+    await user.update(updateData);
+    return user;
   }
 
-  // Метод для деактивации пользователя
   async deactivateUser(id: number) {
     const user = await this.userModel.findByPk(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException(`Пользователь с id ${id} не найден`);
     }
 
-    return user.update({ deleted_at: new Date() }); // Устанавливаем deleted_at для "деактивации"
+    await user.update({ deleted_at: new Date() });
+    return user;
   }
 }

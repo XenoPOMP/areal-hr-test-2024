@@ -51,6 +51,12 @@ const routes: RouteRecordRaw[] = [
         name: 'history_of_changes',
         meta: { requiresAuth: true },
       },
+      {
+        path: 'users',
+        component: () => import('src/pages/UsersPage.vue'),
+        name: 'users',
+        meta: { requiresAuth: true },
+      },
     ],
   },
   {
