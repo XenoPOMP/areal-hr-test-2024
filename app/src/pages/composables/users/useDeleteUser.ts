@@ -1,26 +1,35 @@
 import { useQuasar } from 'quasar';
-import axios from 'axios';
 
-export function useDeleteUser(loadUsers: () => Promise<void>) {
+export const useDeleteUser = (loadUsers: () => Promise<void>) => {
   const $q = useQuasar();
 
-  const deleteUserHandler = async (userId: number) => {
+  const deleteUserHandler = async (userId: string) => {
     try {
-      await axios.patch(
-        `http://localhost:3000/users/${userId}/soft-delete`,
-        {},
-        { withCredentials: true }
-      );
+      const response = await fetch(`http://localhost:3000/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при удалении пользователя');
+      }
+
       await loadUsers();
-      $q.notify({ type: 'positive', message: 'Пользователь успешно удален' });
-    } catch (err) {
-      console.error('Ошибка удаления пользователя:', err);
+
+      $q.notify({
+        type: 'positive',
+        message: 'Пользователь успешно удалён',
+      });
+    } catch (error) {
       $q.notify({
         type: 'negative',
         message: 'Ошибка при удалении пользователя',
       });
+
+      console.error('Ошибка при удалении пользователя:', error);
     }
   };
 
-  return { deleteUserHandler };
-}
+  return {
+    deleteUserHandler,
+  };
+};

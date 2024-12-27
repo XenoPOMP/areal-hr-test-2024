@@ -14,6 +14,10 @@ export class AuthService {
       return null;
     }
 
+    if (user.deleted_at !== null) {
+      return null;
+    }
+
     const isPasswordValid = await argon2.verify(user.password, password);
 
     if (!isPasswordValid) {

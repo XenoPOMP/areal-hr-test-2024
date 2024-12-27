@@ -2,12 +2,16 @@
   <div>
     <AppHeader />
 
-    <h1>Управление пользователями</h1>
+    <h1>Пользователи</h1>
+
+    <!-- Кнопка открытия модального окна добавления -->
     <q-btn
       label="Добавить пользователя"
       color="primary"
       @click="showAddModal = true"
     />
+
+    <!-- Таблица пользователей -->
     <q-table
       :rows="users"
       :columns="columns"
@@ -56,7 +60,12 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Отмена" color="negative" @click="cancelAddModal" />
+          <q-btn
+            flat
+            label="Отмена"
+            color="negative"
+            @click="showAddModal = false"
+          />
           <q-btn flat label="Добавить" color="primary" @click="handleCreate" />
         </q-card-actions>
       </q-card>
@@ -82,8 +91,9 @@
           <q-input
             v-model="editedUser.password"
             label="Пароль"
-            type="password"
+            type="text"
             filled
+            required
           />
         </q-card-section>
 
@@ -98,121 +108,85 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import AppHeader from 'src/components/AppHeader.vue';
+import AppHeader from 'components/AppHeader.vue';
+import { usersColumns } from 'src/pages/columns/usersColumns';
+import axiosInstance from 'src/api/axiosInstance';
+
 import { useCreateUser } from 'src/pages/composables/users/useCreateUser';
 import { useUpdateUser } from 'src/pages/composables/users/useUpdateUser';
 import { useDeleteUser } from 'src/pages/composables/users/useDeleteUser';
-import { usersColumns } from 'src/pages/columns/usersColumns';
-import { User } from 'src/pages/types/User';
-import { useQuasar } from 'quasar';
-import axios from 'axios';
-import { userSchema } from 'src/pages/shemas/User.shemas';
+import { User } from './types/User';
 
-const users = ref<User[]>([]);
 const columns = usersColumns;
 
-const newUser = ref({
-  id: 0,
-  name: '',
-  surname: '',
-  second_name: '',
-  login: '',
-  password: '',
-  role: 'hr',
-});
-
-const editedUser = ref<User | null>(null);
-
+const users = ref<User[]>([]);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
-const $q = useQuasar();
+
+interface UserData {
+  id?: number;
+  name: string;
+  surname: string;
+  second_name: string;
+  login: string;
+  password: string;
+}
 
 const loadUsers = async () => {
   try {
-    const response = await axios.get<User[]>('http://localhost:3000/users');
-    users.value = response.data.map((user) => ({
-      ...user,
-      id: Number(user.id),
-    }));
+    const allUsers = await getUsers();
+    users.value = allUsers.filter((user) => user.deleted_at === null);
   } catch (error) {
     console.error('Ошибка загрузки пользователей:', error);
-    $q.notify({
-      type: 'negative',
-      message: 'Ошибка при загрузке пользователей',
-    });
   }
 };
 
 onMounted(loadUsers);
 
-const { createUserHandler } = useCreateUser(loadUsers);
-const { startEditingUser, updateUserHandler } = useUpdateUser(loadUsers);
+const { newUser, createUserHandler } = useCreateUser(loadUsers);
+const { editedUser, startEditingUser, updateUserHandler } =
+  useUpdateUser(loadUsers);
 const { deleteUserHandler } = useDeleteUser(loadUsers);
 
+const cancelEdit = () => {
+  showEditModal.value = false;
+};
+
 const handleCreate = async () => {
-  newUser.value.role = 'hr';
-  const { error } = userSchema.validate(newUser.value);
-  if (error) {
-    error.details.forEach((err) =>
-      $q.notify({ type: 'negative', message: err.message })
-    );
-    return;
-  }
   await createUserHandler();
   showAddModal.value = false;
 };
 
 const handleUpdate = async () => {
-  if (editedUser.value) {
-    editedUser.value.role = 'hr';
-  }
-  const { error } = userSchema.validate(editedUser.value);
-  if (error) {
-    error.details.forEach((err) =>
-      $q.notify({ type: 'negative', message: err.message })
-    );
-    return;
-  }
   await updateUserHandler();
   showEditModal.value = false;
 };
 
 const startEditingWithModal = (user: User) => {
-  startEditingUser(user);
+  const userData: UserData = {
+    id: user.id,
+    name: user.name,
+    surname: user.surname,
+    second_name: user.second_name || '',
+    login: user.login,
+    password: user.password,
+  };
+  startEditingUser(userData);
   showEditModal.value = true;
 };
 
-const cancelAddModal = () => {
-  showAddModal.value = false;
-  resetNewUser();
-};
-
-const cancelEdit = () => {
-  showEditModal.value = false;
-  if (editedUser.value) resetEditedUser();
-};
-
-const resetNewUser = () => {
-  newUser.value = {
-    id: 0,
-    name: '',
-    surname: '',
-    second_name: '',
-    login: '',
-    password: '',
-    role: 'hr',
-  };
-};
-
-const resetEditedUser = () => {
-  if (editedUser.value) {
-    editedUser.value = { ...editedUser.value };
-  }
+const getUsers = async (): Promise<User[]> => {
+  const response = await axiosInstance.get('/users');
+  return response.data;
 };
 </script>
 
 <style scoped>
 .table-container {
   margin-top: 1rem;
+}
+
+.q-dialog {
+  min-width: 400px;
 }
 </style>

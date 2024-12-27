@@ -32,5 +32,10 @@ export const userSchema = Joi.object({
 
   id: Joi.number().integer().optional(),
   second_name: Joi.string().optional(),
+
+  role: Joi.string().valid('hr').required().messages({
+    'any.only': 'Роль может быть только "hr"',
+  }),
+
   deleted_at: Joi.forbidden(),
 });

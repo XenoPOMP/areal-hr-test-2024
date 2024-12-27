@@ -1,65 +1,38 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
-import axios from 'axios';
 import { userSchema } from 'src/pages/shemas/User.shemas';
-import { User } from 'src/pages/types/User';
 
-export function useUpdateUser(loadUsers: () => Promise<void>) {
+interface UserData {
+  id?: number;
+  name: string;
+  surname: string;
+  second_name: string;
+  login: string;
+  password: string;
+  role?: string;
+}
+
+export const useUpdateUser = (loadUsers: () => Promise<void>) => {
   const $q = useQuasar();
-  const editedUser = ref<User | null>(null);
-  const editMode = ref(false);
 
-  const updateUser = async (
-    userId: number,
-    userData: {
-      name: string;
-      surname: string;
-      second_name: string;
-      login: string;
-      password?: string;
-      role: string;
-    }
-  ) => {
-    try {
-      const response = await axios.put(
-        `http://localhost:3000/users/${userId}`,
-        userData
-      );
-      return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage =
-          error.response?.data?.message || 'Ошибка при обновлении пользователя';
-        throw new Error(errorMessage);
-      } else {
-        throw new Error('Неизвестная ошибка при обновлении пользователя');
-      }
-    }
-  };
+  const editedUser = ref<UserData | null>(null);
 
-  const startEditingUser = (user: User) => {
+  const startEditingUser = (user: UserData) => {
     editedUser.value = { ...user };
-    editMode.value = true;
   };
 
   const cancelEdit = () => {
     editedUser.value = null;
-    editMode.value = false;
   };
 
   const updateUserHandler = async () => {
     if (!editedUser.value) return;
 
-    const userData = {
-      name: editedUser.value.name,
-      surname: editedUser.value.surname,
-      second_name: editedUser.value.second_name,
-      login: editedUser.value.login,
-      password: editedUser.value.password,
-      role: editedUser.value.role,
-    };
+    editedUser.value.role = editedUser.value.role || 'hr';
 
-    const { error } = userSchema.validate(userData, { abortEarly: false });
+    const { error } = userSchema.validate(editedUser.value, {
+      abortEarly: false,
+    });
 
     if (error) {
       error.details.forEach((err) =>
@@ -69,28 +42,46 @@ export function useUpdateUser(loadUsers: () => Promise<void>) {
     }
 
     try {
-      await updateUser(editedUser.value.id, userData);
+      const userDataToUpdate = { ...editedUser.value };
+
+      await updateUser(userDataToUpdate);
+      editedUser.value = null;
       await loadUsers();
-      cancelEdit();
       $q.notify({ type: 'positive', message: 'Пользователь успешно обновлен' });
-    } catch (err: unknown) {
-      let errorMessage = 'Ошибка при обновлении пользователя';
-      if (axios.isAxiosError(err) && err.response?.data?.message) {
-        errorMessage = err.response?.data?.message;
-      }
-      console.error('Ошибка обновления пользователя:', err);
+    } catch (err) {
       $q.notify({
         type: 'negative',
-        message: errorMessage,
+        message: 'Ошибка при обновлении пользователя',
       });
     }
   };
 
+  const updateUser = async (userData: UserData) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/users/${userData.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Ошибка при обновлении пользователя');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка при обновлении пользователя:', error);
+      throw error;
+    }
+  };
+
   return {
-    editMode,
     editedUser,
     startEditingUser,
     cancelEdit,
     updateUserHandler,
   };
-}
+};

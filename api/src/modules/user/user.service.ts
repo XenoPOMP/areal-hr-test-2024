@@ -1,11 +1,8 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/models/user.model';
 import * as argon2 from 'argon2';
+import { CreateUserDto } from 'modules/user/dto/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -21,22 +18,17 @@ export class UserService {
     });
   }
 
-  async createUser(login: string, password: string) {
-    const existingUser = await this.findByLogin(login);
-    if (existingUser) {
-      throw new BadRequestException(
-        'Пользователь с таким логином уже существует',
-      );
-    }
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await argon2.hash(createUserDto.password, {
+      type: argon2.argon2id,
+    });
 
-    const hashedPassword = await argon2.hash(password);
-
-    const newUser = await this.userModel.create({
-      login,
+    const user = await this.userModel.create({
+      ...createUserDto,
       password: hashedPassword,
     });
 
-    return newUser;
+    return user;
   }
 
   async updateUser(id: number, updateData: Partial<User>) {

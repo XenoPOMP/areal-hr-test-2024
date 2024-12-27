@@ -1,12 +1,14 @@
 import {
   Controller,
-  Put,
-  Param,
+  Post,
   Body,
   UseGuards,
-  NotFoundException,
   BadRequestException,
+  NotFoundException,
+  Param,
+  Put,
   Get,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from 'src/modules/user/user.service';
 import { RolesGuard } from 'src/guards/roles.guard';
@@ -42,15 +44,26 @@ export class UserController {
     return updatedUser;
   }
 
-  @Put(':id/deactivate')
-  @UseGuards(RolesGuard)
-  async deactivateUser(@Param('id') id: number) {
-    const deactivatedUser = await this.userService.deactivateUser(id);
-
-    if (!deactivatedUser) {
-      throw new NotFoundException(`Пользователь с id ${id} не найден`);
+  @Post()
+  async create(@Body() userData: any) {
+    if (!userData.name || !userData.surname) {
+      throw new Error('Имя и фамилия обязательны');
     }
 
-    return deactivatedUser;
+    userData.role = 'hr';
+
+    try {
+      const user = await this.userService.create(userData);
+      return user;
+    } catch (error) {
+      console.error('Ошибка при добавлении пользователя', error);
+      throw error;
+    }
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string) {
+    await this.userService.deactivateUser(Number(id));
+    return { message: 'Пользователь удалён' };
   }
 }
