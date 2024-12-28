@@ -18,5 +18,8 @@
     "@vue/devtools-api": "^7.6.4",
     "@vueuse/core": "^11.3.0",
     "vitepress": "^1.5.0"
+  },
+  "dependencies": {
+    "vite": "^6.0.6"
   }
 }
