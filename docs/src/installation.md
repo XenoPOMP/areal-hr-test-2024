@@ -26,4 +26,18 @@
    npm run dev
    ```
 
+## Запуск проекта на Docker
+
+1. Создайте контейнеры с помощью команды:
+
+   ```
+   docker-compose up --build
+   ```
+
+2. После создания контейнеров выполните миграцию для базы данных:
+
+   ```
+   docker-compose exec backend npx sequelize-cli db:migrate
+   ```
+
 ## [Вернуться на главную страницу](index.md)

@@ -1,6 +1,4 @@
-volumes:
-  db_data:
-  backend_logs:
+version: '3.8'
 
 services:
   db:
@@ -10,15 +8,18 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Spiridon_2017
-      - POSTGRES_DB=areal_hr
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
     volumes:
       - db_data:/var/lib/postgresql/data
+    networks:
+      - default
 
   backend:
     build:
       context: ./api
+      dockerfile: ./container/dockerfile
     container_name: areal-hr-test-2024-backend
     ports:
       - "3000:3000"
@@ -26,39 +27,74 @@ services:
       - ./api:/usr/src/app
       - backend_logs:/var/log/backend
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PGHOST=db
-      - PGPORT=5432
-      - PGDATABASE=areal_hr
-      - PGUSER=postgres
-      - PGPASSWORD=Spiridon_2017
+      - PGPORT=${PGPORT}
+      - PGDATABASE=${PGDATABASE}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - API_PORT=${API_PORT}
+      - API_BASE_PATH=${API_BASE_PATH}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - FILES_DIR=${FILES_DIR}
     depends_on:
       - db
     command: >
       sh -c "npm run start"
+    networks:
+      - default
 
   frontend:
     build:
       context: ./app
+      dockerfile: ./container/dockerfile
     container_name: areal-hr-test-2024-frontend
     ports:
       - "9000:80"
-    volumes:
-      - ./app:/usr/src/app
+    env_file:
+      - .env
     environment:
-      - VUE_ROUTER_MODE=history
       - VUE_APP_DEBUG=true
     depends_on:
       - backend
+    networks:
+      - default
 
   nginx:
-    image: nginx
+    image: nginx:alpine
     container_name: areal-hr-test-2024-nginx
     ports:
       - "80:80"
+      - "8080:8080"
     volumes:
       - ./containers/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./app/dist/spa:/usr/share/nginx/html
+      - ./docs/.vitepress/dist:/usr/share/nginx/docs
     depends_on:
-      - backend
       - frontend
+      - backend
+    networks:
+      - default
+
+  docs:
+    build:
+      context: .
+      dockerfile: docs/container/Dockerfile
+    container_name: areal-hr-test-2024-docs
+    ports:
+      - "5173:5173"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - default
+
+volumes:
+  db_data:
+  backend_logs:
+
+networks:
+  default:
+    driver: bridge

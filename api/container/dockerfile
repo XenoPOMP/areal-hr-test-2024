@@ -1,20 +1,23 @@
-# Базовый образ Node.js
-FROM node:20
+# Используем Node.js образ с Alpine для лёгкости
+FROM node:20-alpine
 
-# Рабочая директория контейнера
+# Устанавливаем рабочую директорию
 WORKDIR /usr/src/app
 
-# Копирование package.json и package-lock.json для установки зависимостей
+# Копируем package.json и package-lock.json для установки зависимостей
 COPY package*.json ./
 
-# Установка зависимостей
+# Устанавливаем зависимости
 RUN npm install
 
-# Копирование всего кода приложения в контейнер
+# Копируем весь код приложения в контейнер
 COPY . .
 
-# Открытие порта 3000
-EXPOSE 3000
+# Сборка проекта (если используется TypeScript в NestJS)
+RUN npm run build
 
-# Команда для запуска приложения
-CMD ["npm", "start"]
+# Устанавливаем утилиту для проверки доступности базы данных (netcat)
+RUN apk add --no-cache netcat-openbsd
+
+# Ожидаем подключения к базе данных перед выполнением миграций
+CMD ["sh", "-c", "until nc -z -v -w30 db 5432; do echo 'Waiting for database connection...'; sleep 1; done && npx sequelize-cli db:migrate && npm run start:prod"]
