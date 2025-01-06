@@ -3,3 +3,6 @@ node_modules
 files/
 .vitepress/
 /docs/.vitepress/
+
+# MacOS
+.DS_Store
