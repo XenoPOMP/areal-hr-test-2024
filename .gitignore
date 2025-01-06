@@ -1,6 +1,5 @@
 node_modules
 .env
 files/
-.idea/
 .vitepress/
 /docs/.vitepress/
